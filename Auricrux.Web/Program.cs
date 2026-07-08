@@ -1,4 +1,5 @@
 using Auricrux.Web.Components;
+using Auricrux.Web.Middleware;
 using Auricrux.Shared.Services;
 using Auricrux.Shared.Models;
 
@@ -15,10 +16,11 @@ var auricruxConfig = new AuricruxConfig
     EnableLogging = true
 };
 
-// Add services to the container.
 builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddControllers();
 
 // Register Auricrux services
 builder.Services
@@ -47,13 +49,54 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.UseRouting();
+
+app.UseEndpoints(endpoints =>
+{
+    // API endpoints MUST be mapped first
+    endpoints.MapPost("/api/thinking", async (ThinkingRequest req, ILogger<Program> log) =>
+    {
+        log.LogInformation("Thinking: {Query}", req.Query);
+        return Results.Ok(new ThinkingResponse
+        {
+            Success = true,
+            Mode = req.Mode,
+            Result = $"Response to: {req.Query}",
+            ProcessingTimeMs = Random.Shared.Next(500, 3000),
+            Timestamp = DateTime.UtcNow
+        });
+    });
+
+    endpoints.MapPost("/api/search", async (SearchRequest req, ILogger<Program> log) =>
+    {
+        log.LogInformation("Search: {Query}", req.Query);
+        return Results.Ok(new SearchResponse
+        {
+            Success = true,
+            Scope = req.Scope,
+            Results = new List<SearchResult>
+            {
+                new() { Title = "Result 1", Snippet = $"Search result for: {req.Query}", Score = 0.95 },
+                new() { Title = "Result 2", Snippet = "Another result", Score = 0.87 },
+                new() { Title = "Result 3", Snippet = "Third result", Score = 0.76 }
+            },
+            TotalResults = 3,
+            Timestamp = DateTime.UtcNow
+        });
+    });
+
+    endpoints.MapGet("/api/health", () => Results.Ok(new { status = "healthy", app = "Auricrux", timestamp = DateTime.UtcNow }));
+
+    // Map static assets
+    endpoints.MapStaticAssets();
+
+    // DISABLE: Razor Components - testing if this is causing the issue
+    // endpoints.MapRazorComponents<App>()
+    //     .AddInteractiveServerRenderMode();
+});
 
 app.Run();

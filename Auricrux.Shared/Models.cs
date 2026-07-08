@@ -176,3 +176,84 @@ public class AuricruxConfig
     /// <summary>Enable request logging</summary>
     public bool EnableLogging { get; set; } = true;
 }
+
+/// <summary>
+/// Request for thinking mode operations
+/// </summary>
+public class ThinkingRequest
+{
+    /// <summary>User's query for thinking</summary>
+    public required string Query { get; set; }
+
+    /// <summary>Thinking mode to use</summary>
+    public ThinkingMode Mode { get; set; } = ThinkingMode.Auto;
+}
+
+/// <summary>
+/// Response from thinking mode operation
+/// </summary>
+public class ThinkingResponse
+{
+    /// <summary>Success status</summary>
+    public bool Success { get; set; }
+
+    /// <summary>Thinking mode used</summary>
+    public ThinkingMode Mode { get; set; }
+
+    /// <summary>Thinking result</summary>
+    public string Result { get; set; } = string.Empty;
+
+    /// <summary>Processing time in milliseconds</summary>
+    public int ProcessingTimeMs { get; set; }
+
+    /// <summary>Response timestamp</summary>
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Request for search operations
+/// </summary>
+public class SearchRequest
+{
+    /// <summary>Search query</summary>
+    public required string Query { get; set; }
+
+    /// <summary>Search scope</summary>
+    public SearchScope Scope { get; set; } = SearchScope.Both;
+}
+
+/// <summary>
+/// Single search result
+/// </summary>
+public class SearchResult
+{
+    /// <summary>Result title</summary>
+    public required string Title { get; set; }
+
+    /// <summary>Result snippet/summary</summary>
+    public string Snippet { get; set; } = string.Empty;
+
+    /// <summary>Relevance score (0-1)</summary>
+    public double Score { get; set; }
+}
+
+/// <summary>
+/// Response from search operation
+/// </summary>
+public class SearchResponse
+{
+    /// <summary>Success status</summary>
+    public bool Success { get; set; }
+
+    /// <summary>Search scope used</summary>
+    public SearchScope Scope { get; set; }
+
+    /// <summary>Search results</summary>
+    public List<SearchResult> Results { get; set; } = new();
+
+    /// <summary>Total number of results</summary>
+    public int TotalResults { get; set; }
+
+    /// <summary>Response timestamp</summary>
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+}
