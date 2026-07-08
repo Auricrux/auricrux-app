@@ -1,0 +1,287 @@
+@page "/"
+@using Auricrux.Shared.Models
+@using Auricrux.Shared.Services
+@inject AuricruxService AuricruxService
+@inject ILogger<Chat> Logger
+@rendermode InteractiveServer
+
+<div class="container-fluid vh-100 d-flex flex-column" style="max-width: 1200px; margin: 0 auto;">
+    <!-- Header -->
+    <div class="bg-primary text-white p-3 rounded-top">
+        <div class="d-flex align-items-center mb-3">
+            <h1 class="mb-0">⚡ Auricrux AI Assistant</h1>
+        </div>
+        <p class="mb-2">Status: <span class="badge bg-secondary">@StatusMessage</span></p>
+        
+        <!-- Control Panel -->
+        <div class="row g-2">
+            <div class="col-12 col-md-3">
+                <label class="form-label mb-1">Thinking Mode</label>
+                <select class="form-select form-select-sm" @onchange="OnThinkingModeChanged">
+                    @foreach (var mode in Enum.GetValues(typeof(ThinkingMode)).Cast<ThinkingMode>())
+                    {
+                        <option value="@mode" selected="@(mode == SelectedThinkingMode)">@mode</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label mb-1">Search Scope</label>
+                <select class="form-select form-select-sm" @onchange="OnSearchScopeChanged">
+                    @foreach (var scope in Enum.GetValues(typeof(SearchScope)).Cast<SearchScope>())
+                    {
+                        <option value="@scope" selected="@(scope == SelectedSearchScope)">@scope</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label mb-1">
+                    <input type="checkbox" @onchange="OnAutoSpeakChanged" checked="@AutoSpeakEnabled" /> Auto-Speak
+                </label>
+            </div>
+            <div class="col-12 col-md-3">
+                <button class="btn btn-warning btn-sm w-100" @onclick="ClearHistory" disabled="@IsLoading">
+                    Clear History
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="flex-grow-1 overflow-auto" style="background-color: #f8f9fa; padding: 20px;">
+        @foreach (var message in Messages)
+        {
+            <div class="mb-3">
+                @if (message.IsUser)
+                {
+                    <div class="d-flex justify-content-end">
+                        <div class="alert alert-info" style="max-width: 70%;">
+                            <strong>You:</strong>
+                            <p class="mb-0">@message.Content</p>
+                            <small class="text-muted">@message.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex justify-content-start">
+                        <div class="alert alert-light border" style="max-width: 70%;">
+                            <strong>Auricrux:</strong>
+                            <p class="mb-0">@message.Content</p>
+                            @if (message.ProcessingTimeMs > 0)
+                            {
+                                <small class="text-muted">Processed in @message.ProcessingTimeMs ms • @message.Timestamp.ToString("HH:mm:ss")</small>
+                            }
+                            @if (!string.IsNullOrEmpty(message.InteractionId))
+                            {
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-success" @onclick="() => RateMessage(message.InteractionId, 5)">⭐⭐⭐⭐⭐</button>
+                                    <button class="btn btn-sm btn-outline-success" @onclick="() => RateMessage(message.InteractionId, 4)">⭐⭐⭐⭐</button>
+                                    <button class="btn btn-sm btn-outline-success" @onclick="() => RateMessage(message.InteractionId, 3)">⭐⭐⭐</button>
+                                    <button class="btn btn-sm btn-outline-warning" @onclick="() => RateMessage(message.InteractionId, 2)">⭐⭐</button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RateMessage(message.InteractionId, 1)">⭐</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        @if (IsLoading)
+        {
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Input Area -->
+    <div class="bg-light border-top p-3">
+        <div class="input-group">
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="Type your message..."
+                   @bind="UserInput"
+                   @onkeyup="OnKeyUp"
+                   disabled="@IsLoading" />
+            <button class="btn btn-primary" type="button" @onclick="SendMessage" disabled="@(IsLoading || string.IsNullOrWhiteSpace(UserInput))">
+                @if (IsLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Sending...</span>
+                }
+                else
+                {
+                    <span>Send</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ChatMessageViewModel> Messages = new();
+    private string UserInput = string.Empty;
+    private bool IsLoading = false;
+    private string StatusMessage = "Ready";
+    private ThinkingMode SelectedThinkingMode = ThinkingMode.Auto;
+    private SearchScope SelectedSearchScope = SearchScope.Both;
+    private bool AutoSpeakEnabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Messages.Add(new ChatMessageViewModel
+        {
+            Role = "assistant",
+            Content = "Hello! I'm Auricrux, your AI assistant. How can I help you today?",
+            IsUser = false,
+            Timestamp = DateTime.Now
+        });
+
+        await Task.CompletedTask;
+    }
+
+    private void OnThinkingModeChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<ThinkingMode>(e.Value?.ToString(), out var mode))
+        {
+            SelectedThinkingMode = mode;
+        }
+    }
+
+    private void OnSearchScopeChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<SearchScope>(e.Value?.ToString(), out var scope))
+        {
+            SelectedSearchScope = scope;
+        }
+    }
+
+    private void OnAutoSpeakChanged(ChangeEventArgs e)
+    {
+        AutoSpeakEnabled = (bool)(e.Value ?? false);
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !IsLoading && !string.IsNullOrWhiteSpace(UserInput))
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(UserInput)) return;
+
+        try
+        {
+            IsLoading = true;
+            var query = UserInput;
+            UserInput = string.Empty;
+            StatusMessage = "Sending...";
+
+            // Add user message
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "user",
+                Content = query,
+                IsUser = true,
+                Timestamp = DateTime.Now
+            });
+
+            await InvokeAsync(StateHasChanged);
+
+            // Process query
+            var (response, interaction) = await AuricruxService.ProcessQueryAsync(
+                query,
+                SelectedThinkingMode,
+                SelectedSearchScope
+            );
+
+            if (response != null)
+            {
+                Messages.Add(new ChatMessageViewModel
+                {
+                    Role = "assistant",
+                    Content = response.Content,
+                    IsUser = false,
+                    Timestamp = DateTime.Now,
+                    InteractionId = interaction?.Id,
+                    ThinkingContent = response.ThinkingContent,
+                    ProcessingTimeMs = response.ProcessingTimeMs,
+                    Sources = response.Sources
+                });
+
+                StatusMessage = $"Completed in {response.ProcessingTimeMs}ms";
+            }
+            else
+            {
+                Messages.Add(new ChatMessageViewModel
+                {
+                    Role = "assistant",
+                    Content = "I'm sorry, I encountered an error processing your request. Please try again.",
+                    IsUser = false,
+                    Timestamp = DateTime.Now
+                });
+                StatusMessage = "Error occurred";
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error: {ex.Message}");
+            StatusMessage = "Error sending message";
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = $"Error: {ex.Message}",
+                IsUser = false,
+                Timestamp = DateTime.Now
+            });
+            await InvokeAsync(StateHasChanged);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ClearHistory()
+    {
+        AuricruxService.ClearHistory();
+        Messages.Clear();
+        Messages.Add(new ChatMessageViewModel
+        {
+            Role = "assistant",
+            Content = "Conversation cleared. How can I help you?",
+            IsUser = false,
+            Timestamp = DateTime.Now
+        });
+        StatusMessage = "Ready";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RateMessage(string? interactionId, int stars)
+    {
+        if (string.IsNullOrEmpty(interactionId)) return;
+
+        var success = await AuricruxService.SubmitFeedbackAsync(interactionId, stars);
+        StatusMessage = success ? $"Rated {stars} star(s)" : "Failed to submit rating";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public class ChatMessageViewModel
+    {
+        public string Role { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public bool IsUser { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string? InteractionId { get; set; }
+        public string? ThinkingContent { get; set; }
+        public long ProcessingTimeMs { get; set; }
+        public List<Source> Sources { get; set; } = new();
+    }
+}

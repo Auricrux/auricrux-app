@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Auricrux.Mobile/Auricrux.Mobile.csproj" />
+  <Project Path="Auricrux.Shared/Auricrux.Shared.csproj" />
+  <Project Path="Auricrux.Web/Auricrux.Web.csproj" />
+</Solution>

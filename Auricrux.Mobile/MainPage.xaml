@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Auricrux.Mobile.MainPage"
+             Title="Auricrux"
+             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F1F1F}">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Padding="10">
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Padding="10" Spacing="8">
+            <HorizontalStackLayout Spacing="10">
+                <Image Source="appicon.png" WidthRequest="40" HeightRequest="40" Aspect="AspectFit"/>
+                <Label Text="Auricrux AI Assistant" FontSize="20" FontAttributes="Bold" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+            
+            <Label x:Name="StatusLabel" Text="Ready" FontSize="12" TextColor="Gray"/>
+            
+            <!-- Mode Controls -->
+            <HorizontalStackLayout Spacing="10">
+                <Label Text="Thinking:" VerticalOptions="Center" FontSize="12"/>
+                <Picker x:Name="ThinkingModePicker" WidthRequest="100" FontSize="12"/>
+                <Label Text="Search:" VerticalOptions="Center" FontSize="12"/>
+                <Picker x:Name="SearchScopePicker" WidthRequest="100" FontSize="12"/>
+                <CheckBox x:Name="AutoSpeakCheckBox" VerticalOptions="Center" Margin="5,0"/>
+                <Label Text="Auto-speak" VerticalOptions="Center" FontSize="11"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- Chat Messages -->
+        <CollectionView x:Name="MessagesCollectionView" 
+                       Grid.Row="1"
+                       SelectionMode="Single"
+                       Margin="5">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Spacing="5" Padding="10">
+                        <Frame Padding="12" CornerRadius="10" 
+                               BackgroundColor="{Binding IsUser, Converter={StaticResource UserMessageColorConverter}}"
+                               BorderColor="Transparent">
+                            <StackLayout Spacing="3">
+                                <Label Text="{Binding Content}" 
+                                      TextColor="{Binding IsUser, Converter={StaticResource UserMessageTextColorConverter}}"
+                                      FontSize="14"
+                                      LineBreakMode="WordWrap"/>
+                                <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}" 
+                                      FontSize="10" 
+                                      TextColor="Gray"
+                                      IsVisible="{Binding ProcessingTimeMs, Converter={StaticResource ProcessingTimeVisibilityConverter}}"/>
+                                <Label Text="{Binding ProcessingTimeMs, StringFormat='Processed in {0}ms'}" 
+                                      FontSize="10" 
+                                      TextColor="Gray"
+                                      IsVisible="{Binding ProcessingTimeMs, Converter={StaticResource ProcessingTimeVisibilityConverter}}"/>
+                            </StackLayout>
+                        </Frame>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator x:Name="LoadingIndicator" 
+                          Grid.Row="2"
+                          IsRunning="False"
+                          IsVisible="False"
+                          Color="{AppThemeBinding Light=Black, Dark=White}"/>
+
+        <!-- Input Area -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Padding="5">
+            <Entry x:Name="InputEntry" 
+                  Grid.Column="0"
+                  Grid.Row="0"
+                  Placeholder="Type your message..."
+                  PlaceholderColor="Gray"
+                  Margin="10"/>
+            
+            <Button x:Name="SendButton" 
+                   Grid.Column="1"
+                   Grid.Row="0"
+                   Text="Send"
+                   Margin="5"
+                   CornerRadius="5"/>
+            
+            <!-- Rating Buttons -->
+            <HorizontalStackLayout Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Spacing="5" Margin="0,5">
+                <Button Text="⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
+                <Button Text="⭐⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
+                <Button Text="⭐⭐⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
+                <Button Text="⭐⭐⭐⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
+                <Button Text="⭐⭐⭐⭐⭐" FontSize="16" WidthRequest="50" Margin="5,0"/>
+                <Button Text="Clear" Margin="5"/>
+            </HorizontalStackLayout>
+        </Grid>
+    </Grid>
+
+</ContentPage>
