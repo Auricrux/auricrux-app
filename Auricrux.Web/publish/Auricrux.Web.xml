@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Auricrux.Web</name>
+    </assembly>
+    <members>
+        <member name="T:Auricrux.Web.Controllers.AuricruxApiController">
+            <summary>
+            API controller for Auricrux thinking modes and search
+            </summary>
+        </member>
+        <member name="M:Auricrux.Web.Controllers.AuricruxApiController.GetHealth">
+            <summary>
+            Health check for API
+            </summary>
+        </member>
+        <member name="M:Auricrux.Web.Controllers.AuricruxApiController.PostThinking(Auricrux.Shared.Models.ThinkingRequest)">
+            <summary>
+            Process a thinking mode request
+            </summary>
+        </member>
+        <member name="M:Auricrux.Web.Controllers.AuricruxApiController.PostSearch(Auricrux.Shared.Models.SearchRequest)">
+            <summary>
+            Process a search request
+            </summary>
+        </member>
+        <member name="T:Program">
+            <summary>
+            Auto-generated public partial Program class for top-level statement apps.
+            </summary>
+        </member>
+    </members>
+</doc>

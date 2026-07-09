@@ -1,0 +1,248 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "Auricrux.Web/1.0.0": {
+        "dependencies": {
+          "Auricrux.Shared": "1.0.0"
+        },
+        "runtime": {
+          "Auricrux.Web.dll": {}
+        }
+      },
+      "Microsoft.Maui.Controls/10.0.0": {
+        "dependencies": {
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Controls.Xaml": "10.0.0"
+        }
+      },
+      "Microsoft.Maui.Controls.Core/10.0.0": {
+        "dependencies": {
+          "Microsoft.Maui.Core": "10.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Maui.Controls.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52904"
+          }
+        },
+        "resources": {
+          "lib/net10.0/ar/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "ar"
+          },
+          "lib/net10.0/ca/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "ca"
+          },
+          "lib/net10.0/cs/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net10.0/da/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "da"
+          },
+          "lib/net10.0/de/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net10.0/el/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "el"
+          },
+          "lib/net10.0/es/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net10.0/fi/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "fi"
+          },
+          "lib/net10.0/fr/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net10.0/he/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "he"
+          },
+          "lib/net10.0/hi/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "hi"
+          },
+          "lib/net10.0/hr/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "hr"
+          },
+          "lib/net10.0/hu/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "hu"
+          },
+          "lib/net10.0/id/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "id"
+          },
+          "lib/net10.0/it/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net10.0/ja/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net10.0/ko/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net10.0/ms/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "ms"
+          },
+          "lib/net10.0/nb/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "nb"
+          },
+          "lib/net10.0/nl/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "nl"
+          },
+          "lib/net10.0/pl/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net10.0/pt-BR/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net10.0/pt/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "pt"
+          },
+          "lib/net10.0/ro/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "ro"
+          },
+          "lib/net10.0/ru/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net10.0/sk/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "sk"
+          },
+          "lib/net10.0/sv/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "sv"
+          },
+          "lib/net10.0/th/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "th"
+          },
+          "lib/net10.0/tr/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net10.0/uk/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "uk"
+          },
+          "lib/net10.0/vi/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "vi"
+          },
+          "lib/net10.0/zh-HK/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "zh-HK"
+          },
+          "lib/net10.0/zh-Hans/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net10.0/zh-Hant/Microsoft.Maui.Controls.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Microsoft.Maui.Controls.Xaml/10.0.0": {
+        "dependencies": {
+          "Microsoft.Maui.Controls.Core": "10.0.0",
+          "Microsoft.Maui.Core": "10.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Maui.Controls.Xaml.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52904"
+          }
+        }
+      },
+      "Microsoft.Maui.Core/10.0.0": {
+        "dependencies": {
+          "Microsoft.Maui.Essentials": "10.0.0",
+          "Microsoft.Maui.Graphics": "10.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Maui.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52904"
+          }
+        }
+      },
+      "Microsoft.Maui.Essentials/10.0.0": {
+        "dependencies": {
+          "Microsoft.Maui.Graphics": "10.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Maui.Essentials.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52904"
+          }
+        }
+      },
+      "Microsoft.Maui.Graphics/10.0.0": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Maui.Graphics.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52904"
+          }
+        }
+      },
+      "Auricrux.Shared/1.0.0": {
+        "dependencies": {
+          "Microsoft.Maui.Controls": "10.0.0"
+        },
+        "runtime": {
+          "Auricrux.Shared.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Auricrux.Web/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Maui.Controls/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NP0HDpggHYNMTnzqlXAxospQyR6gu4GHzYEIFcAB1/Dmu0BodfvlPrNA2wYwTGE9ERERc9OjXRZUTYZDEYDNAA==",
+      "path": "microsoft.maui.controls/10.0.0",
+      "hashPath": "microsoft.maui.controls.10.0.0.nupkg.sha512"
+    },
+    "Microsoft.Maui.Controls.Core/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gzEDoTscHaxuJQ5A8BXjWDMOVsAF6zh4AWsSrLB0Q+1F8EWHB/R7YwHIjqBf9bZLroJBpot9lBLHXdyNwlSCvg==",
+      "path": "microsoft.maui.controls.core/10.0.0",
+      "hashPath": "microsoft.maui.controls.core.10.0.0.nupkg.sha512"
+    },
+    "Microsoft.Maui.Controls.Xaml/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oLOGV0OWETnEl0iKLodBqDFT06Se+y7aP5HWhDyNcdW9wDhOz0wuOf1Jamj0HiBpP7fL7JT5N6o+hxdH1BtKtA==",
+      "path": "microsoft.maui.controls.xaml/10.0.0",
+      "hashPath": "microsoft.maui.controls.xaml.10.0.0.nupkg.sha512"
+    },
+    "Microsoft.Maui.Core/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HkUxRS2qJyBgvtb5Pop8WQJCx4TkTjz9Ug+IIFasUbWpNHImERx4IbAG/S8iWi4cGYnc8xvNLVzXHrbHcCdfuw==",
+      "path": "microsoft.maui.core/10.0.0",
+      "hashPath": "microsoft.maui.core.10.0.0.nupkg.sha512"
+    },
+    "Microsoft.Maui.Essentials/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Lq9QTJ3UrA9CZdFACmEtXHqju27I8CeRWRD0PSAZHNbvH2v3uAtfzKAaJunbopIxf5nOboYwt8Ja70jgUVDI+w==",
+      "path": "microsoft.maui.essentials/10.0.0",
+      "hashPath": "microsoft.maui.essentials.10.0.0.nupkg.sha512"
+    },
+    "Microsoft.Maui.Graphics/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hHQdbaavPrUl25INCFRIr/PegJI8148AYe7D8qn8UMBGG/Djd/UvMPxM+3u2L0J6tyWlfWfwmDeiJs7Ab+OjLw==",
+      "path": "microsoft.maui.graphics/10.0.0",
+      "hashPath": "microsoft.maui.graphics.10.0.0.nupkg.sha512"
+    },
+    "Auricrux.Shared/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

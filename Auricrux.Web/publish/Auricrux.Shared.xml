@@ -1,0 +1,317 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Auricrux.Shared</name>
+    </assembly>
+    <members>
+        <member name="T:Auricrux.Shared.Models.ThinkingMode">
+            <summary>
+            Thinking mode for LLM responses
+            </summary>
+        </member>
+        <member name="F:Auricrux.Shared.Models.ThinkingMode.Quick">
+            <summary>Quick response with minimal reasoning</summary>
+        </member>
+        <member name="F:Auricrux.Shared.Models.ThinkingMode.Auto">
+            <summary>Balanced thinking and response time</summary>
+        </member>
+        <member name="F:Auricrux.Shared.Models.ThinkingMode.Deep">
+            <summary>Deep analysis with extended thinking</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.SearchScope">
+            <summary>
+            Search scope for queries
+            </summary>
+        </member>
+        <member name="F:Auricrux.Shared.Models.SearchScope.Internal">
+            <summary>Search only internal documents</summary>
+        </member>
+        <member name="F:Auricrux.Shared.Models.SearchScope.Public">
+            <summary>Search public resources</summary>
+        </member>
+        <member name="F:Auricrux.Shared.Models.SearchScope.Both">
+            <summary>Search both internal and public</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.StarRating">
+            <summary>
+            User feedback rating for chat interactions
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.StarRating.Stars">
+            <summary>Rating from 1 to 5</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.StarRating.Comment">
+            <summary>Optional comment from user</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.StarRating.Timestamp">
+            <summary>Timestamp of feedback</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.ChatRequest">
+            <summary>
+            Request sent to the Auricrux backend
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatRequest.Query">
+            <summary>User's query or message</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatRequest.ThinkingMode">
+            <summary>Thinking mode to use for the response</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatRequest.SearchScope">
+            <summary>Search scope for the query</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatRequest.ConversationHistory">
+            <summary>Conversation history for context</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatRequest.SessionId">
+            <summary>Session identifier for tracking</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.ChatResponse">
+            <summary>
+            Response from the Auricrux backend
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatResponse.Content">
+            <summary>The AI-generated response</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatResponse.ThinkingContent">
+            <summary>Thinking process (if available)</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatResponse.Sources">
+            <summary>Sources used for the response</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatResponse.Timestamp">
+            <summary>Response timestamp</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatResponse.ProcessingTimeMs">
+            <summary>Duration of processing in milliseconds</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatResponse.ConfidenceScore">
+            <summary>Confidence score (0-1)</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.ChatMessage">
+            <summary>
+            Single message in conversation history
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatMessage.Role">
+            <summary>Message role (user or assistant)</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatMessage.Content">
+            <summary>Message content</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ChatMessage.Timestamp">
+            <summary>Timestamp of the message</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.Source">
+            <summary>
+            Source reference for a response
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.Source.Title">
+            <summary>Title or name of the source</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.Source.Url">
+            <summary>URL or identifier for the source</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.Source.RelevanceScore">
+            <summary>Relevance score (0-1)</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.AuricruxInteraction">
+            <summary>
+            Auricrux interaction record for tracking and analytics
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.Id">
+            <summary>Unique identifier for this interaction</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.SessionId">
+            <summary>Session identifier</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.Query">
+            <summary>The original query</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.Response">
+            <summary>The response from Auricrux</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.ThinkingMode">
+            <summary>Thinking mode used</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.SearchScope">
+            <summary>Search scope used</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.Feedback">
+            <summary>User's star rating feedback</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.Timestamp">
+            <summary>Timestamp of interaction</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxInteraction.ProcessingTimeMs">
+            <summary>Processing time in milliseconds</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.AuricruxConfig">
+            <summary>
+            Configuration for the Auricrux client
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxConfig.ApiEndpoint">
+            <summary>Backend API endpoint</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxConfig.DefaultThinkingMode">
+            <summary>Default thinking mode</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxConfig.DefaultSearchScope">
+            <summary>Default search scope</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxConfig.EnableAutoSpeak">
+            <summary>Enable audio/TTS by default</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxConfig.TimeoutSeconds">
+            <summary>API timeout in seconds</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.AuricruxConfig.EnableLogging">
+            <summary>Enable request logging</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.ThinkingRequest">
+            <summary>
+            Request for thinking mode operations
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ThinkingRequest.Query">
+            <summary>User's query for thinking</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ThinkingRequest.Mode">
+            <summary>Thinking mode to use</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.ThinkingResponse">
+            <summary>
+            Response from thinking mode operation
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ThinkingResponse.Success">
+            <summary>Success status</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ThinkingResponse.Mode">
+            <summary>Thinking mode used</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ThinkingResponse.Result">
+            <summary>Thinking result</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ThinkingResponse.ProcessingTimeMs">
+            <summary>Processing time in milliseconds</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.ThinkingResponse.Timestamp">
+            <summary>Response timestamp</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.SearchRequest">
+            <summary>
+            Request for search operations
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchRequest.Query">
+            <summary>Search query</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchRequest.Scope">
+            <summary>Search scope</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.SearchResult">
+            <summary>
+            Single search result
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResult.Title">
+            <summary>Result title</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResult.Snippet">
+            <summary>Result snippet/summary</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResult.Score">
+            <summary>Relevance score (0-1)</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Models.SearchResponse">
+            <summary>
+            Response from search operation
+            </summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResponse.Success">
+            <summary>Success status</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResponse.Scope">
+            <summary>Search scope used</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResponse.Results">
+            <summary>Search results</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResponse.TotalResults">
+            <summary>Total number of results</summary>
+        </member>
+        <member name="P:Auricrux.Shared.Models.SearchResponse.Timestamp">
+            <summary>Response timestamp</summary>
+        </member>
+        <member name="T:Auricrux.Shared.Services.AuricruxApiClient">
+            <summary>
+            Client for communicating with the Auricrux backend API
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.AuricruxApiClient.SendChatAsync(Auricrux.Shared.Models.ChatRequest,System.Threading.CancellationToken)">
+            <summary>
+            Send a chat query and get a response from Auricrux backend
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.AuricruxApiClient.HealthCheckAsync(System.Threading.CancellationToken)">
+            <summary>
+            Check if the backend is available
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.AuricruxApiClient.SubmitFeedbackAsync(System.String,Auricrux.Shared.Models.StarRating,System.Threading.CancellationToken)">
+            <summary>
+            Submit user feedback/rating for an interaction
+            </summary>
+        </member>
+        <member name="T:Auricrux.Shared.Services.TextToSpeechService">
+            <summary>
+            Service for text-to-speech functionality
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.TextToSpeechService.InitializeAsync">
+            <summary>
+            Initialize TTS (platform-specific implementation)
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.TextToSpeechService.SpeakAsync(System.String)">
+            <summary>
+            Speak text using platform's TTS
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.TextToSpeechService.StopAsync">
+            <summary>
+            Stop current TTS playback
+            </summary>
+        </member>
+        <member name="T:Auricrux.Shared.Services.AuricruxService">
+            <summary>
+            Service for managing Auricrux interactions and local state
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.AuricruxService.ProcessQueryAsync(System.String,Auricrux.Shared.Models.ThinkingMode,Auricrux.Shared.Models.SearchScope,System.Threading.CancellationToken)">
+            <summary>
+            Process a user query and get a response
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.AuricruxService.SubmitFeedbackAsync(System.String,System.Int32,System.String)">
+            <summary>
+            Submit feedback for an interaction
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.AuricruxService.GetHistory">
+            <summary>
+            Get conversation history
+            </summary>
+        </member>
+        <member name="M:Auricrux.Shared.Services.AuricruxService.ClearHistory">
+            <summary>
+            Clear conversation history
+            </summary>
+        </member>
+    </members>
+</doc>

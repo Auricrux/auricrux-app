@@ -51,52 +51,101 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+// Handle /api routes with MIDDLEWARE (before routing)
+app.Use(async (context, next) =>
+{
+    var log = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    var path = context.Request.Path.Value ?? "";
+    
+    if (path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
+    {
+        log.LogInformation("API Request: {Method} {Path}", context.Request.Method, path);
+        
+        // Explicitly set content type first
+        context.Response.ContentType = "application/json";
+        
+        if (path.Equals("/api/health", StringComparison.OrdinalIgnoreCase) && context.Request.Method == "GET")
+        {
+            context.Response.StatusCode = 200;
+            await context.Response.WriteAsJsonAsync(new { status = "healthy", app = "Auricrux", timestamp = DateTime.UtcNow });
+            return;
+        }
+        else if (path.Equals("/api/thinking", StringComparison.OrdinalIgnoreCase) && context.Request.Method == "POST")
+        {
+            try
+            {
+                var req = await context.Request.ReadFromJsonAsync<ThinkingRequest>();
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsJsonAsync(new ThinkingResponse
+                {
+                    Success = true,
+                    Mode = req?.Mode ?? ThinkingMode.Auto,
+                    Result = $"Response to: {req?.Query}",
+                    ProcessingTimeMs = Random.Shared.Next(500, 3000),
+                    Timestamp = DateTime.UtcNow
+                });
+                return;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error processing thinking request");
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid request" });
+                return;
+            }
+        }
+        else if (path.Equals("/api/search", StringComparison.OrdinalIgnoreCase) && context.Request.Method == "POST")
+        {
+            try
+            {
+                var req = await context.Request.ReadFromJsonAsync<SearchRequest>();
+                context.Response.StatusCode = 200;
+                await context.Response.WriteAsJsonAsync(new SearchResponse
+                {
+                    Success = true,
+                    Scope = req?.Scope ?? SearchScope.Both,
+                    Results = new List<SearchResult>
+                    {
+                        new() { Title = "Result 1", Snippet = $"Search result for: {req?.Query}", Score = 0.95 },
+                        new() { Title = "Result 2", Snippet = "Another result", Score = 0.87 },
+                        new() { Title = "Result 3", Snippet = "Third result", Score = 0.76 }
+                    },
+                    TotalResults = 3,
+                    Timestamp = DateTime.UtcNow
+                });
+                return;
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error processing search request");
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid request" });
+                return;
+            }
+        }
+        else
+        {
+            context.Response.StatusCode = 404;
+            await context.Response.WriteAsJsonAsync(new { error = "API endpoint not found", path });
+            return;
+        }
+    }
+    
+    await next();
+});
+
 app.UseAntiforgery();
 
 app.UseRouting();
 
 app.UseEndpoints(endpoints =>
 {
-    // API endpoints MUST be mapped first
-    endpoints.MapPost("/api/thinking", async (ThinkingRequest req, ILogger<Program> log) =>
-    {
-        log.LogInformation("Thinking: {Query}", req.Query);
-        return Results.Ok(new ThinkingResponse
-        {
-            Success = true,
-            Mode = req.Mode,
-            Result = $"Response to: {req.Query}",
-            ProcessingTimeMs = Random.Shared.Next(500, 3000),
-            Timestamp = DateTime.UtcNow
-        });
-    });
-
-    endpoints.MapPost("/api/search", async (SearchRequest req, ILogger<Program> log) =>
-    {
-        log.LogInformation("Search: {Query}", req.Query);
-        return Results.Ok(new SearchResponse
-        {
-            Success = true,
-            Scope = req.Scope,
-            Results = new List<SearchResult>
-            {
-                new() { Title = "Result 1", Snippet = $"Search result for: {req.Query}", Score = 0.95 },
-                new() { Title = "Result 2", Snippet = "Another result", Score = 0.87 },
-                new() { Title = "Result 3", Snippet = "Third result", Score = 0.76 }
-            },
-            TotalResults = 3,
-            Timestamp = DateTime.UtcNow
-        });
-    });
-
-    endpoints.MapGet("/api/health", () => Results.Ok(new { status = "healthy", app = "Auricrux", timestamp = DateTime.UtcNow }));
-
-    // Map static assets
+    // Static files
     endpoints.MapStaticAssets();
 
-    // DISABLE: Razor Components - testing if this is causing the issue
-    // endpoints.MapRazorComponents<App>()
-    //     .AddInteractiveServerRenderMode();
+    // Razor Components - for Blazor rendering (everything else)
+    endpoints.MapRazorComponents<App>()
+        .AddInteractiveServerRenderMode();
 });
 
 app.Run();
