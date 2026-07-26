@@ -10,7 +10,31 @@ permissions:
   contents: write
 
 jobs:
-  android-apk:
+  play-status:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.play.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Probe Play Console API access
+        id: play
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          PACKAGE_NAME: com.futurecontractors.auricrux
+        run: |
+          pip install -q google-auth requests
+          python scripts/ci_probe_play_ready.py
+          if [ "$(grep '^ready=' "$GITHUB_OUTPUT" | tail -1 | cut -d= -f2)" != "true" ]; then
+            echo "::notice::Play Console app not ready — APK + Firebase only until package exists and SA has Release manager."
+          fi
+
+  android-release:
+    needs: play-status
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -32,25 +56,115 @@ jobs:
           dotnet --version
           dotnet workload list
 
-      - name: Publish APK
+      - name: Configure Android release signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         shell: pwsh
         run: |
+          if (-not $env:ANDROID_KEYSTORE_BASE64) {
+            Write-Host "::notice::ANDROID_KEYSTORE_BASE64 not set — publish will use debug signing."
+            exit 0
+          }
+          $bytes = [Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64)
+          $keystorePath = Join-Path $env:GITHUB_WORKSPACE "auricrux-mobile-release.keystore"
+          [IO.File]::WriteAllBytes($keystorePath, $bytes)
+          "KEYSTORE_PATH=$keystorePath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Publish signed Android APK
+        shell: pwsh
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
           New-Item -ItemType Directory -Force -Path artifacts/android | Out-Null
-          dotnet publish Auricrux.Mobile/Auricrux.Mobile.csproj `
-            -c Release `
-            -f net10.0-android `
-            -p:AndroidPackageFormat=apk `
-            -p:AcceptAndroidSDKLicenses=true `
-            -o artifacts/android
+          $publishArgs = @(
+            "publish", "Auricrux.Mobile/Auricrux.Mobile.csproj",
+            "-c", "Release",
+            "-f", "net10.0-android",
+            "-p:AndroidPackageFormat=apk",
+            "-p:AcceptAndroidSDKLicenses=true",
+            "-o", "artifacts/android"
+          )
+          if ($env:KEYSTORE_PATH) {
+            $publishArgs += @(
+              "-p:AndroidKeyStore=true",
+              "-p:AndroidSigningKeyStore=$env:KEYSTORE_PATH",
+              "-p:AndroidSigningStorePass=$env:ANDROID_KEYSTORE_PASSWORD",
+              "-p:AndroidSigningKeyAlias=$env:ANDROID_KEY_ALIAS",
+              "-p:AndroidSigningKeyPass=$env:ANDROID_KEY_PASSWORD"
+            )
+          }
+          dotnet @publishArgs
           $apks = @(Get-ChildItem -Recurse artifacts/android -Filter *.apk)
           if ($apks.Count -lt 1) { throw "No APK produced under artifacts/android" }
           $apks | ForEach-Object { Write-Host $_.FullName; Write-Host ("SizeBytes=" + $_.Length) }
+
+      - name: Publish signed Android AAB
+        if: needs.play-status.outputs.ready == 'true'
+        shell: pwsh
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/android | Out-Null
+          $publishArgs = @(
+            "publish", "Auricrux.Mobile/Auricrux.Mobile.csproj",
+            "-c", "Release",
+            "-f", "net10.0-android",
+            "-p:AndroidPackageFormat=aab",
+            "-p:AcceptAndroidSDKLicenses=true",
+            "-o", "artifacts/android"
+          )
+          if ($env:KEYSTORE_PATH) {
+            $publishArgs += @(
+              "-p:AndroidKeyStore=true",
+              "-p:AndroidSigningKeyStore=$env:KEYSTORE_PATH",
+              "-p:AndroidSigningStorePass=$env:ANDROID_KEYSTORE_PASSWORD",
+              "-p:AndroidSigningKeyAlias=$env:ANDROID_KEY_ALIAS",
+              "-p:AndroidSigningKeyPass=$env:ANDROID_KEY_PASSWORD"
+            )
+          }
+          dotnet @publishArgs
+          $aabs = @(Get-ChildItem -Recurse artifacts/android -Filter *.aab)
+          if ($aabs.Count -lt 1) { throw "No AAB produced under artifacts/android" }
+          $aabs | ForEach-Object { Write-Host $_.FullName; Write-Host ("SizeBytes=" + $_.Length) }
+
+      - name: Stage release artifacts
+        id: artifacts
+        shell: pwsh
+        run: |
+          $root = Join-Path $env:GITHUB_WORKSPACE "release-artifacts"
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          $apk = Get-ChildItem -Path artifacts/android -Recurse -Filter "*.apk" |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if (-not $apk) { throw "No APK artifact found after publish." }
+          Copy-Item $apk.FullName (Join-Path $root "auricrux-release.apk") -Force
+          $aab = Get-ChildItem -Path artifacts/android -Recurse -Filter "*.aab" |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if ($aab) {
+            Copy-Item $aab.FullName (Join-Path $root "auricrux-release.aab") -Force
+          }
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: auricrux-android-apk
-          path: artifacts/android/**/*.apk
+          path: release-artifacts/auricrux-release.apk
+          if-no-files-found: error
+
+      - name: Upload AAB artifact
+        if: needs.play-status.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: auricrux-android-aab
+          path: release-artifacts/auricrux-release.aab
           if-no-files-found: error
 
       - name: Create GitHub Release with APK
@@ -61,7 +175,63 @@ jobs:
           body: |
             Downloadable Auricrux Construction Specialist Android build (APK).
             Target: net10.0-android. Proprietary/local model path; no OpenAI runtime dependency.
-          files: artifacts/android/**/*.apk
+            Testers: Firebase App Distribution (internal) + https://auricrux.futurecontractorsofamerica.com/download/
+          files: release-artifacts/auricrux-release.apk
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  distribute:
+    needs: android-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: auricrux-android-apk
+          path: release-artifacts
+
+      - name: Detect Firebase configuration
+        id: firebase
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -n "$FIREBASE_APP_ID" ] && [ -n "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::FIREBASE_APP_ID or FIREBASE_SERVICE_ACCOUNT_JSON not set — skipping distribution."
+          fi
+
+      - name: Firebase App Distribution
+        if: steps.firebase.outputs.configured == 'true'
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          groups: internal
+          file: release-artifacts/auricrux-release.apk
+          releaseNotes: "Auricrux release from ${{ github.sha }}"
+        continue-on-error: true
+
+  play-upload:
+    needs: [play-status, android-release]
+    if: needs.play-status.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: auricrux-android-aab
+          path: release-artifacts
+
+      - name: Play Store internal track
+        uses: r0adkll/upload-google-play@v1
+        continue-on-error: true
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.futurecontractors.auricrux
+          releaseFiles: release-artifacts/auricrux-release.aab
+          track: internal
+          status: completed
