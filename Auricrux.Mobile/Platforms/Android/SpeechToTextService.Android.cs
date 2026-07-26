@@ -69,9 +69,9 @@ public partial class SpeechToTextService
 	private sealed class RecognitionListener : Java.Lang.Object, IRecognitionListener
 	{
 		private readonly Action<string?> _onResults;
-		private readonly Action<SpeechRecognizerError> _onError;
+		private readonly Action<int> _onError;
 
-		public RecognitionListener(Action<string?> onResults, Action<SpeechRecognizerError> onError)
+		public RecognitionListener(Action<string?> onResults, Action<int> onError)
 		{
 			_onResults = onResults;
 			_onError = onError;
@@ -80,12 +80,12 @@ public partial class SpeechToTextService
 		public void OnBeginningOfSpeech() { }
 		public void OnBufferReceived(byte[]? buffer) { }
 		public void OnEndOfSpeech() { }
-		public void OnEvent(int eventType, Bundle? params) { }
+		public void OnEvent(int eventType, Bundle? args) { }
 		public void OnPartialResults(Bundle? partialResults) { }
-		public void OnReadyForSpeech(Bundle? params) { }
+		public void OnReadyForSpeech(Bundle? args) { }
 		public void OnRmsChanged(float rmsdB) { }
 
-		public void OnError(SpeechRecognizerError error) => _onError(error);
+		public void OnError(SpeechRecognizerError error) => _onError((int)error);
 
 		public void OnResults(Bundle? results)
 		{
