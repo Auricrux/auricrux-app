@@ -21,14 +21,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Install MAUI workload
         run: |
           dotnet workload install maui
+          dotnet --version
           dotnet workload list
 
       - name: Publish APK
@@ -37,14 +38,12 @@ jobs:
           New-Item -ItemType Directory -Force -Path artifacts/android | Out-Null
           dotnet publish Auricrux.Mobile/Auricrux.Mobile.csproj `
             -c Release `
-            -f net8.0-android `
+            -f net10.0-android `
             -p:AndroidPackageFormat=apk `
             -p:AcceptAndroidSDKLicenses=true `
-            -p:CheckEolTargetFramework=false `
-            -p:CheckEolWorkloads=false `
             -o artifacts/android
-          $apks = Get-ChildItem -Recurse artifacts/android -Filter *.apk
-          if (-not $apks) { throw "No APK produced" }
+          $apks = @(Get-ChildItem -Recurse artifacts/android -Filter *.apk)
+          if ($apks.Count -lt 1) { throw "No APK produced under artifacts/android" }
           $apks | ForEach-Object { Write-Host $_.FullName; Write-Host ("SizeBytes=" + $_.Length) }
 
       - name: Upload APK artifact
@@ -61,7 +60,7 @@ jobs:
           name: Auricrux Android ${{ github.ref_type == 'tag' && github.ref_name || format('launch-{0}', github.run_number) }}
           body: |
             Downloadable Auricrux Construction Specialist Android build (APK).
-            Proprietary/local model path; no OpenAI runtime dependency.
+            Target: net10.0-android. Proprietary/local model path; no OpenAI runtime dependency.
           files: artifacts/android/**/*.apk
           generate_release_notes: false
         env:
