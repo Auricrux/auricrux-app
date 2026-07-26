@@ -36,6 +36,7 @@ jobs:
             -f net8.0-android `
             -p:AndroidPackageFormat=apk `
             -p:AcceptAndroidSDKLicenses=true `
+            -p:CheckEolTargetFramework=false `
             -o artifacts/android
           Get-ChildItem -Recurse artifacts/android -Filter *.apk | ForEach-Object { $_.FullName }
 
