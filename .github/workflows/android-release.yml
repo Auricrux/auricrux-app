@@ -1,0 +1,60 @@
+name: Android Release Artifact
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'android-*'
+
+permissions:
+  contents: write
+
+jobs:
+  android-apk:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Install MAUI Android workload
+        run: |
+          dotnet workload install maui-android --skip-manifest-update
+          dotnet workload list
+
+      - name: Publish APK
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/android | Out-Null
+          dotnet publish Auricrux.Mobile/Auricrux.Mobile.csproj `
+            -c Release `
+            -f net8.0-android `
+            -p:AndroidPackageFormat=apk `
+            -p:AcceptAndroidSDKLicenses=true `
+            -o artifacts/android
+          Get-ChildItem -Recurse artifacts/android -Filter *.apk | ForEach-Object { $_.FullName }
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: auricrux-android-apk
+          path: artifacts/android/**/*.apk
+          if-no-files-found: error
+
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('android-launch-{0}', github.run_number) }}
+          name: Auricrux Android ${{ github.ref_type == 'tag' && github.ref_name || format('launch-{0}', github.run_number) }}
+          body: |
+            Downloadable Auricrux Construction Specialist Android build (APK).
+            Proprietary/local model path; no OpenAI runtime dependency.
+          files: artifacts/android/**/*.apk
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

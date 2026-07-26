@@ -6,11 +6,27 @@ namespace Auricrux.Mobile;
 
 public static class MauiProgram
 {
+	// Auricrux standalone backend — independent of FCA Ecosystem
+	private const string DefaultApiEndpoint = "http://localhost:5000";
+
+	private static string ResolveApiEndpoint()
+	{
+		var configured = Environment.GetEnvironmentVariable("AURICRUX_API_ENDPOINT")
+			?? Environment.GetEnvironmentVariable("AURICRUX__API_ENDPOINT");
+
+		if (!string.IsNullOrWhiteSpace(configured))
+		{
+			return configured.Trim();
+		}
+
+		return DefaultApiEndpoint;
+	}
+
 	public static MauiApp CreateMauiApp()
 	{
 		var auricruxConfig = new AuricruxConfig
 		{
-			ApiEndpoint = "http://localhost:5000",
+			ApiEndpoint = ResolveApiEndpoint(),
 			DefaultThinkingMode = ThinkingMode.Auto,
 			DefaultSearchScope = SearchScope.Both,
 			EnableAutoSpeak = false,
