@@ -15,16 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET 8 (MAUI Android TFM)
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: '8.0.x'
 
       - name: Install MAUI Android workload
         run: |
-          dotnet workload install maui-android --skip-manifest-update
+          dotnet workload install maui-android
+          dotnet --info
           dotnet workload list
 
       - name: Publish APK
@@ -37,6 +36,7 @@ jobs:
             -p:AndroidPackageFormat=apk `
             -p:AcceptAndroidSDKLicenses=true `
             -p:CheckEolTargetFramework=false `
+            -p:CheckEolWorkloads=false `
             -o artifacts/android
           Get-ChildItem -Recurse artifacts/android -Filter *.apk | ForEach-Object { $_.FullName }
 
