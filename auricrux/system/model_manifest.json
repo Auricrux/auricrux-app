@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "modelId": "auricrux-3b-true-god-checkpoint-70000-azure-disk",
+  "status": "azure-disk-ahead-of-local-promotion",
+  "runtimeUse": "Azure train disk has checkpoint-70000; local/GCE product runtime still uses interim Ollama llama3.2:3b alias until a safe off-train merge/export completes.",
+  "notTrueGodTierReason": "Checkpoint exists on disk; full true-god promotion still requires post-run suites and an export that does not interrupt live train or token factory.",
+  "baseModel": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
+  "adapter": {
+    "azurePath": "/mnt/auricrux-eod/runs/run-20260715T114454Z/outputs/auricrux_lora_adapter_3b_true_god_1b5/checkpoint-70000",
+    "localLabel": "checkpoint-70000-azure-disk",
+    "verifiedAtUtc": "2026-07-26T20:09:01Z",
+    "verifiedFiles": [
+      "adapter_config.json",
+      "adapter_model.safetensors",
+      "trainer_state.json"
+    ],
+    "evalStatus": "PENDING-PROMOTION",
+    "evalSuite": "eval/construction_god_suite_v1.json",
+    "priorCandidateOnDisk": "checkpoint-65000",
+    "lossAtStep70000": 0.0373,
+    "trainProgressNote": "70000 / 297000 (~23.6%)"
+  },
+  "trueGodRun": {
+    "status": "running-do-not-interrupt",
+    "host": "auricrux-gpu-ncast4-t4",
+    "resourceGroup": "AURICRUX-TRAINING-NCAST4",
+    "trainPid": 1019003,
+    "config": "config/auricrux_training_config_3b_true_god_1b5.json",
+    "lastObservedCheckpointOnDisk": 70000,
+    "gcpL4Spot": "TERMINATED"
+  },
+  "productRuntime": {
+    "gceHost": "instance-20260715-113528",
+    "ollamaModel": "auricrux-llama-3b-ckpt-40000",
+    "ollamaBackingWeights": "llama3.2:3b (interim base + construction system prompt)",
+    "api": "https://auricrux.futurecontractorsofamerica.com/api/chat",
+    "note": "Do not load LoRA merge on the train GPU while PID 1019003 is alive. Prefer auricrux-export-clean or a stopped-spot GPU for merge→GGUF."
+  },
+  "productQualityBar": {
+    "domain": "construction-specialist-only",
+    "targetFeel": "flagship-peer-output-quality-at-3b-latency",
+    "winCondition": "attention-to-detail-and-construction-accuracy"
+  },
+  "migrationPolicy": {
+    "productionFinalLabel": "awaiting-safe-export-of-checkpoint-70000-plus-eval",
+    "tokenFactory": "do-not-tamper"
+  },
+  "recordedAtUtc": "2026-07-26T20:10:00Z"
+}
