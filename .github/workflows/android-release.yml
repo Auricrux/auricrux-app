@@ -25,7 +25,7 @@ jobs:
         id: play
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          PACKAGE_NAME: com.futurecontractors.auricrux
+          PACKAGE_NAME: com.fca.auricrux
         run: |
           pip install -q google-auth requests
           python scripts/ci_probe_play_ready.py
@@ -231,7 +231,7 @@ jobs:
         continue-on-error: true
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.futurecontractors.auricrux
+          packageName: com.fca.auricrux
           releaseFiles: release-artifacts/auricrux-release.aab
           track: internal
           status: completed

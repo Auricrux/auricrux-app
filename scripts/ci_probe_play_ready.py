@@ -9,7 +9,7 @@ import google.auth.transport.requests
 import requests
 from google.oauth2 import service_account
 
-PACKAGE_NAME = os.environ.get("PACKAGE_NAME", "com.futurecontractors.auricrux")
+PACKAGE_NAME = os.environ.get("PACKAGE_NAME", "com.fca.auricrux")
 SA_JSON = os.environ.get("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "")
 GITHUB_OUTPUT = os.environ.get("GITHUB_OUTPUT", "")
 

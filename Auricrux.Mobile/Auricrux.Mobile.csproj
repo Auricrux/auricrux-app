@@ -11,7 +11,7 @@
 		<Nullable>enable</Nullable>
 
 		<ApplicationTitle>Auricrux</ApplicationTitle>
-		<ApplicationId>com.futurecontractors.auricrux</ApplicationId>
+		<ApplicationId>com.fca.auricrux</ApplicationId>
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
