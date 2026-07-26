@@ -3,14 +3,17 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
-
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
-    <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <!-- Auricrux brand palette -->
+    <Color x:Key="Primary">#B77912</Color>
+    <Color x:Key="PrimaryDark">#D49A22</Color>
+    <Color x:Key="PrimaryDarkText">#1A1208</Color>
+    <Color x:Key="Secondary">#ECE8DF</Color>
+    <Color x:Key="SecondaryDarkText">#8A5A12</Color>
+    <Color x:Key="Tertiary">#5A320A</Color>
+    <Color x:Key="Ink">#1A1208</Color>
+    <Color x:Key="Paper">#F7F4EF</Color>
+    <Color x:Key="UserBubble">#5A320A</Color>
+    <Color x:Key="AssistantBubble">#ECE8DF</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
@@ -32,7 +35,6 @@
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
-
     <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
     <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
     <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>

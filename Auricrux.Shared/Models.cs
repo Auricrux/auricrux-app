@@ -88,6 +88,9 @@ public class ChatResponse
 
     /// <summary>Confidence score (0-1)</summary>
     public double ConfidenceScore { get; set; }
+
+    /// <summary>Server interaction id when provided</summary>
+    public Guid? InteractionId { get; set; }
 }
 
 /// <summary>
@@ -111,7 +114,7 @@ public class ChatMessage
 public class Source
 {
     /// <summary>Title or name of the source</summary>
-    public required string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
 
     /// <summary>URL or identifier for the source</summary>
     public string? Url { get; set; }
@@ -159,7 +162,7 @@ public class AuricruxInteraction
 public class AuricruxConfig
 {
     /// <summary>Backend API endpoint</summary>
-    public string ApiEndpoint { get; set; } = "http://localhost:5000";
+    public string ApiEndpoint { get; set; } = "https://auricrux.futurecontractorsofamerica.com";
 
     /// <summary>Default thinking mode</summary>
     public ThinkingMode DefaultThinkingMode { get; set; } = ThinkingMode.Auto;
@@ -171,7 +174,7 @@ public class AuricruxConfig
     public bool EnableAutoSpeak { get; set; } = false;
 
     /// <summary>API timeout in seconds</summary>
-    public int TimeoutSeconds { get; set; } = 30;
+    public int TimeoutSeconds { get; set; } = 180;
 
     /// <summary>Enable request logging</summary>
     public bool EnableLogging { get; set; } = true;

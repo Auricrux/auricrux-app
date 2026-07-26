@@ -8,254 +8,426 @@ using Microsoft.Extensions.Logging;
 
 namespace Auricrux.Mobile;
 
-/// <summary>
-/// ViewModel for the main chat page
-/// </summary>
 public class MainPageViewModel : INotifyPropertyChanged
 {
-    private readonly AuricruxService _auricruxService;
-    private readonly ILogger<MainPageViewModel> _logger;
-    private string _userInput = string.Empty;
-    private bool _isLoading = false;
-    private string _statusMessage = "Ready";
-    private ThinkingMode _selectedThinkingMode = ThinkingMode.Auto;
-    private SearchScope _selectedSearchScope = SearchScope.Both;
-    private bool _autoSpeakEnabled = false;
+	private readonly AuricruxService _auricruxService;
+	private readonly AuricruxApiClient _apiClient;
+	private readonly AuricruxConfig _config;
+	private readonly TextToSpeechService _ttsService;
+	private readonly SpeechToTextService _sttService;
+	private readonly AnswerExportService _exportService;
+	private readonly ILogger<MainPageViewModel> _logger;
 
-    public ObservableCollection<ChatMessageViewModel> Messages { get; } = new();
+	private string _userInput = string.Empty;
+	private bool _isLoading;
+	private bool _isListening;
+	private bool _isOnline;
+	private string _statusMessage = "Checking connection…";
+	private string _connectionLabel = "";
+	private ThinkingMode _selectedThinkingMode = ThinkingMode.Auto;
+	private SearchScope _selectedSearchScope = SearchScope.Both;
+	private bool _autoSpeakEnabled;
+	private string _lastQuestion = string.Empty;
+	private string _lastAnswer = string.Empty;
 
-    public string UserInput
-    {
-        get => _userInput;
-        set { _userInput = value; OnPropertyChanged(); }
-    }
+	public ObservableCollection<ChatMessageViewModel> Messages { get; } = new();
+	public ObservableCollection<string> QuickPrompts { get; } = new()
+	{
+		"What is a sill plate?",
+		"Rough estimate for a 20x30 garage slab",
+		"OSHA fall protection basics",
+		"Sequence for a residential roof tear-off"
+	};
 
-    public bool IsLoading
-    {
-        get => _isLoading;
-        set { _isLoading = value; OnPropertyChanged(); }
-    }
+	public string UserInput
+	{
+		get => _userInput;
+		set { _userInput = value; OnPropertyChanged(); }
+	}
 
-    public string StatusMessage
-    {
-        get => _statusMessage;
-        set { _statusMessage = value; OnPropertyChanged(); }
-    }
+	public bool IsLoading
+	{
+		get => _isLoading;
+		set { _isLoading = value; OnPropertyChanged(); }
+	}
 
-    public ThinkingMode SelectedThinkingMode
-    {
-        get => _selectedThinkingMode;
-        set { _selectedThinkingMode = value; OnPropertyChanged(); }
-    }
+	public bool IsListening
+	{
+		get => _isListening;
+		set { _isListening = value; OnPropertyChanged(); }
+	}
 
-    public SearchScope SelectedSearchScope
-    {
-        get => _selectedSearchScope;
-        set { _selectedSearchScope = value; OnPropertyChanged(); }
-    }
+	public bool IsOnline
+	{
+		get => _isOnline;
+		set { _isOnline = value; OnPropertyChanged(); OnPropertyChanged(nameof(ConnectionStatusText)); }
+	}
 
-    public bool AutoSpeakEnabled
-    {
-        get => _autoSpeakEnabled;
-        set { _autoSpeakEnabled = value; OnPropertyChanged(); }
-    }
+	public string StatusMessage
+	{
+		get => _statusMessage;
+		set { _statusMessage = value; OnPropertyChanged(); }
+	}
 
-    public ICommand SendMessageCommand { get; }
-    public ICommand ClearHistoryCommand { get; }
-    public ICommand RateLast5StarsCommand { get; }
-    public ICommand RateLast4StarsCommand { get; }
-    public ICommand RateLast3StarsCommand { get; }
-    public ICommand RateLast2StarsCommand { get; }
-    public ICommand RateLast1StarCommand { get; }
+	public string ConnectionLabel
+	{
+		get => _connectionLabel;
+		set { _connectionLabel = value; OnPropertyChanged(); }
+	}
 
-    public MainPageViewModel(AuricruxService auricruxService, ILogger<MainPageViewModel> logger)
-    {
-        _auricruxService = auricruxService;
-        _logger = logger;
+	public string ConnectionStatusText => IsOnline ? "Online" : "Backend offline / warming";
 
-        SendMessageCommand = new AsyncRelayCommand(SendMessage);
-        ClearHistoryCommand = new AsyncRelayCommand(ClearHistory);
-        RateLast5StarsCommand = new AsyncRelayCommand(() => RateLastMessage(5));
-        RateLast4StarsCommand = new AsyncRelayCommand(() => RateLastMessage(4));
-        RateLast3StarsCommand = new AsyncRelayCommand(() => RateLastMessage(3));
-        RateLast2StarsCommand = new AsyncRelayCommand(() => RateLastMessage(2));
-        RateLast1StarCommand = new AsyncRelayCommand(() => RateLastMessage(1));
+	public ThinkingMode SelectedThinkingMode
+	{
+		get => _selectedThinkingMode;
+		set { _selectedThinkingMode = value; OnPropertyChanged(); OnPropertyChanged(nameof(ThinkingChipLabel)); }
+	}
 
-        Messages.Add(new ChatMessageViewModel
-        {
-            Role = "assistant",
-            Content = "Hello! I'm Auricrux, your AI assistant. How can I help you today?",
-            IsUser = false,
-            Timestamp = DateTime.Now
-        });
-    }
+	public SearchScope SelectedSearchScope
+	{
+		get => _selectedSearchScope;
+		set { _selectedSearchScope = value; OnPropertyChanged(); OnPropertyChanged(nameof(SearchChipLabel)); }
+	}
 
-    private async Task SendMessage()
-    {
-        if (string.IsNullOrWhiteSpace(UserInput)) return;
+	public string ThinkingChipLabel => $"Think: {SelectedThinkingMode}";
+	public string SearchChipLabel => $"Scope: {SelectedSearchScope}";
 
-        try
-        {
-            IsLoading = true;
-            var query = UserInput;
-            UserInput = string.Empty;
-            StatusMessage = "Sending...";
+	public bool AutoSpeakEnabled
+	{
+		get => _autoSpeakEnabled;
+		set { _autoSpeakEnabled = value; OnPropertyChanged(); }
+	}
 
-            // Add user message to chat
-            Messages.Add(new ChatMessageViewModel
-            {
-                Role = "user",
-                Content = query,
-                IsUser = true,
-                Timestamp = DateTime.Now
-            });
+	public ICommand SendMessageCommand { get; }
+	public ICommand ClearHistoryCommand { get; }
+	public ICommand RateUpCommand { get; }
+	public ICommand RateDownCommand { get; }
+	public ICommand CycleThinkingCommand { get; }
+	public ICommand CycleSearchCommand { get; }
+	public ICommand QuickPromptCommand { get; }
+	public ICommand MicCommand { get; }
+	public ICommand ShareLastCommand { get; }
+	public ICommand SpeakLastCommand { get; }
+	public ICommand RefreshHealthCommand { get; }
 
-            // Process query
-            var (response, interaction) = await _auricruxService.ProcessQueryAsync(
-                query,
-                SelectedThinkingMode,
-                SelectedSearchScope
-            );
+	public MainPageViewModel(
+		AuricruxService auricruxService,
+		AuricruxApiClient apiClient,
+		AuricruxConfig config,
+		TextToSpeechService ttsService,
+		SpeechToTextService sttService,
+		AnswerExportService exportService,
+		ILogger<MainPageViewModel> logger)
+	{
+		_auricruxService = auricruxService;
+		_apiClient = apiClient;
+		_config = config;
+		_ttsService = ttsService;
+		_sttService = sttService;
+		_exportService = exportService;
+		_logger = logger;
 
-            if (response != null)
-            {
-                // Add response to chat
-                var responseVm = new ChatMessageViewModel
-                {
-                    Role = "assistant",
-                    Content = response.Content,
-                    IsUser = false,
-                    Timestamp = DateTime.Now,
-                    InteractionId = interaction?.Id,
-                    ThinkingContent = response.ThinkingContent,
-                    ProcessingTimeMs = response.ProcessingTimeMs,
-                    Sources = response.Sources
-                };
-                Messages.Add(responseVm);
+		ConnectionLabel = _config.ApiEndpoint;
 
-                StatusMessage = $"Completed in {response.ProcessingTimeMs}ms";
+		SendMessageCommand = new AsyncRelayCommand(SendMessage);
+		ClearHistoryCommand = new AsyncRelayCommand(ClearHistory);
+		RateUpCommand = new AsyncRelayCommand(() => RateLastMessage(5));
+		RateDownCommand = new AsyncRelayCommand(() => RateLastMessage(1));
+		CycleThinkingCommand = new Command(CycleThinking);
+		CycleSearchCommand = new Command(CycleSearch);
+		QuickPromptCommand = new AsyncRelayCommand<string>(SendQuickPrompt);
+		MicCommand = new AsyncRelayCommand(ListenMic);
+		ShareLastCommand = new AsyncRelayCommand(ShareLast);
+		SpeakLastCommand = new AsyncRelayCommand(SpeakLast);
+		RefreshHealthCommand = new AsyncRelayCommand(CheckHealthAsync);
 
-                // Auto-speak if enabled
-                if (AutoSpeakEnabled)
-                {
-                    var ttsService = MauiProgram.CreateMauiApp().Services.GetRequiredService<TextToSpeechService>();
-                    await ttsService.SpeakAsync(response.Content);
-                }
-            }
-            else
-            {
-                Messages.Add(new ChatMessageViewModel
-                {
-                    Role = "assistant",
-                    Content = "I'm sorry, I encountered an error processing your request. Please try again.",
-                    IsUser = false,
-                    Timestamp = DateTime.Now
-                });
-                StatusMessage = "Error occurred";
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Error sending message: {ex.Message}");
-            StatusMessage = "Error sending message";
-            Messages.Add(new ChatMessageViewModel
-            {
-                Role = "assistant",
-                Content = $"Error: {ex.Message}",
-                IsUser = false,
-                Timestamp = DateTime.Now
-            });
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
+		Messages.Add(new ChatMessageViewModel
+		{
+			Role = "assistant",
+			Content = "Auricrux Construction Specialist ready. Ask a field, estimate, or safety question — or tap a prompt below.",
+			IsUser = false,
+			Timestamp = DateTime.Now
+		});
+	}
 
-    private async Task ClearHistory()
-    {
-        _auricruxService.ClearHistory();
-        Messages.Clear();
-        Messages.Add(new ChatMessageViewModel
-        {
-            Role = "assistant",
-            Content = "Conversation cleared. How can I help you?",
-            IsUser = false,
-            Timestamp = DateTime.Now
-        });
-        StatusMessage = "Ready";
-        await Task.CompletedTask;
-    }
+	public async Task CheckHealthAsync()
+	{
+		StatusMessage = "Checking connection…";
+		IsOnline = await _apiClient.HealthCheckAsync();
+		StatusMessage = IsOnline
+			? "Ready"
+			: "Backend offline or model warming — wait a moment and retry";
+	}
 
-    private async Task RateLastMessage(int stars)
-    {
-        var lastAssistantMessage = Messages.LastOrDefault(m => !m.IsUser);
-        if (lastAssistantMessage?.InteractionId != null)
-        {
-            var success = await _auricruxService.SubmitFeedbackAsync(lastAssistantMessage.InteractionId, stars);
-            StatusMessage = success ? $"Rated {stars} star(s)" : "Failed to submit rating";
-        }
-        else
-        {
-            StatusMessage = "No recent message to rate";
-        }
-        await Task.CompletedTask;
-    }
+	private void CycleThinking()
+	{
+		SelectedThinkingMode = SelectedThinkingMode switch
+		{
+			ThinkingMode.Quick => ThinkingMode.Auto,
+			ThinkingMode.Auto => ThinkingMode.Deep,
+			_ => ThinkingMode.Quick
+		};
+	}
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+	private void CycleSearch()
+	{
+		SelectedSearchScope = SelectedSearchScope switch
+		{
+			SearchScope.Internal => SearchScope.Public,
+			SearchScope.Public => SearchScope.Both,
+			_ => SearchScope.Internal
+		};
+	}
 
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
+	private async Task SendQuickPrompt(string? prompt)
+	{
+		if (string.IsNullOrWhiteSpace(prompt)) return;
+		UserInput = prompt;
+		await SendMessage();
+	}
+
+	private async Task ListenMic()
+	{
+		try
+		{
+			IsListening = true;
+			StatusMessage = "Listening…";
+			var text = await _sttService.ListenAsync();
+			if (!string.IsNullOrWhiteSpace(text))
+			{
+				UserInput = text;
+				StatusMessage = "Transcript ready — tap Send or edit";
+			}
+			else
+			{
+				StatusMessage = "No speech captured";
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Mic failed");
+			StatusMessage = "Microphone unavailable";
+		}
+		finally
+		{
+			IsListening = false;
+		}
+	}
+
+	private async Task ShareLast()
+	{
+		if (string.IsNullOrWhiteSpace(_lastAnswer))
+		{
+			StatusMessage = "No answer to share yet";
+			return;
+		}
+
+		try
+		{
+			await _exportService.ShareAnswerAsync(_lastQuestion, _lastAnswer);
+			StatusMessage = "Share sheet opened";
+		}
+		catch
+		{
+			StatusMessage = "Could not export answer";
+		}
+	}
+
+	private async Task SpeakLast()
+	{
+		if (string.IsNullOrWhiteSpace(_lastAnswer))
+		{
+			StatusMessage = "No answer to speak";
+			return;
+		}
+
+		await _ttsService.StopAsync();
+		await _ttsService.SpeakAsync(_lastAnswer);
+		StatusMessage = "Speaking answer";
+	}
+
+	private async Task SendMessage()
+	{
+		if (string.IsNullOrWhiteSpace(UserInput) || IsLoading) return;
+
+		try
+		{
+			IsLoading = true;
+			var query = UserInput.Trim();
+			UserInput = string.Empty;
+			_lastQuestion = query;
+			StatusMessage = IsOnline ? "Thinking…" : "Sending (backend may be warming)…";
+
+			Messages.Add(new ChatMessageViewModel
+			{
+				Role = "user",
+				Content = query,
+				IsUser = true,
+				Timestamp = DateTime.Now
+			});
+
+			var (response, interaction) = await _auricruxService.ProcessQueryAsync(
+				query,
+				SelectedThinkingMode,
+				SelectedSearchScope);
+
+			if (response != null)
+			{
+				_lastAnswer = response.Content;
+				Messages.Add(new ChatMessageViewModel
+				{
+					Role = "assistant",
+					Content = response.Content,
+					IsUser = false,
+					Timestamp = DateTime.Now,
+					InteractionId = interaction?.Id,
+					ThinkingContent = response.ThinkingContent,
+					ProcessingTimeMs = response.ProcessingTimeMs,
+					Sources = response.Sources
+				});
+
+				IsOnline = true;
+				StatusMessage = $"Completed in {response.ProcessingTimeMs}ms";
+
+				if (AutoSpeakEnabled)
+				{
+					await _ttsService.StopAsync();
+					await _ttsService.SpeakAsync(response.Content);
+				}
+			}
+			else
+			{
+				IsOnline = await _apiClient.HealthCheckAsync();
+				var detail = IsOnline
+					? "Model is warming or returned an error. Try again in a moment."
+					: "Cannot reach Auricrux API. Check network, then tap status to retry.";
+				Messages.Add(new ChatMessageViewModel
+				{
+					Role = "assistant",
+					Content = detail,
+					IsUser = false,
+					Timestamp = DateTime.Now
+				});
+				StatusMessage = IsOnline ? "Model error" : "Backend offline";
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error sending message");
+			StatusMessage = "Error sending message";
+			Messages.Add(new ChatMessageViewModel
+			{
+				Role = "assistant",
+				Content = $"Error: {ex.Message}",
+				IsUser = false,
+				Timestamp = DateTime.Now
+			});
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+	private async Task ClearHistory()
+	{
+		_auricruxService.ClearHistory();
+		Messages.Clear();
+		_lastAnswer = string.Empty;
+		_lastQuestion = string.Empty;
+		Messages.Add(new ChatMessageViewModel
+		{
+			Role = "assistant",
+			Content = "Conversation cleared. How can I help on site?",
+			IsUser = false,
+			Timestamp = DateTime.Now
+		});
+		StatusMessage = "Ready";
+		await Task.CompletedTask;
+	}
+
+	private async Task RateLastMessage(int stars)
+	{
+		var lastAssistantMessage = Messages.LastOrDefault(m => !m.IsUser);
+		if (lastAssistantMessage?.InteractionId != null)
+		{
+			var success = await _auricruxService.SubmitFeedbackAsync(lastAssistantMessage.InteractionId, stars);
+			StatusMessage = success ? (stars >= 4 ? "Thanks for the feedback" : "Feedback noted") : "Failed to submit rating";
+		}
+		else
+		{
+			StatusMessage = "No recent message to rate";
+		}
+	}
+
+	public event PropertyChangedEventHandler? PropertyChanged;
+
+	protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
 
-/// <summary>
-/// ViewModel for a single chat message
-/// </summary>
 public class ChatMessageViewModel
 {
-    public string Role { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public bool IsUser { get; set; }
-    public DateTime Timestamp { get; set; }
-    public string? InteractionId { get; set; }
-    public string? ThinkingContent { get; set; }
-    public long ProcessingTimeMs { get; set; }
-    public List<Source> Sources { get; set; } = new();
+	public string Role { get; set; } = string.Empty;
+	public string Content { get; set; } = string.Empty;
+	public bool IsUser { get; set; }
+	public DateTime Timestamp { get; set; }
+	public string? InteractionId { get; set; }
+	public string? ThinkingContent { get; set; }
+	public long ProcessingTimeMs { get; set; }
+	public List<Source> Sources { get; set; } = new();
 }
 
-/// <summary>
-/// AsyncRelayCommand for use with async methods
-/// </summary>
 public class AsyncRelayCommand : ICommand
 {
-    private readonly Func<Task> _execute;
-    private bool _isExecuting = false;
+	private readonly Func<Task> _execute;
+	private bool _isExecuting;
 
-    public AsyncRelayCommand(Func<Task> execute)
-    {
-        _execute = execute;
-    }
+	public AsyncRelayCommand(Func<Task> execute) => _execute = execute;
 
-    public event EventHandler? CanExecuteChanged;
+	public event EventHandler? CanExecuteChanged;
+	public bool CanExecute(object? parameter) => !_isExecuting;
 
-    public bool CanExecute(object? parameter) => !_isExecuting;
+	public async void Execute(object? parameter)
+	{
+		if (_isExecuting) return;
+		try
+		{
+			_isExecuting = true;
+			CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+			await _execute();
+		}
+		finally
+		{
+			_isExecuting = false;
+			CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+		}
+	}
+}
 
-    public async void Execute(object? parameter)
-    {
-        if (_isExecuting) return;
+public class AsyncRelayCommand<T> : ICommand
+{
+	private readonly Func<T?, Task> _execute;
+	private bool _isExecuting;
 
-        try
-        {
-            _isExecuting = true;
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-            await _execute();
-        }
-        finally
-        {
-            _isExecuting = false;
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
-    }
+	public AsyncRelayCommand(Func<T?, Task> execute) => _execute = execute;
+
+	public event EventHandler? CanExecuteChanged;
+	public bool CanExecute(object? parameter) => !_isExecuting;
+
+	public async void Execute(object? parameter)
+	{
+		if (_isExecuting) return;
+		try
+		{
+			_isExecuting = true;
+			CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+			await _execute(parameter is T t ? t : default);
+		}
+		finally
+		{
+			_isExecuting = false;
+			CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+		}
+	}
 }

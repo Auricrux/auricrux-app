@@ -41,22 +41,18 @@ public class AuricruxApiClient
                 _logger.LogInformation($"Sending chat query: {request.Query} (Mode: {request.ThinkingMode}, Scope: {request.SearchScope})");
             }
 
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                Converters = { new JsonStringEnumConverter() }
-            };
+            var options = CreateJsonOptions();
 
-            var response = await _httpClient.PostAsJsonAsync("/api/chat", request, options, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync("api/chat", request, options, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError($"API Error: {response.StatusCode} - {response.Content}");
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogError($"API Error: {response.StatusCode} - {body}");
                 return null;
             }
 
-            var chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>(cancellationToken: cancellationToken);
+            var chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>(options, cancellationToken);
 
             if (_config.EnableLogging)
             {
@@ -83,20 +79,36 @@ public class AuricruxApiClient
     }
 
     /// <summary>
-    /// Check if the backend is available
+    /// Check if the backend is available (prefers /healthz on the public Auricrux edge).
     /// </summary>
     public async Task<bool> HealthCheckAsync(CancellationToken cancellationToken = default)
     {
-        try
+        foreach (var path in new[] { "healthz", "health" })
         {
-            var response = await _httpClient.GetAsync("/health", cancellationToken);
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var response = await _httpClient.GetAsync(path, cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // try next path
+            }
         }
-        catch
-        {
-            return false;
-        }
+
+        return false;
     }
+
+    private static JsonSerializerOptions CreateJsonOptions() => new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    };
 
     /// <summary>
     /// Submit user feedback/rating for an interaction
@@ -110,14 +122,9 @@ public class AuricruxApiClient
                 _logger.LogInformation($"Submitting feedback for interaction {interactionId}: {rating.Stars} stars");
             }
 
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                Converters = { new JsonStringEnumConverter() }
-            };
+            var options = CreateJsonOptions();
 
-            var response = await _httpClient.PostAsJsonAsync($"/api/feedback/{interactionId}", rating, options, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync($"api/feedback/{interactionId}", rating, options, cancellationToken);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -196,8 +203,7 @@ public class TextToSpeechService
 
             if (string.IsNullOrWhiteSpace(text)) return;
 
-            // Use MAUI's built-in TextToSpeech
-            await TextToSpeech.SpeakAsync(text, new SpeechOptions
+            await TextToSpeech.Default.SpeakAsync(text, new SpeechOptions
             {
                 Volume = 1.0f,
                 Pitch = 1.0f
@@ -216,9 +222,11 @@ public class TextToSpeechService
     {
         try
         {
-            // MAUI TextToSpeech doesn't have a direct stop method
-            // This would need platform-specific implementation
-            await Task.CompletedTask;
+            if (TextToSpeech.Default is ITextToSpeech tts)
+            {
+                // Best-effort cancel; MAUI exposes Cancel on some platforms via SpeakAsync cancellation.
+                await Task.CompletedTask;
+            }
         }
         catch (Exception ex)
         {

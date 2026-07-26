@@ -9,11 +9,12 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            
-            <!-- Value Converters -->
+
             <local:UserMessageColorConverter x:Key="UserMessageColorConverter" />
             <local:UserMessageTextColorConverter x:Key="UserMessageTextColorConverter" />
             <local:ProcessingTimeVisibilityConverter x:Key="ProcessingTimeVisibilityConverter" />
+            <local:OnlineColorConverter x:Key="OnlineColorConverter" />
+            <local:MicLabelConverter x:Key="MicLabelConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

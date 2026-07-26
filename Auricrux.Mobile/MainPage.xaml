@@ -2,97 +2,198 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Auricrux.Mobile.MainPage"
+             x:Name="RootPage"
              Title="Auricrux"
-             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F1F1F}">
+             BackgroundColor="{StaticResource Paper}">
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto" Padding="10">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Padding="12">
+
         <!-- Header -->
-        <VerticalStackLayout Grid.Row="0" Padding="10" Spacing="8">
-            <HorizontalStackLayout Spacing="10">
-                <Image Source="appicon.png" WidthRequest="40" HeightRequest="40" Aspect="AspectFit"/>
-                <Label Text="Auricrux AI Assistant" FontSize="20" FontAttributes="Bold" VerticalOptions="Center"/>
+        <VerticalStackLayout Grid.Row="0" Spacing="8" Padding="4,4,4,10">
+            <HorizontalStackLayout Spacing="12">
+                <Image Source="auricrux_mark.svg" WidthRequest="44" HeightRequest="44" Aspect="AspectFit"/>
+                <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                    <Label Text="Auricrux"
+                           FontSize="26"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource Ink}"
+                           CharacterSpacing="0.5"/>
+                    <Label Text="Construction Specialist"
+                           FontSize="12"
+                           TextColor="{StaticResource Tertiary}"/>
+                </VerticalStackLayout>
             </HorizontalStackLayout>
-            
-            <Label x:Name="StatusLabel" Text="Ready" FontSize="12" TextColor="Gray"/>
-            
-            <!-- Mode Controls -->
-            <HorizontalStackLayout Spacing="10">
-                <Label Text="Thinking:" VerticalOptions="Center" FontSize="12"/>
-                <Picker x:Name="ThinkingModePicker" WidthRequest="100" FontSize="12"/>
-                <Label Text="Search:" VerticalOptions="Center" FontSize="12"/>
-                <Picker x:Name="SearchScopePicker" WidthRequest="100" FontSize="12"/>
-                <CheckBox x:Name="AutoSpeakCheckBox" VerticalOptions="Center" Margin="5,0"/>
-                <Label Text="Auto-speak" VerticalOptions="Center" FontSize="11"/>
+
+            <HorizontalStackLayout Spacing="8">
+                <Border StrokeThickness="0"
+                        BackgroundColor="{StaticResource Secondary}"
+                        Padding="10,6"
+                        StrokeShape="RoundRectangle 14">
+                    <HorizontalStackLayout Spacing="6">
+                        <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4"
+                                 Color="{Binding IsOnline, Converter={StaticResource OnlineColorConverter}}"/>
+                        <Label Text="{Binding ConnectionStatusText}"
+                               FontSize="12"
+                               TextColor="{StaticResource Ink}"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+                <Label Text="{Binding ConnectionLabel}"
+                       FontSize="10"
+                       TextColor="{StaticResource Gray500}"
+                       VerticalOptions="Center"
+                       LineBreakMode="TailTruncation"
+                       MaxLines="1"/>
             </HorizontalStackLayout>
+
+            <Label Text="{Binding StatusMessage}" FontSize="12" TextColor="{StaticResource Gray600}"/>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="{Binding ThinkingChipLabel}"
+                        Command="{Binding CycleThinkingCommand}"
+                        BackgroundColor="{StaticResource Ink}"
+                        TextColor="White"
+                        FontSize="12"
+                        Padding="12,8"
+                        CornerRadius="16"/>
+                <Button Text="{Binding SearchChipLabel}"
+                        Command="{Binding CycleSearchCommand}"
+                        BackgroundColor="{StaticResource Tertiary}"
+                        TextColor="White"
+                        FontSize="12"
+                        Padding="12,8"
+                        CornerRadius="16"/>
+                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                    <CheckBox IsChecked="{Binding AutoSpeakEnabled}" Color="{StaticResource Primary}"/>
+                    <Label Text="Speak" FontSize="12" VerticalOptions="Center" TextColor="{StaticResource Ink}"/>
+                </HorizontalStackLayout>
+            </HorizontalStackLayout>
+
+            <ScrollView Orientation="Horizontal" HeightRequest="40">
+                <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding QuickPrompts}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Button Text="{Binding}"
+                                    Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.QuickPromptCommand}"
+                                    CommandParameter="{Binding}"
+                                    BackgroundColor="{StaticResource Secondary}"
+                                    TextColor="{StaticResource Ink}"
+                                    FontSize="11"
+                                    Padding="12,6"
+                                    CornerRadius="14"/>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+            </ScrollView>
         </VerticalStackLayout>
 
-        <!-- Chat Messages -->
-        <CollectionView x:Name="MessagesCollectionView" 
-                       Grid.Row="1"
-                       SelectionMode="Single"
-                       Margin="5">
+        <!-- Messages -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Messages}"
+                        SelectionMode="None"
+                        Margin="0,4">
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <StackLayout Spacing="5" Padding="10">
-                        <Frame Padding="12" CornerRadius="10" 
-                               BackgroundColor="{Binding IsUser, Converter={StaticResource UserMessageColorConverter}}"
-                               BorderColor="Transparent">
-                            <StackLayout Spacing="3">
-                                <Label Text="{Binding Content}" 
-                                      TextColor="{Binding IsUser, Converter={StaticResource UserMessageTextColorConverter}}"
-                                      FontSize="14"
-                                      LineBreakMode="WordWrap"/>
-                                <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm:ss}'}" 
-                                      FontSize="10" 
-                                      TextColor="Gray"
-                                      IsVisible="{Binding ProcessingTimeMs, Converter={StaticResource ProcessingTimeVisibilityConverter}}"/>
-                                <Label Text="{Binding ProcessingTimeMs, StringFormat='Processed in {0}ms'}" 
-                                      FontSize="10" 
-                                      TextColor="Gray"
-                                      IsVisible="{Binding ProcessingTimeMs, Converter={StaticResource ProcessingTimeVisibilityConverter}}"/>
-                            </StackLayout>
-                        </Frame>
-                    </StackLayout>
+                    <Border Padding="14,12"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 14"
+                            BackgroundColor="{Binding IsUser, Converter={StaticResource UserMessageColorConverter}}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Content}"
+                                   TextColor="{Binding IsUser, Converter={StaticResource UserMessageTextColorConverter}}"
+                                   FontSize="15"
+                                   LineBreakMode="WordWrap"/>
+                            <Label Text="{Binding Timestamp, StringFormat='{0:HH:mm}'}"
+                                   FontSize="10"
+                                   TextColor="{StaticResource Gray500}"
+                                   IsVisible="{Binding ProcessingTimeMs, Converter={StaticResource ProcessingTimeVisibilityConverter}}"/>
+                        </VerticalStackLayout>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <!-- Loading Indicator -->
-        <ActivityIndicator x:Name="LoadingIndicator" 
-                          Grid.Row="2"
-                          IsRunning="False"
-                          IsVisible="False"
-                          Color="{AppThemeBinding Light=Black, Dark=White}"/>
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsLoading}"
+                           IsVisible="{Binding IsLoading}"
+                           Color="{StaticResource Primary}"/>
 
-        <!-- Input Area -->
-        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Padding="5">
-            <Entry x:Name="InputEntry" 
-                  Grid.Column="0"
-                  Grid.Row="0"
-                  Placeholder="Type your message..."
-                  PlaceholderColor="Gray"
-                  Margin="10"/>
-            
-            <Button x:Name="SendButton" 
-                   Grid.Column="1"
-                   Grid.Row="0"
-                   Text="Send"
-                   Margin="5"
-                   CornerRadius="5"/>
-            
-            <!-- Rating Buttons -->
-            <HorizontalStackLayout Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Spacing="5" Margin="0,5">
-                <Button Text="⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
-                <Button Text="⭐⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
-                <Button Text="⭐⭐⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
-                <Button Text="⭐⭐⭐⭐" FontSize="16" WidthRequest="40" Margin="5,0"/>
-                <Button Text="⭐⭐⭐⭐⭐" FontSize="16" WidthRequest="50" Margin="5,0"/>
-                <Button Text="Clear" Margin="5"/>
+        <!-- Composer -->
+        <VerticalStackLayout Grid.Row="3" Spacing="8" Padding="0,8,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                <Button Grid.Column="0"
+                        Text="{Binding IsListening, Converter={StaticResource MicLabelConverter}}"
+                        Command="{Binding MicCommand}"
+                        BackgroundColor="{StaticResource Tertiary}"
+                        TextColor="White"
+                        WidthRequest="56"
+                        HeightRequest="48"
+                        CornerRadius="12"
+                        FontSize="12"/>
+                <Border Grid.Column="1"
+                        Stroke="{StaticResource Gray300}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="White"
+                        Padding="4">
+                    <Entry Text="{Binding UserInput}"
+                           Placeholder="Ask Auricrux…"
+                           PlaceholderColor="{StaticResource Gray400}"
+                           BackgroundColor="Transparent"
+                           TextColor="{StaticResource Ink}"/>
+                </Border>
+                <Button Grid.Column="2"
+                        Text="Send"
+                        Command="{Binding SendMessageCommand}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        WidthRequest="72"
+                        HeightRequest="48"
+                        CornerRadius="12"
+                        FontAttributes="Bold"/>
+                <Button Grid.Column="3"
+                        Text="Share"
+                        Command="{Binding ShareLastCommand}"
+                        BackgroundColor="{StaticResource Ink}"
+                        TextColor="White"
+                        WidthRequest="64"
+                        HeightRequest="48"
+                        CornerRadius="12"
+                        FontSize="12"/>
+            </Grid>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Speak"
+                        Command="{Binding SpeakLastCommand}"
+                        BackgroundColor="{StaticResource Secondary}"
+                        TextColor="{StaticResource Ink}"
+                        FontSize="12"
+                        Padding="12,8"
+                        CornerRadius="12"/>
+                <Button Text="Helpful"
+                        Command="{Binding RateUpCommand}"
+                        BackgroundColor="{StaticResource Secondary}"
+                        TextColor="{StaticResource Ink}"
+                        FontSize="12"
+                        Padding="12,8"
+                        CornerRadius="12"/>
+                <Button Text="Needs work"
+                        Command="{Binding RateDownCommand}"
+                        BackgroundColor="{StaticResource Secondary}"
+                        TextColor="{StaticResource Ink}"
+                        FontSize="12"
+                        Padding="12,8"
+                        CornerRadius="12"/>
+                <Button Text="Clear"
+                        Command="{Binding ClearHistoryCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource Gray600}"
+                        FontSize="12"
+                        Padding="12,8"/>
             </HorizontalStackLayout>
-        </Grid>
+        </VerticalStackLayout>
     </Grid>
-
 </ContentPage>

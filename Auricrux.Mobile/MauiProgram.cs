@@ -6,8 +6,7 @@ namespace Auricrux.Mobile;
 
 public static class MauiProgram
 {
-	// Auricrux standalone backend — independent of FCA Ecosystem
-	private const string DefaultApiEndpoint = "http://localhost:5000";
+	public const string ProductionApiEndpoint = "https://auricrux.futurecontractorsofamerica.com";
 
 	private static string ResolveApiEndpoint()
 	{
@@ -16,10 +15,10 @@ public static class MauiProgram
 
 		if (!string.IsNullOrWhiteSpace(configured))
 		{
-			return configured.Trim();
+			return configured.Trim().TrimEnd('/');
 		}
 
-		return DefaultApiEndpoint;
+		return ProductionApiEndpoint;
 	}
 
 	public static MauiApp CreateMauiApp()
@@ -30,12 +29,12 @@ public static class MauiProgram
 			DefaultThinkingMode = ThinkingMode.Auto,
 			DefaultSearchScope = SearchScope.Both,
 			EnableAutoSpeak = false,
-			TimeoutSeconds = 30,
+			TimeoutSeconds = 180,
 			EnableLogging = true
 		};
 
 		var builder = MauiApp.CreateBuilder();
-		
+
 		builder
 			.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
@@ -54,11 +53,14 @@ public static class MauiProgram
 			.AddSingleton(auricruxConfig)
 			.AddSingleton<MainPage>()
 			.AddSingleton<MainPageViewModel>()
+			.AddSingleton<SpeechToTextService>()
+			.AddSingleton<AnswerExportService>()
 			.AddHttpClient<AuricruxApiClient>()
-			.ConfigureHttpClient(client =>
+			.ConfigureHttpClient((sp, client) =>
 			{
-				client.BaseAddress = new Uri(auricruxConfig.ApiEndpoint);
-				client.Timeout = TimeSpan.FromSeconds(auricruxConfig.TimeoutSeconds);
+				var config = sp.GetRequiredService<AuricruxConfig>();
+				client.BaseAddress = new Uri(config.ApiEndpoint.TrimEnd('/') + "/");
+				client.Timeout = TimeSpan.FromSeconds(config.TimeoutSeconds);
 			});
 
 		builder.Services.AddSingleton<TextToSpeechService>();
@@ -67,4 +69,3 @@ public static class MauiProgram
 		return builder.Build();
 	}
 }
-

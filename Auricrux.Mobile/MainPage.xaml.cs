@@ -1,131 +1,76 @@
 using System.Globalization;
-using Auricrux.Shared.Models;
 using Auricrux.Shared.Services;
-using Microsoft.Maui.Controls;
 
 namespace Auricrux.Mobile;
 
 public partial class MainPage : ContentPage
 {
 	private readonly MainPageViewModel _viewModel;
-	private readonly AuricruxService _auricruxService;
 
-	public MainPage(MainPageViewModel viewModel, AuricruxService auricruxService)
+	public MainPage(MainPageViewModel viewModel)
 	{
 		InitializeComponent();
 		_viewModel = viewModel;
-		_auricruxService = auricruxService;
 		BindingContext = _viewModel;
-
-		SetupUI();
 	}
 
-	private void SetupUI()
-	{
-		// Populate thinking mode picker
-		ThinkingModePicker.ItemsSource = Enum.GetValues(typeof(ThinkingMode)).Cast<ThinkingMode>().ToList();
-		ThinkingModePicker.SelectedItem = _viewModel.SelectedThinkingMode;
-		ThinkingModePicker.SelectedIndexChanged += (s, e) =>
-		{
-			if (ThinkingModePicker.SelectedItem is ThinkingMode mode)
-				_viewModel.SelectedThinkingMode = mode;
-		};
-
-		// Populate search scope picker
-		SearchScopePicker.ItemsSource = Enum.GetValues(typeof(SearchScope)).Cast<SearchScope>().ToList();
-		SearchScopePicker.SelectedItem = _viewModel.SelectedSearchScope;
-		SearchScopePicker.SelectedIndexChanged += (s, e) =>
-		{
-			if (SearchScopePicker.SelectedItem is SearchScope scope)
-				_viewModel.SelectedSearchScope = scope;
-		};
-
-		// Bind auto-speak toggle
-		AutoSpeakCheckBox.CheckedChanged += (s, e) =>
-		{
-			_viewModel.AutoSpeakEnabled = e.Value;
-		};
-
-		// Bind UI controls to ViewModel
-		InputEntry.SetBinding(Entry.TextProperty, new Binding("UserInput", mode: BindingMode.TwoWay));
-		StatusLabel.SetBinding(Label.TextProperty, new Binding("StatusMessage", mode: BindingMode.OneWay));
-		LoadingIndicator.SetBinding(ActivityIndicator.IsRunningProperty, new Binding("IsLoading", mode: BindingMode.OneWay));
-		LoadingIndicator.SetBinding(ActivityIndicator.IsVisibleProperty, new Binding("IsLoading", mode: BindingMode.OneWay));
-
-		// Bind messages collection
-		MessagesCollectionView.SetBinding(CollectionView.ItemsSourceProperty, new Binding("Messages", mode: BindingMode.OneWay));
-
-		// Set up button commands
-		SendButton.Clicked += (s, e) =>
-		{
-			_viewModel.SendMessageCommand.Execute(null);
-		};
-	}
-
-	protected override void OnAppearing()
+	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
+		await _viewModel.CheckHealthAsync();
 	}
 }
 
-/// <summary>
-/// Converter for determining message background color
-/// </summary>
 public class UserMessageColorConverter : IValueConverter
 {
 	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
-		if (value is bool isUser)
+		if (Application.Current?.Resources.TryGetValue("UserBubble", out var user) == true
+		    && Application.Current.Resources.TryGetValue("AssistantBubble", out var assistant) == true
+		    && value is bool isUser)
 		{
-			return isUser
-				? Colors.Blue
-				: Colors.LightGray;
+			return isUser ? user : assistant;
 		}
-		return Colors.LightGray;
+
+		return value is bool u && u ? Color.FromArgb("#5A320A") : Color.FromArgb("#ECE8DF");
 	}
 
 	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
+		=> throw new NotImplementedException();
 }
 
-/// <summary>
-/// Converter for determining message text color
-/// </summary>
 public class UserMessageTextColorConverter : IValueConverter
 {
 	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-	{
-		if (value is bool isUser)
-		{
-			return isUser ? Colors.White : Colors.Black;
-		}
-		return Colors.Black;
-	}
+		=> value is bool isUser && isUser ? Colors.White : Color.FromArgb("#1A1208");
 
 	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
+		=> throw new NotImplementedException();
 }
 
-/// <summary>
-/// Converter for showing processing time visibility
-/// </summary>
 public class ProcessingTimeVisibilityConverter : IValueConverter
 {
 	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-	{
-		if (value is long time)
-		{
-			return time > 0;
-		}
-		return false;
-	}
+		=> value is long time && time > 0;
 
 	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
+		=> throw new NotImplementedException();
+}
+
+public class OnlineColorConverter : IValueConverter
+{
+	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+		=> value is true ? Color.FromArgb("#2F9E44") : Color.FromArgb("#C92A2A");
+
+	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+		=> throw new NotImplementedException();
+}
+
+public class MicLabelConverter : IValueConverter
+{
+	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+		=> value is true ? "…" : "Mic";
+
+	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+		=> throw new NotImplementedException();
 }
