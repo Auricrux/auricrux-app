@@ -1,0 +1,62 @@
+[
+  {
+    "title": "CSI Division 03 Concrete",
+    "scope": "internal",
+    "content": "Concrete placement, curing, and formwork sequencing for commercial work. Verify mix design, cold-weather protections, and strength tests before stripping forms.",
+    "tags": ["concrete", "formwork", "csi", "testing"]
+  },
+  {
+    "title": "CSI Division 09 Finishes",
+    "scope": "internal",
+    "content": "Drywall, flooring, and paint coordination with punch and closeout. Protect finished work during remaining trades.",
+    "tags": ["finishes", "punch", "closeout"]
+  },
+  {
+    "title": "AIA A201 General Conditions",
+    "scope": "public",
+    "content": "Contractual roles for owner, architect, and contractor. Change orders require written authorization and time/price impact documentation.",
+    "tags": ["aia", "contract", "change"]
+  },
+  {
+    "title": "OSHA Fall Protection",
+    "scope": "public",
+    "content": "Fall protection triggers and competent person duties on elevated work. Inspect harnesses and anchor points daily.",
+    "tags": ["osha", "safety", "fall"]
+  },
+  {
+    "title": "Bid Leveling Checklist",
+    "scope": "internal",
+    "content": "Normalize alternates, allowances, unit prices, exclusions, and schedule assumptions before award recommendation.",
+    "tags": ["bid", "estimate", "award"]
+  },
+  {
+    "title": "RFI Best Practices",
+    "scope": "internal",
+    "content": "Write RFIs with drawing references, conflict description, schedule impact, and a proposed solution for faster architect response.",
+    "tags": ["rfi", "design", "coordination"]
+  },
+  {
+    "title": "Pay Application SOV",
+    "scope": "internal",
+    "content": "Align schedule of values to cost codes for AIA-style G702/G703 billing. Retainage and stored materials must match contract terms.",
+    "tags": ["billing", "payapp", "sov"]
+  },
+  {
+    "title": "CTE Electrical Fundamentals",
+    "scope": "internal",
+    "content": "Ohm's law, conduit fill awareness, and lockout/tagout fundamentals for CTE electrical pathways.",
+    "tags": ["cte", "electrical", "training"]
+  },
+  {
+    "title": "Job Cost Variance",
+    "scope": "internal",
+    "content": "Compare committed cost, actual cost, and forecast to complete weekly. Flag overruns before pay apps are certified.",
+    "tags": ["jobcost", "finance", "forecast"]
+  },
+  {
+    "title": "Warranty Closeout Package",
+    "scope": "internal",
+    "content": "Collect O&M manuals, attic stock, training attendance, and warranty start dates before substantial completion.",
+    "tags": ["warranty", "closeout", "om"]
+  }
+]

@@ -1,53 +1,66 @@
+using Auricrux.Shared.Models;
+using Auricrux.Shared.Services;
+using Auricrux.Web.Components;
+using Auricrux.Web.Services;
+using Microsoft.Extensions.FileProviders;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddConsole();
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+builder.Services.AddControllers();
+builder.Services.AddHttpClient(nameof(ConstructionIntelligenceService));
+builder.Services.AddHttpClient(nameof(MediaGenerationService));
+builder.Services.AddHttpClient(nameof(FcaAccountLinkService));
+builder.Services.AddSingleton<ConstructionIntelligenceService>();
+builder.Services.AddSingleton<MediaGenerationService>();
+builder.Services.AddSingleton<WorkspaceStorageService>();
+builder.Services.AddSingleton<ConversationMemoryService>();
+builder.Services.AddSingleton<FcaAccountLinkService>();
+builder.Services.AddSingleton(sp =>
+{
+    var config = new AuricruxConfig
+    {
+        ApiEndpoint = builder.Configuration["Auricrux:PublicBaseUrl"] ?? "http://localhost:5080/",
+        EnableAutoSpeak = false,
+        EnableLogging = true,
+        TimeoutSeconds = 180
+    };
+    return config;
+});
+builder.Services.AddHttpClient<AuricruxApiClient>((sp, client) =>
+{
+    var cfg = sp.GetRequiredService<AuricruxConfig>();
+    client.BaseAddress = new Uri(cfg.ApiEndpoint);
+});
+builder.Services.AddSingleton<TextToSpeechService>();
+builder.Services.AddScoped<AuricruxService>();
 
 var app = builder.Build();
 
-// Minimal API - just endpoints, no complex components
-app.MapGet("/", () => Results.Ok(new { message = "Auricrux API Running", version = "1.0.0", timestamp = DateTime.UtcNow }));
+var mediaRoot = Path.Combine(app.Environment.ContentRootPath, "Data", "media");
+Directory.CreateDirectory(mediaRoot);
+var workspaceRoot = Path.Combine(app.Environment.ContentRootPath, "Data", "workspace");
+Directory.CreateDirectory(workspaceRoot);
 
-app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", app = "Auricrux", version = "1.0.0", timestamp = DateTime.UtcNow }));
-
-app.MapPost("/api/thinking", async (HttpContext context) =>
+if (!app.Environment.IsDevelopment())
 {
-    try
-    {
-        var request = await context.Request.ReadFromJsonAsync<dynamic>();
-        
-        return Results.Ok(new 
-        { 
-            thinking_output = "Extended thinking about the construction question...",
-            analysis = "Comprehensive breakdown of the issue",
-            timestamp = DateTime.UtcNow 
-        });
-    }
-    catch
-    {
-        return Results.BadRequest(new { error = "Invalid request format" });
-    }
-});
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+}
 
-app.MapPost("/api/search", async (HttpContext context) =>
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
 {
-    try
-    {
-        var request = await context.Request.ReadFromJsonAsync<dynamic>();
-        
-        return Results.Ok(new 
-        { 
-            results = new[] 
-            {
-                new { id = "1", title = "Result 1", relevance = 0.95 },
-                new { id = "2", title = "Result 2", relevance = 0.87 }
-            },
-            timestamp = DateTime.UtcNow 
-        });
-    }
-    catch
-    {
-        return Results.BadRequest(new { error = "Invalid request format" });
-    }
+    FileProvider = new PhysicalFileProvider(mediaRoot),
+    RequestPath = "/media"
 });
+app.UseAntiforgery();
+app.MapStaticAssets();
+app.MapControllers();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
 
 app.Run();

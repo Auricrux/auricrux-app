@@ -29,8 +29,12 @@ public class MainPageViewModel : INotifyPropertyChanged
 	private bool _autoSpeakEnabled;
 	private string _lastQuestion = string.Empty;
 	private string _lastAnswer = string.Empty;
+	private string _accountEmail = "contractor@example.com";
+	private string _selectedModel = "llama3.2";
+	private string _quotaLabel = "Freemium";
 
 	public ObservableCollection<ChatMessageViewModel> Messages { get; } = new();
+	public ObservableCollection<string> AvailableModels { get; } = new() { "llama3.2", "mistral", "auricrux" };
 	public ObservableCollection<string> QuickPrompts { get; } = new()
 	{
 		"What is a sill plate?",
@@ -91,6 +95,24 @@ public class MainPageViewModel : INotifyPropertyChanged
 
 	public string ThinkingChipLabel => $"Think: {SelectedThinkingMode}";
 	public string SearchChipLabel => $"Scope: {SelectedSearchScope}";
+
+	public string AccountEmail
+	{
+		get => _accountEmail;
+		set { _accountEmail = value; OnPropertyChanged(); }
+	}
+
+	public string SelectedModel
+	{
+		get => _selectedModel;
+		set { _selectedModel = value; OnPropertyChanged(); }
+	}
+
+	public string QuotaLabel
+	{
+		get => _quotaLabel;
+		set { _quotaLabel = value; OnPropertyChanged(); }
+	}
 
 	public bool AutoSpeakEnabled
 	{
@@ -256,7 +278,7 @@ public class MainPageViewModel : INotifyPropertyChanged
 			var query = UserInput.Trim();
 			UserInput = string.Empty;
 			_lastQuestion = query;
-			StatusMessage = IsOnline ? "Thinking…" : "Sending (backend may be warming)…";
+			StatusMessage = IsOnline ? "Checking quota…" : "Sending (backend may be warming)…";
 
 			Messages.Add(new ChatMessageViewModel
 			{
@@ -266,10 +288,38 @@ public class MainPageViewModel : INotifyPropertyChanged
 				Timestamp = DateTime.Now
 			});
 
+			await _apiClient.RegisterAccountAsync(AccountEmail);
+			var (consumeAccount, limitReached, consumeError) = await _apiClient.ConsumeAsync(AccountEmail);
+			if (limitReached)
+			{
+				StatusMessage = "Freemium daily limit reached — upgrade required";
+				Messages.Add(new ChatMessageViewModel
+				{
+					Role = "assistant",
+					Content = "You've hit today's freemium query limit. Upgrade to Pro for higher daily capacity.",
+					IsUser = false,
+					Timestamp = DateTime.Now
+				});
+				return;
+			}
+
+			if (consumeAccount is null)
+			{
+				StatusMessage = consumeError ?? "Quota check failed";
+				return;
+			}
+
+			QuotaLabel = $"{consumeAccount.Plan}: {consumeAccount.QueriesUsedToday}/{consumeAccount.DailyQueryLimit}";
+
+			var model = string.Equals(consumeAccount.Plan, "free", StringComparison.OrdinalIgnoreCase)
+				? "llama3.2"
+				: SelectedModel;
+
 			var (response, interaction) = await _auricruxService.ProcessQueryAsync(
 				query,
 				SelectedThinkingMode,
-				SelectedSearchScope);
+				SelectedSearchScope,
+				model);
 
 			if (response != null)
 			{

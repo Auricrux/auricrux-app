@@ -1,22 +1,66 @@
 @page "/"
 @using Auricrux.Shared.Models
 @using Auricrux.Shared.Services
+@using Microsoft.AspNetCore.Components.Forms
 @inject AuricruxService AuricruxService
+@inject AuricruxApiClient ApiClient
+@inject IJSRuntime Js
 @inject ILogger<Chat> Logger
 @rendermode InteractiveServer
+@implements IDisposable
 
-<div class="container-fluid vh-100 d-flex flex-column" style="max-width: 1200px; margin: 0 auto;">
-    <!-- Header -->
-    <div class="bg-primary text-white p-3 rounded-top">
-        <div class="d-flex align-items-center mb-3">
-            <h1 class="mb-0">⚡ Auricrux AI Assistant</h1>
+    <div class="auricrux-shell d-flex flex-column vh-100" style="max-width: 1100px; margin: 0 auto; background: linear-gradient(180deg,#0f1c18 0%,#1a2e28 40%,#f4f1ea 40%);">
+    <div class="text-white p-4" style="background: transparent;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div>
+                <div style="letter-spacing:0.18em;text-transform:uppercase;font-size:0.75rem;opacity:0.8;">Construction Specialist AI</div>
+                <h1 class="mb-0" style="font-family:Georgia,serif;font-size:2.2rem;">Auricrux</h1>
+            </div>
+            <span class="badge" style="background:#c4a35a;color:#111;">@StatusMessage</span>
         </div>
-        <p class="mb-2">Status: <span class="badge bg-secondary">@StatusMessage</span></p>
-        
-        <!-- Control Panel -->
-        <div class="row g-2">
+        <p class="mb-3" style="max-width:42rem;opacity:0.9;">Multi-model construction AI — chat, speech, files, image/video generation, durable memory, optional FCA account link.</p>
+
+        <div class="row g-2 mb-2">
             <div class="col-12 col-md-3">
-                <label class="form-label mb-1">Thinking Mode</label>
+                <label class="form-label mb-1">Account email</label>
+                <input class="form-control form-control-sm" @bind="AccountEmail" placeholder="you@company.com" />
+            </div>
+            <div class="col-6 col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100 btn-outline-light" type="button" @onclick="EnsureAccount" disabled="@IsLoading">Register</button>
+            </div>
+            <div class="col-6 col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100" style="background:#c4a35a;color:#111;" type="button" @onclick="UpgradePro" disabled="@IsLoading">Upgrade Pro</button>
+            </div>
+            <div class="col-12 col-md-5">
+                <label class="form-label mb-1">FCA bearer (link ecosystem account)</label>
+                <div class="input-group input-group-sm">
+                    <input class="form-control" @bind="FcaBearerToken" placeholder="main-token or FCA JWT" />
+                    <button class="btn btn-outline-light" type="button" @onclick="LinkFca" disabled="@IsLoading">Link FCA</button>
+                </div>
+                <small class="opacity-75">@FcaLinkLabel</small>
+            </div>
+        </div>
+        
+        <div class="row g-2">
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Model</label>
+                <select class="form-select form-select-sm" @bind="SelectedModel">
+                    @foreach (var model in AvailableModels)
+                    {
+                        <option value="@model">@model</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Memory</label>
+                <select class="form-select form-select-sm" @bind="MemoryBackend">
+                    <option value="session">Session (RAM)</option>
+                    <option value="file-jsonl">File JSONL</option>
+                    <option value="sqlite">SQLite</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Thinking</label>
                 <select class="form-select form-select-sm" @onchange="OnThinkingModeChanged">
                     @foreach (var mode in Enum.GetValues(typeof(ThinkingMode)).Cast<ThinkingMode>())
                     {
@@ -24,8 +68,8 @@
                     }
                 </select>
             </div>
-            <div class="col-12 col-md-3">
-                <label class="form-label mb-1">Search Scope</label>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Search</label>
                 <select class="form-select form-select-sm" @onchange="OnSearchScopeChanged">
                     @foreach (var scope in Enum.GetValues(typeof(SearchScope)).Cast<SearchScope>())
                     {
@@ -33,21 +77,38 @@
                     }
                 </select>
             </div>
-            <div class="col-12 col-md-3">
-                <label class="form-label mb-1">
-                    <input type="checkbox" @onchange="OnAutoSpeakChanged" checked="@AutoSpeakEnabled" /> Auto-Speak
-                </label>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Speech</label>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-light flex-fill" type="button" @onclick="StartListening" disabled="@IsLoading">Mic</button>
+                    <label class="btn btn-sm btn-outline-light mb-0">
+                        <input type="checkbox" @onchange="OnAutoSpeakChanged" checked="@AutoSpeakEnabled" /> TTS
+                    </label>
+                </div>
             </div>
-            <div class="col-12 col-md-3">
-                <button class="btn btn-warning btn-sm w-100" @onclick="ClearHistory" disabled="@IsLoading">
-                    Clear History
-                </button>
+            <div class="col-6 col-md-2">
+                <label class="form-label mb-1">Generate</label>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-light flex-fill" type="button" @onclick="GenerateImage" disabled="@IsLoading">Image</button>
+                    <button class="btn btn-sm btn-outline-light flex-fill" type="button" @onclick="GenerateVideo" disabled="@IsLoading">Video</button>
+                </div>
             </div>
         </div>
+        <div class="row g-2 mt-2">
+            <div class="col-12 col-md-8">
+                <InputFile OnChange="OnFileSelected" class="form-control form-control-sm" />
+            </div>
+            <div class="col-6 col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100 btn-outline-light" type="button" @onclick="UploadSelectedFile" disabled="@(IsLoading || SelectedBrowserFile is null)">Upload file</button>
+            </div>
+            <div class="col-6 col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100" style="background:#c4a35a;color:#111;" type="button" @onclick="ClearHistory" disabled="@IsLoading">Clear</button>
+            </div>
+        </div>
+        <small class="opacity-75 d-block mt-1">@QuotaLabel</small>
     </div>
 
-    <!-- Chat Messages -->
-    <div class="flex-grow-1 overflow-auto" style="background-color: #f8f9fa; padding: 20px;">
+    <div class="flex-grow-1 overflow-auto" style="background-color: #f7f4ee; padding: 20px;">
         @foreach (var message in Messages)
         {
             <div class="mb-3">
@@ -57,7 +118,6 @@
                         <div class="alert alert-info" style="max-width: 70%;">
                             <strong>You:</strong>
                             <p class="mb-0">@message.Content</p>
-                            <small class="text-muted">@message.Timestamp.ToString("HH:mm:ss")</small>
                         </div>
                     </div>
                 }
@@ -66,19 +126,27 @@
                     <div class="d-flex justify-content-start">
                         <div class="alert alert-light border" style="max-width: 70%;">
                             <strong>Auricrux:</strong>
-                            <p class="mb-0">@message.Content</p>
+                            <p class="mb-0" style="white-space: pre-wrap;">@message.Content</p>
+                            @if (!string.IsNullOrEmpty(message.MediaUrl))
+                            {
+                                <div class="mt-2">
+                                    <a href="@message.MediaUrl" target="_blank" rel="noopener">Open media</a>
+                                    @if (message.MediaUrl.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) || message.MediaUrl.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <div class="mt-2"><img src="@message.MediaUrl" alt="generated" style="max-width:100%;border:1px solid #ccc;" /></div>
+                                    }
+                                </div>
+                            }
                             @if (message.ProcessingTimeMs > 0)
                             {
-                                <small class="text-muted">Processed in @message.ProcessingTimeMs ms • @message.Timestamp.ToString("HH:mm:ss")</small>
+                                <small class="text-muted">@message.ProcessingTimeMs ms</small>
                             }
                             @if (!string.IsNullOrEmpty(message.InteractionId))
                             {
                                 <div class="mt-2">
-                                    <button class="btn btn-sm btn-outline-success" @onclick="() => RateMessage(message.InteractionId, 5)">⭐⭐⭐⭐⭐</button>
-                                    <button class="btn btn-sm btn-outline-success" @onclick="() => RateMessage(message.InteractionId, 4)">⭐⭐⭐⭐</button>
-                                    <button class="btn btn-sm btn-outline-success" @onclick="() => RateMessage(message.InteractionId, 3)">⭐⭐⭐</button>
-                                    <button class="btn btn-sm btn-outline-warning" @onclick="() => RateMessage(message.InteractionId, 2)">⭐⭐</button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RateMessage(message.InteractionId, 1)">⭐</button>
+                                    <button class="btn btn-sm btn-outline-success" @onclick="() => RateMessage(message.InteractionId, 5)">5★</button>
+                                    <button class="btn btn-sm btn-outline-warning" @onclick="() => RateMessage(message.InteractionId, 3)">3★</button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RateMessage(message.InteractionId, 1)">1★</button>
                                 </div>
                             }
                         </div>
@@ -89,33 +157,16 @@
         @if (IsLoading)
         {
             <div class="d-flex justify-content-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
+                <div class="spinner-border text-primary" role="status"></div>
             </div>
         }
     </div>
 
-    <!-- Input Area -->
     <div class="bg-light border-top p-3">
         <div class="input-group">
-            <input type="text" 
-                   class="form-control" 
-                   placeholder="Type your message..."
-                   @bind="UserInput"
-                   @onkeyup="OnKeyUp"
-                   disabled="@IsLoading" />
-            <button class="btn btn-primary" type="button" @onclick="SendMessage" disabled="@(IsLoading || string.IsNullOrWhiteSpace(UserInput))">
-                @if (IsLoading)
-                {
-                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    <span>Sending...</span>
-                }
-                else
-                {
-                    <span>Send</span>
-                }
-            </button>
+            <input type="text" class="form-control" placeholder="Ask construction questions, or describe an image/video to generate…"
+                   @bind="UserInput" @onkeyup="OnKeyUp" disabled="@IsLoading" />
+            <button class="btn btn-primary" type="button" @onclick="SendMessage" disabled="@(IsLoading || string.IsNullOrWhiteSpace(UserInput))">Send</button>
         </div>
     </div>
 </div>
@@ -123,82 +174,261 @@
 @code {
     private List<ChatMessageViewModel> Messages = new();
     private string UserInput = string.Empty;
-    private bool IsLoading = false;
+    private bool IsLoading;
     private string StatusMessage = "Ready";
     private ThinkingMode SelectedThinkingMode = ThinkingMode.Auto;
     private SearchScope SelectedSearchScope = SearchScope.Both;
-    private bool AutoSpeakEnabled = false;
+    private bool AutoSpeakEnabled;
+    private string AccountEmail = "contractor@example.com";
+    private string SelectedModel = "llama3.2";
+    private string MemoryBackend = "sqlite";
+    private string FcaBearerToken = string.Empty;
+    private string FcaLinkLabel = "FCA not linked";
+    private List<string> AvailableModels = new() { "llama3.2", "mistral", "auricrux" };
+    private FreemiumAccount? Account;
+    private IBrowserFile? SelectedBrowserFile;
+    private DotNetObjectReference<Chat>? _dotNetRef;
+
+    private string QuotaLabel => Account is null
+        ? "Freemium: register to meter daily queries"
+        : $"{Account.Plan} — {Account.QueriesUsedToday}/{Account.DailyQueryLimit} today · memory={MemoryBackend}";
 
     protected override async Task OnInitializedAsync()
     {
         Messages.Add(new ChatMessageViewModel
         {
             Role = "assistant",
-            Content = "Hello! I'm Auricrux, your AI assistant. How can I help you today?",
+            Content = "Auricrux online — multi-model chat, mic STT, TTS, workspace files, image/video generation, session/file/SQLite memory, and optional FCA account link.",
             IsUser = false,
             Timestamp = DateTime.Now
         });
 
+        var models = await ApiClient.ListModelsAsync();
+        if (models.Count > 0)
+        {
+            AvailableModels = models.ToList();
+            SelectedModel = AvailableModels[0];
+        }
+
+        await EnsureAccount();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+        }
+
         await Task.CompletedTask;
+    }
+
+    private async Task EnsureAccount()
+    {
+        if (string.IsNullOrWhiteSpace(AccountEmail)) return;
+        Account = await ApiClient.RegisterAccountAsync(AccountEmail.Trim());
+        StatusMessage = Account is null ? "Account sync failed" : $"Synced {Account.Plan}";
+    }
+
+    private async Task UpgradePro()
+    {
+        await EnsureAccount();
+        Account = await ApiClient.UpgradeAccountAsync(AccountEmail.Trim(), "pro");
+        StatusMessage = Account is null ? "Upgrade failed" : "Upgraded to Pro";
+    }
+
+    private async Task LinkFca()
+    {
+        if (string.IsNullOrWhiteSpace(FcaBearerToken))
+        {
+            StatusMessage = "FCA token required";
+            return;
+        }
+
+        await EnsureAccount();
+        var link = await ApiClient.LinkFcaAsync(AccountEmail.Trim(), FcaBearerToken.Trim());
+        if (link is null)
+        {
+            FcaLinkLabel = "Link failed — is FCA API running?";
+            StatusMessage = "FCA link failed";
+            return;
+        }
+
+        FcaLinkLabel = $"Linked {link.Plan} · Academy:{link.HasAcademy} · CTE:{link.HasCte}";
+        StatusMessage = "FCA account linked";
+    }
+
+    private async Task StartListening()
+    {
+        if (_dotNetRef is null) _dotNetRef = DotNetObjectReference.Create(this);
+        StatusMessage = "Listening…";
+        try
+        {
+            await Js.InvokeVoidAsync("auricruxSpeech.start", _dotNetRef);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Mic unavailable: {ex.Message}";
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSpeechResult(string text)
+    {
+        UserInput = text;
+        StatusMessage = "Speech captured";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task OnSpeechError(string error)
+    {
+        StatusMessage = $"Speech error: {error}";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e) => SelectedBrowserFile = e.File;
+
+    private async Task UploadSelectedFile()
+    {
+        if (SelectedBrowserFile is null) return;
+        IsLoading = true;
+        try
+        {
+            await using var stream = SelectedBrowserFile.OpenReadStream(104_857_600);
+            await ApiClient.UploadWorkspaceFileAsync(stream, SelectedBrowserFile.Name);
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = $"Uploaded `{SelectedBrowserFile.Name}` to workspace.",
+                IsUser = false,
+                Timestamp = DateTime.Now
+            });
+            StatusMessage = "File uploaded";
+            SelectedBrowserFile = null;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Upload failed: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task GenerateImage()
+    {
+        var prompt = string.IsNullOrWhiteSpace(UserInput) ? "residential foundation plan isometric" : UserInput.Trim();
+        IsLoading = true;
+        StatusMessage = "Generating image…";
+        try
+        {
+            var artifact = await ApiClient.GenerateImageAsync(prompt);
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = artifact is null
+                    ? "Image generation failed."
+                    : $"Image ready via {artifact.Engine}.",
+                IsUser = false,
+                Timestamp = DateTime.Now,
+                MediaUrl = artifact?.PublicPath
+            });
+            StatusMessage = artifact is null ? "Image failed" : "Image ready";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task GenerateVideo()
+    {
+        var prompt = string.IsNullOrWhiteSpace(UserInput) ? "roof tear-off sequence" : UserInput.Trim();
+        IsLoading = true;
+        StatusMessage = "Generating video storyboard…";
+        try
+        {
+            var artifact = await ApiClient.GenerateVideoAsync(prompt);
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = artifact is null
+                    ? "Video generation failed."
+                    : $"Video package ready via {artifact.Engine} ({artifact.Kind}).",
+                IsUser = false,
+                Timestamp = DateTime.Now,
+                MediaUrl = artifact?.PublicPath
+            });
+            StatusMessage = artifact is null ? "Video failed" : "Video ready";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private void OnThinkingModeChanged(ChangeEventArgs e)
     {
-        if (Enum.TryParse<ThinkingMode>(e.Value?.ToString(), out var mode))
-        {
-            SelectedThinkingMode = mode;
-        }
+        if (Enum.TryParse<ThinkingMode>(e.Value?.ToString(), out var mode)) SelectedThinkingMode = mode;
     }
 
     private void OnSearchScopeChanged(ChangeEventArgs e)
     {
-        if (Enum.TryParse<SearchScope>(e.Value?.ToString(), out var scope))
-        {
-            SelectedSearchScope = scope;
-        }
+        if (Enum.TryParse<SearchScope>(e.Value?.ToString(), out var scope)) SelectedSearchScope = scope;
     }
 
-    private void OnAutoSpeakChanged(ChangeEventArgs e)
-    {
-        AutoSpeakEnabled = (bool)(e.Value ?? false);
-    }
+    private void OnAutoSpeakChanged(ChangeEventArgs e) => AutoSpeakEnabled = (bool)(e.Value ?? false);
 
     private async Task OnKeyUp(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !IsLoading && !string.IsNullOrWhiteSpace(UserInput))
-        {
             await SendMessage();
-        }
     }
 
     private async Task SendMessage()
     {
         if (string.IsNullOrWhiteSpace(UserInput)) return;
-
         try
         {
             IsLoading = true;
             var query = UserInput;
             UserInput = string.Empty;
-            StatusMessage = "Sending...";
-
-            // Add user message
-            Messages.Add(new ChatMessageViewModel
+            await EnsureAccount();
+            var (account, limitReached, consumeError) = await ApiClient.ConsumeAsync(AccountEmail.Trim());
+            if (limitReached)
             {
-                Role = "user",
-                Content = query,
-                IsUser = true,
-                Timestamp = DateTime.Now
-            });
+                StatusMessage = "Daily freemium limit reached — upgrade to Pro";
+                Messages.Add(new ChatMessageViewModel
+                {
+                    Role = "assistant",
+                    Content = "Freemium daily limit reached. Upgrade to Pro for higher capacity and multi-model access.",
+                    IsUser = false,
+                    Timestamp = DateTime.Now
+                });
+                return;
+            }
 
+            if (account is null)
+            {
+                StatusMessage = consumeError ?? "Quota check failed";
+                return;
+            }
+
+            Account = account;
+            if (string.Equals(Account.Plan, "free", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(SelectedModel, "llama3.2", StringComparison.OrdinalIgnoreCase))
+            {
+                SelectedModel = "llama3.2";
+            }
+
+            Messages.Add(new ChatMessageViewModel { Role = "user", Content = query, IsUser = true, Timestamp = DateTime.Now });
+            await ApiClient.AppendMemoryAsync(AuricruxService.SessionId, "user", query, MemoryBackend);
             await InvokeAsync(StateHasChanged);
 
-            // Process query
             var (response, interaction) = await AuricruxService.ProcessQueryAsync(
-                query,
-                SelectedThinkingMode,
-                SelectedSearchScope
-            );
+                query, SelectedThinkingMode, SelectedSearchScope, SelectedModel);
 
             if (response != null)
             {
@@ -209,39 +439,31 @@
                     IsUser = false,
                     Timestamp = DateTime.Now,
                     InteractionId = interaction?.Id,
-                    ThinkingContent = response.ThinkingContent,
-                    ProcessingTimeMs = response.ProcessingTimeMs,
-                    Sources = response.Sources
+                    ProcessingTimeMs = response.ProcessingTimeMs
                 });
-
+                await ApiClient.AppendMemoryAsync(AuricruxService.SessionId, "assistant", response.Content, MemoryBackend);
                 StatusMessage = $"Completed in {response.ProcessingTimeMs}ms";
+                if (AutoSpeakEnabled)
+                {
+                    try { await Js.InvokeVoidAsync("auricruxSpeech.speak", response.Content); } catch { /* ignore */ }
+                }
             }
             else
             {
                 Messages.Add(new ChatMessageViewModel
                 {
                     Role = "assistant",
-                    Content = "I'm sorry, I encountered an error processing your request. Please try again.",
+                    Content = "Error processing request. Check Ollama / API health.",
                     IsUser = false,
                     Timestamp = DateTime.Now
                 });
-                StatusMessage = "Error occurred";
+                StatusMessage = "Error";
             }
-
-            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Error: {ex.Message}");
+            Logger.LogError(ex, "Send failed");
             StatusMessage = "Error sending message";
-            Messages.Add(new ChatMessageViewModel
-            {
-                Role = "assistant",
-                Content = $"Error: {ex.Message}",
-                IsUser = false,
-                Timestamp = DateTime.Now
-            });
-            await InvokeAsync(StateHasChanged);
         }
         finally
         {
@@ -256,7 +478,7 @@
         Messages.Add(new ChatMessageViewModel
         {
             Role = "assistant",
-            Content = "Conversation cleared. How can I help you?",
+            Content = "Conversation cleared.",
             IsUser = false,
             Timestamp = DateTime.Now
         });
@@ -267,11 +489,11 @@
     private async Task RateMessage(string? interactionId, int stars)
     {
         if (string.IsNullOrEmpty(interactionId)) return;
-
         var success = await AuricruxService.SubmitFeedbackAsync(interactionId, stars);
-        StatusMessage = success ? $"Rated {stars} star(s)" : "Failed to submit rating";
-        await InvokeAsync(StateHasChanged);
+        StatusMessage = success ? $"Rated {stars}★" : "Rating failed";
     }
+
+    public void Dispose() => _dotNetRef?.Dispose();
 
     public class ChatMessageViewModel
     {
@@ -280,8 +502,7 @@
         public bool IsUser { get; set; }
         public DateTime Timestamp { get; set; }
         public string? InteractionId { get; set; }
-        public string? ThinkingContent { get; set; }
         public long ProcessingTimeMs { get; set; }
-        public List<Source> Sources { get; set; } = new();
+        public string? MediaUrl { get; set; }
     }
 }

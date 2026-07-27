@@ -32,18 +32,21 @@ public class AuricruxApiClient
     /// <summary>
     /// Send a chat query and get a response from Auricrux backend
     /// </summary>
-    public async Task<ChatResponse?> SendChatAsync(ChatRequest request, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse?> SendChatAsync(ChatRequest request, string? model = null, CancellationToken cancellationToken = default)
     {
         try
         {
             if (_config.EnableLogging)
             {
-                _logger.LogInformation($"Sending chat query: {request.Query} (Mode: {request.ThinkingMode}, Scope: {request.SearchScope})");
+                _logger.LogInformation($"Sending chat query: {request.Query} (Mode: {request.ThinkingMode}, Scope: {request.SearchScope}, Model: {model ?? "default"})");
             }
 
             var options = CreateJsonOptions();
+            var path = string.IsNullOrWhiteSpace(model)
+                ? "api/chat"
+                : $"api/chat?model={Uri.EscapeDataString(model.Trim())}";
 
-            var response = await _httpClient.PostAsJsonAsync("api/chat", request, options, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync(path, request, options, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -133,6 +136,186 @@ public class AuricruxApiClient
             return false;
         }
     }
+
+    public async Task<IReadOnlyList<string>> ListModelsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("api/models", cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return Array.Empty<string>();
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<ModelsPayload>(CreateJsonOptions(), cancellationToken);
+            return (IReadOnlyList<string>)(payload?.Models ?? new List<string>());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to list models: {ex.Message}");
+            return Array.Empty<string>();
+        }
+    }
+
+    public async Task<FreemiumAccount?> RegisterAccountAsync(string email, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync(
+                "api/account/register",
+                new { email },
+                CreateJsonOptions(),
+                cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<FreemiumAccount>(CreateJsonOptions(), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to register account: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<(FreemiumAccount? account, bool limitReached, string? error)> ConsumeAsync(string email, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsync(
+                $"api/account/{Uri.EscapeDataString(email.Trim())}/consume",
+                null,
+                cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.PaymentRequired)
+            {
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                return (null, true, body);
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (null, false, $"Consume failed: {response.StatusCode}");
+            }
+
+            var account = await response.Content.ReadFromJsonAsync<FreemiumAccount>(CreateJsonOptions(), cancellationToken);
+            return (account, false, null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to consume quota: {ex.Message}");
+            return (null, false, ex.Message);
+        }
+    }
+
+    public async Task<FreemiumAccount?> UpgradeAccountAsync(string email, string plan, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync(
+                $"api/account/{Uri.EscapeDataString(email.Trim())}/upgrade",
+                new { plan },
+                CreateJsonOptions(),
+                cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<FreemiumAccount>(CreateJsonOptions(), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to upgrade account: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<MediaArtifactDto?> GenerateImageAsync(string prompt, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/media/image", new { prompt }, CreateJsonOptions(), cancellationToken);
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<MediaArtifactDto>(CreateJsonOptions(), cancellationToken)
+            : null;
+    }
+
+    public async Task<MediaArtifactDto?> GenerateVideoAsync(string prompt, int frames = 8, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/media/video", new { prompt, frames }, CreateJsonOptions(), cancellationToken);
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<MediaArtifactDto>(CreateJsonOptions(), cancellationToken)
+            : null;
+    }
+
+    public async Task AppendMemoryAsync(string sessionId, string role, string content, string backend = "sqlite", CancellationToken cancellationToken = default)
+    {
+        await _httpClient.PostAsJsonAsync(
+            $"api/memory/{Uri.EscapeDataString(sessionId)}",
+            new { role, content, backend },
+            CreateJsonOptions(),
+            cancellationToken);
+    }
+
+    public async Task<FcaLinkDto?> LinkFcaAsync(string email, string fcaBearerToken, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            $"api/account/{Uri.EscapeDataString(email.Trim())}/link-fca",
+            new { fcaBearerToken },
+            CreateJsonOptions(),
+            cancellationToken);
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<FcaLinkDto>(CreateJsonOptions(), cancellationToken)
+            : null;
+    }
+
+    public async Task UploadWorkspaceFileAsync(Stream content, string fileName, string? folder = null, CancellationToken cancellationToken = default)
+    {
+        using var form = new MultipartFormDataContent();
+        var streamContent = new StreamContent(content);
+        form.Add(streamContent, "file", fileName);
+        if (!string.IsNullOrWhiteSpace(folder))
+        {
+            form.Add(new StringContent(folder), "folder");
+        }
+
+        await _httpClient.PostAsync("api/workspace/files", form, cancellationToken);
+    }
+
+    private sealed class ModelsPayload
+    {
+        public List<string>? Models { get; set; }
+    }
+}
+
+public sealed class MediaArtifactDto
+{
+    public string Id { get; set; } = string.Empty;
+    public string Kind { get; set; } = string.Empty;
+    public string LocalPath { get; set; } = string.Empty;
+    public string PublicPath { get; set; } = string.Empty;
+    public string Engine { get; set; } = string.Empty;
+    public string Prompt { get; set; } = string.Empty;
+}
+
+public sealed class FcaLinkDto
+{
+    public string AuricruxEmail { get; set; } = string.Empty;
+    public DateTime LinkedAtUtc { get; set; }
+    public string Plan { get; set; } = string.Empty;
+    public bool HasAcademy { get; set; }
+    public bool HasCte { get; set; }
+    public bool HasEmbeddedAuricrux { get; set; }
+    public string Status { get; set; } = string.Empty;
+}
+
+public sealed class FreemiumAccount
+{
+    public string Email { get; set; } = string.Empty;
+    public string Plan { get; set; } = "free";
+    public int DailyQueryLimit { get; set; }
+    public int QueriesUsedToday { get; set; }
 }
 
 /// <summary>
@@ -158,25 +341,24 @@ public class TextToSpeechService
         {
             if (_isInitialized) return;
 
+            try
+            {
+                _ = DeviceInfo.Platform;
+            }
+            catch
+            {
+                _isInitialized = true;
+                _logger.LogInformation("TTS initialized in non-MAUI host (no-op speak)");
+                return;
+            }
+
             // Platform-specific initialization (handled by platform implementations)
-            if (DeviceInfo.Platform == DevicePlatform.WinUI)
+            if (DeviceInfo.Platform == DevicePlatform.WinUI
+                || DeviceInfo.Platform == DevicePlatform.iOS
+                || DeviceInfo.Platform == DevicePlatform.Android
+                || DeviceInfo.Platform == DevicePlatform.macOS
+                || true)
             {
-                // Windows initialization
-                _isInitialized = true;
-            }
-            else if (DeviceInfo.Platform == DevicePlatform.iOS)
-            {
-                // iOS initialization
-                _isInitialized = true;
-            }
-            else if (DeviceInfo.Platform == DevicePlatform.Android)
-            {
-                // Android initialization
-                _isInitialized = true;
-            }
-            else if (DeviceInfo.Platform == DevicePlatform.macOS)
-            {
-                // macOS initialization
                 _isInitialized = true;
             }
 
@@ -185,6 +367,7 @@ public class TextToSpeechService
         }
         catch (Exception ex)
         {
+            _isInitialized = true;
             _logger.LogError($"TTS initialization failed: {ex.Message}");
         }
     }
@@ -203,11 +386,18 @@ public class TextToSpeechService
 
             if (string.IsNullOrWhiteSpace(text)) return;
 
-            await TextToSpeech.Default.SpeakAsync(text, new SpeechOptions
+            try
             {
-                Volume = 1.0f,
-                Pitch = 1.0f
-            });
+                await TextToSpeech.Default.SpeakAsync(text, new SpeechOptions
+                {
+                    Volume = 1.0f,
+                    Pitch = 1.0f
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug("TTS speak skipped on this host: {Message}", ex.Message);
+            }
         }
         catch (Exception ex)
         {
@@ -264,6 +454,7 @@ public class AuricruxService
         string query,
         ThinkingMode thinkingMode = ThinkingMode.Auto,
         SearchScope searchScope = SearchScope.Both,
+        string? model = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -283,7 +474,7 @@ public class AuricruxService
                     .ToList()
             };
 
-            var response = await _apiClient.SendChatAsync(chatRequest, cancellationToken);
+            var response = await _apiClient.SendChatAsync(chatRequest, model, cancellationToken);
 
             if (response == null)
             {

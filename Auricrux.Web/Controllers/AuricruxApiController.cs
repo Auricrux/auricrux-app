@@ -1,73 +1,89 @@
-using Microsoft.AspNetCore.Mvc;
 using Auricrux.Shared.Models;
+using Auricrux.Web.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Auricrux.Web.Controllers;
 
-/// <summary>
-/// API controller for Auricrux thinking modes and search
-/// </summary>
 [ApiController]
 [Route("api")]
-public class AuricruxApiController : ControllerBase
+public sealed class AuricruxApiController(
+    ConstructionIntelligenceService intelligence,
+    ILogger<AuricruxApiController> logger) : ControllerBase
 {
-    private readonly ILogger<AuricruxApiController> _logger;
-
-    public AuricruxApiController(ILogger<AuricruxApiController> logger)
-    {
-        _logger = logger;
-    }
-
-    /// <summary>
-    /// Health check for API
-    /// </summary>
     [HttpGet("health")]
+    [HttpGet("/health")]
+    [HttpGet("/healthz")]
     public ActionResult<object> GetHealth()
     {
-        return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+        return Ok(new
+        {
+            status = "healthy",
+            app = "Auricrux",
+            version = "1.0.0",
+            models = intelligence.AvailableModels,
+            timestamp = DateTime.UtcNow
+        });
     }
 
-    /// <summary>
-    /// Process a thinking mode request
-    /// </summary>
-    [HttpPost("thinking")]
-    public ActionResult<ThinkingResponse> PostThinking([FromBody] ThinkingRequest request)
+    [HttpGet("models")]
+    public ActionResult<object> ListModels() => Ok(new { models = intelligence.AvailableModels });
+
+    [HttpPost("chat")]
+    public async Task<ActionResult<ChatResponse>> Chat(
+        [FromBody] ChatRequest request,
+        [FromQuery] string? model,
+        CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Thinking request received: Mode={Mode}, Query={Query}", request.Mode, request.Query);
-
-        var response = new ThinkingResponse
+        if (string.IsNullOrWhiteSpace(request.Query))
         {
-            Success = true,
-            Mode = request.Mode,
-            Result = $"Thinking response for query: {request.Query}",
-            ProcessingTimeMs = Random.Shared.Next(500, 3000),
-            Timestamp = DateTime.UtcNow
-        };
+            return BadRequest(new { error = "Query is required." });
+        }
 
+        logger.LogInformation("Chat mode={Mode} scope={Scope} model={Model}", request.ThinkingMode, request.SearchScope, model);
+        var response = await intelligence.ChatAsync(request, model, cancellationToken);
         return Ok(response);
     }
 
-    /// <summary>
-    /// Process a search request
-    /// </summary>
+    [HttpPost("thinking")]
+    public async Task<ActionResult<ThinkingResponse>> PostThinking(
+        [FromBody] ThinkingRequest request,
+        [FromQuery] string? model,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+        {
+            return BadRequest(new { error = "Query is required." });
+        }
+
+        var response = await intelligence.ThinkAsync(request, model, cancellationToken);
+        return Ok(response);
+    }
+
     [HttpPost("search")]
     public ActionResult<SearchResponse> PostSearch([FromBody] SearchRequest request)
     {
-        _logger.LogInformation("Search request received: Scope={Scope}, Query={Query}", request.Scope, request.Query);
-
-        var response = new SearchResponse
+        if (string.IsNullOrWhiteSpace(request.Query))
         {
-            Success = true,
-            Scope = request.Scope,
-            Results = new List<SearchResult>
-            {
-                new() { Title = "Result 1", Snippet = "Sample search result for query: " + request.Query, Score = 0.95 },
-                new() { Title = "Result 2", Snippet = "Another relevant result", Score = 0.87 },
-                new() { Title = "Result 3", Snippet = "Additional search result", Score = 0.76 }
-            },
-            TotalResults = 3,
-            Timestamp = DateTime.UtcNow
-        };
+            return BadRequest(new { error = "Query is required." });
+        }
 
-        return Ok(response);
+        return Ok(intelligence.Search(request));
+    }
+
+    [HttpPost("feedback/{interactionId:guid}")]
+    public IActionResult Feedback(Guid interactionId, [FromBody] StarRating rating)
+    {
+        if (!intelligence.TryGetInteraction(interactionId, out _))
+        {
+            return NotFound();
+        }
+
+        if (rating.Stars is < 1 or > 5)
+        {
+            return BadRequest(new { error = "Stars must be 1-5." });
+        }
+
+        intelligence.RecordFeedback(interactionId, rating);
+        return Accepted();
     }
 }
