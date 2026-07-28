@@ -62,6 +62,11 @@
     "verifiedSampleQuery": "What is a sill plate?",
     "verifiedResponseLatencyMs": 49337,
     "evalSuite": "eval/construction_god_suite_v1.json",
-    "evalSuiteLastRunResult": "30/30 cases passed (100%) via Auricrux.Eval against the live ConstructionIntelligenceService corpus + graceful-fallback runtime — see eval/reports/construction_god_suite_v1_report.md"
+    "evalSuiteLastRunResult": "30/30 cases passed (100%) via Auricrux.Eval against the live ConstructionIntelligenceService corpus + graceful-fallback runtime — see eval/reports/construction_god_suite_v1_report.md",
+    "ollamaShowProof": {
+      "file": "auricrux/system/auricrux-fca-ollama-show-proof.json",
+      "capturedAtUtc": "2026-07-28T04:10:34Z",
+      "finding": "ollama show auricrux-fca confirms a raw-passthrough TEMPLATE plus a baked-in SYSTEM prompt/few-shot MESSAGE pairs over a 3.2B llama-arch Q4_K_M GGUF base — no LoRA adapter, no checkpoint-70000 weights merged in. Confirms this is still the interim system-prompt alias, not the Wave M fine-tune."
+    }
   }
 }

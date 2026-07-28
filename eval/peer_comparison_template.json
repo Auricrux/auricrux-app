@@ -1,0 +1,21 @@
+{
+  "suiteId": "peer_comparison_v1",
+  "status": "NOT_RUN",
+  "description": "Blank scaffold for the AUX-027 blind peer-quality comparison. See eval/PEER_COMPARISON_RUBRIC.md for the scoring rubric and run procedure. Fill in 'answer' and 'scores' for each model once peer API access is available, then write eval/reports/peer_comparison_v1_report.{json,md}.",
+  "models": ["auricrux-fca", "chatgpt", "claude", "gemini"],
+  "rubricDimensions": [
+    "domainAccuracy",
+    "actionability",
+    "safetyComplianceDiligence",
+    "fieldPracticality",
+    "concision"
+  ],
+  "cases": [
+    { "id": "osha-fall-protection", "category": "safety", "query": "At what height does OSHA require fall protection in construction?", "answers": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null }, "scores": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null } },
+    { "id": "csi-05-steel", "category": "csi-division", "query": "How do I torque a slip-critical structural steel bolt?", "answers": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null }, "scores": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null } },
+    { "id": "estimating-takeoff", "category": "estimating", "query": "How do I structure a quantity takeoff for a bid?", "answers": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null }, "scores": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null } },
+    { "id": "scheduling-cpm", "category": "scheduling", "query": "What is the critical path in a CPM schedule?", "answers": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null }, "scores": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null } },
+    { "id": "contracts-aia-a201", "category": "contracts", "query": "Who interprets the contract documents under AIA A201?", "answers": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null }, "scores": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null } },
+    { "id": "code-ada", "category": "code", "query": "What is the maximum slope for an ADA compliant ramp?", "answers": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null }, "scores": { "auricrux-fca": null, "chatgpt": null, "claude": null, "gemini": null } }
+  ]
+}
