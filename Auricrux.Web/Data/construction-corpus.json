@@ -388,5 +388,95 @@
     "scope": "internal",
     "content": "Final payment release requires: punch-list zero or agreed completion date, as-built drawings, O&M manuals, warranties, commissioning reports, affidavit of payment to subs, and final unconditional lien waivers. Retainage release is often the last lever — do not sign final waiver until all disputed change orders and deductive items are resolved in writing.",
     "tags": ["closeout", "final payment", "retainage", "lien waiver", "punch list"]
+  },
+  {
+    "title": "LEED and Green Building Certification",
+    "scope": "public",
+    "content": "LEED v4.1 credits span location/transportation, sustainable sites, water efficiency, energy/atmosphere, materials/resources, and indoor environmental quality. Document MR credits with EPDs/HPDs, diversion receipts for construction waste management, and commissioning reports for EA prerequisites. Target certification level (Certified/Silver/Gold/Platinum) early — it drives spec substitutions and sub scope.",
+    "tags": ["leed", "green building", "sustainability", "commissioning", "epd"]
+  },
+  {
+    "title": "Passive House and High-Performance Envelope",
+    "scope": "internal",
+    "content": "Passive House (PHIUS/PHI) targets air leakage ≤ 0.05–0.08 CFM50/sf, continuous insulation without thermal bridges, and balanced ERV ventilation. Blower-door testing at mid-construction and final is mandatory; fenestration U-values and SHGC must match modeled performance or energy models must be re-run.",
+    "tags": ["passive house", "envelope", "air leakage", "blower door", "insulation"]
+  },
+  {
+    "title": "Concrete Pumping and Placement Logistics",
+    "scope": "internal",
+    "content": "Line pump vs. boom pump selection depends on pour volume, access, and vertical reach. Pre-pour checklist: verify pump pad stability, prime lines with grout slug, maintain slump within spec at discharge, and never add water at the chute without engineer approval. Coordinate truck spacing (one every 20–30 minutes for large slabs) to avoid cold joints.",
+    "tags": ["concrete", "pumping", "placement", "slab", "logistics"]
+  },
+  {
+    "title": "Temporary Power and Job Site Electrical Safety",
+    "scope": "public",
+    "content": "Temporary power panels require GFCI protection, grounding, and weather-rated enclosures per NEC Article 590. Lockout/tagout before servicing temp feeds; inspect cords for damage daily. NEC 1926 Subpart K applies on construction sites — only qualified electricians perform permanent connections.",
+    "tags": ["temporary power", "electrical", "nec", "osha", "gfci"]
+  },
+  {
+    "title": "Crane Rigging and Critical Lifts",
+    "scope": "internal",
+    "content": "Critical lifts (≥75% rated capacity, tandem picks, or picks over occupied areas) require a written lift plan signed by a qualified rigger and PE when specified. Inspect slings, shackles, and hooks before each pick; maintain a 10-ft exclusion zone under suspended loads. OSHA 1926 Subpart CC governs crane operations — signal person and operator must be qualified.",
+    "tags": ["crane", "rigging", "critical lift", "osha", "safety"]
+  },
+  {
+    "title": "Submittal Review and Approval Workflow",
+    "scope": "internal",
+    "content": "Submittals prove conformance to specs before fabrication/installation. Log each submittal with spec section, revision, and review action (approved/approved as noted/revise and resubmit/rejected). Architect review time is typically 10–14 business days per cycle — float submittals on the critical path early, especially for long-lead equipment.",
+    "tags": ["submittal", "shop drawing", "approval", "specification", "coordination"]
+  },
+  {
+    "title": "Shop Drawing Coordination",
+    "scope": "internal",
+    "content": "Shop drawings are contractor-prepared detail drawings showing fabrication/erection info not on design drawings. Stamp 'For Construction' only after architect approval; track revision clouds and RFI references. MEP shop drawings must coordinate with structural steel penetrations and fire-rated assemblies before release to fab shop.",
+    "tags": ["shop drawing", "coordination", "mep", "fabrication", "rfi"]
+  },
+  {
+    "title": "Non-Destructive Testing for Structural Welds",
+    "scope": "internal",
+    "content": "NDT methods (visual VT, magnetic particle MT, ultrasonic UT, radiographic RT) verify weld quality per AWS D1.1 and project spec. Hold points require third-party inspection before concealment; repair protocols and re-test documentation must be filed with the inspector of record.",
+    "tags": ["ndt", "welding", "aws", "inspection", "steel"]
+  },
+  {
+    "title": "Asbestos and Lead Abatement",
+    "scope": "public",
+    "content": "Renovation/demolition on pre-1981 buildings requires asbestos survey (AHERA/EPA NESHAP) and lead assessment (EPA RRP Rule) before disturbance. Licensed abatement contractors must establish regulated areas, negative pressure, and clearance air monitoring. OSHA 1926.1101 (asbestos) and 1926.62 (lead) set PPE and exposure limits.",
+    "tags": ["asbestos", "lead", "abatement", "osha", "hazmat"]
+  },
+  {
+    "title": "Firestopping and Fire-Rated Penetrations",
+    "scope": "internal",
+    "content": "Penetrations through fire-rated assemblies require listed firestop systems matching the exact assembly rating and penetrating item (pipe, cable tray, duct). UL/Intertek system numbers must match field conditions — field modifications void the listing. Special inspection is required in many jurisdictions per IBC Chapter 17.",
+    "tags": ["firestop", "fire rating", "penetration", "ibc", "inspection"]
+  },
+  {
+    "title": "Low Voltage / Access Control Rough-In",
+    "scope": "internal",
+    "content": "Division 28 systems (access control, CCTV, intrusion) require coordinated pathway/conduit with Division 26 power and Division 27 telecom. PoE switch sizing, cable category (Cat6A for long runs), and head-end room cooling/UPS must be verified before drywall close-in. Commission door hardware interfaces with fire alarm release.",
+    "tags": ["low voltage", "access control", "cctv", "division 28", "commissioning"]
+  },
+  {
+    "title": "MEP Functional Performance Testing",
+    "scope": "internal",
+    "content": "TAB (testing, adjusting, balancing) reports verify HVAC air/water flows against design. Functional performance tests (FPT) exercise sequences of operation under normal, failure, and emergency modes per the commissioning plan. Deficiencies must be resolved and re-tested before owner training and turnover.",
+    "tags": ["mep", "tab", "commissioning", "fpt", "hvac"]
+  },
+  {
+    "title": "Value Engineering Process",
+    "scope": "public",
+    "content": "Value engineering (VE) workshops identify cost-saving alternatives without sacrificing function. Document each VE proposal with first cost, lifecycle cost, schedule impact, and spec deviation. Owner/GC approval is required before substituting materials or methods — unapproved VE is a change-order risk.",
+    "tags": ["value engineering", "cost", "substitution", "lifecycle"]
+  },
+  {
+    "title": "Delay and Disruption Claims Documentation",
+    "scope": "internal",
+    "content": "Delay claims require contemporaneous records: daily reports, TIA/fragnets, weather logs, RFIs, and correspondence showing critical path impact. Notice provisions in the contract (often 7–21 days) are conditions precedent — missing notice can waive the claim regardless of merit.",
+    "tags": ["delay", "claims", "critical path", "documentation", "contract"]
+  },
+  {
+    "title": "Heat Illness Prevention (OSHA)",
+    "scope": "public",
+    "content": "OSHA heat illness prevention requires water, rest, and shade when heat index exceeds thresholds; acclimatization periods for new workers (50% workload days 1–4). Monitor for heat stroke signs (confusion, hot dry skin); call 911 and initiate cooling immediately — do not delay for on-site medical only.",
+    "tags": ["heat illness", "osha", "safety", "summer", "competent person"]
   }
 ]

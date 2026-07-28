@@ -1,0 +1,427 @@
+﻿{
+    "uniqueAdvantages":  3,
+    "capabilities":  {
+                         "app":  "Auricrux",
+                         "version":  "1.2.0",
+                         "primaryModel":  "auricrux-fca",
+                         "corpusEntries":  80,
+                         "corpusStats":  {
+                                             "totalEntries":  80,
+                                             "internalEntries":  57,
+                                             "publicEntries":  23,
+                                             "categories":  {
+                                                                "csi-division":  22,
+                                                                "general":  18,
+                                                                "safety":  10,
+                                                                "contracts":  7,
+                                                                "technology":  7,
+                                                                "commercial-billing":  4,
+                                                                "code":  4,
+                                                                "scheduling":  3,
+                                                                "estimating":  2,
+                                                                "closeout":  2,
+                                                                "cte-training":  1
+                                                            },
+                                             "topTags":  {
+                                                             "csi":  13,
+                                                             "osha":  10,
+                                                             "safety":  7,
+                                                             "commissioning":  6,
+                                                             "coordination":  5,
+                                                             "mep":  5,
+                                                             "billing":  4,
+                                                             "closeout":  4,
+                                                             "envelope":  4,
+                                                             "retainage":  4,
+                                                             "concrete":  3,
+                                                             "contract":  3
+                                                         }
+                                         },
+                         "constructionMoat":  {
+                                                  "specialistModel":  "auricrux-fca",
+                                                  "corpusGroundedSearch":  true,
+                                                  "evalSuite":  "construction_god_suite_v1",
+                                                  "evalSuiteLastResult":  "30/30 (100%)",
+                                                  "promotedFineTuneLive":  false,
+                                                  "notes":  "Runtime serves auricrux-fca Ollama alias with construction system prompt; checkpoint-70000 fine-tune not yet exported."
+                                              },
+                         "platforms":  [
+                                           "Web (Blazor Server)",
+                                           "Android (MAUI)",
+                                           "Windows (MAUI)",
+                                           "iOS (MAUI, macOS host)",
+                                           "macOS (Mac Catalyst, macOS host)"
+                                       ],
+                         "features":  [
+                                          {
+                                              "name":  "Multi-model chat",
+                                              "status":  "shipped",
+                                              "detail":  "User-selectable models with freemium gating"
+                                          },
+                                          {
+                                              "name":  "Thinking modes (Quick/Auto/Deep)",
+                                              "status":  "shipped",
+                                              "detail":  "Real model/corpus-backed reasoning"
+                                          },
+                                          {
+                                              "name":  "Search scopes (Internal/Public/Both)",
+                                              "status":  "shipped",
+                                              "detail":  "Corpus retrieval, not hardcoded arrays"
+                                          },
+                                          {
+                                              "name":  "Speech-to-text",
+                                              "status":  "shipped",
+                                              "detail":  "Browser Web Speech API + MAUI native STT"
+                                          },
+                                          {
+                                              "name":  "Text-to-speech",
+                                              "status":  "shipped",
+                                              "detail":  "speechSynthesis + MAUI TTS"
+                                          },
+                                          {
+                                              "name":  "Conversation memory",
+                                              "status":  "shipped",
+                                              "detail":  "Session, JSONL, and SQLite backends"
+                                          },
+                                          {
+                                              "name":  "Conversation export (Markdown/JSON)",
+                                              "status":  "shipped",
+                                              "detail":  "GET /api/memory/{sessionId}/export for shareable transcripts"
+                                          },
+                                          {
+                                              "name":  "Document workspace",
+                                              "status":  "shipped",
+                                              "detail":  "Upload, list, download, folder CRUD"
+                                          },
+                                          {
+                                              "name":  "Image generation",
+                                              "status":  "shipped",
+                                              "detail":  "Stable Diffusion optional + offline SVG renderer"
+                                          },
+                                          {
+                                              "name":  "Video generation",
+                                              "status":  "shipped",
+                                              "detail":  "Storyboard frames + ffmpeg stitch when available"
+                                          },
+                                          {
+                                              "name":  "OAuth2/OIDC authentication",
+                                              "status":  "shipped",
+                                              "detail":  "JWT bearer + cookie/OIDC when Auth:Enabled"
+                                          },
+                                          {
+                                              "name":  "Freemium monetization",
+                                              "status":  "shipped",
+                                              "detail":  "SQLite-backed plans, quotas, model gating"
+                                          },
+                                          {
+                                              "name":  "FCA ecosystem entitlements",
+                                              "status":  "shipped",
+                                              "detail":  "Link Auricrux account to FCA when configured"
+                                          },
+                                          {
+                                              "name":  "Construction specialist corpus",
+                                              "status":  "shipped",
+                                              "detail":  "80 grounded entries across CSI/OSHA/PM/billing/code"
+                                          },
+                                          {
+                                              "name":  "Agentic tool-use / plugins",
+                                              "status":  "planned",
+                                              "detail":  "Not yet implemented"
+                                          },
+                                          {
+                                              "name":  "Native code interpreter",
+                                              "status":  "planned",
+                                              "detail":  "Not yet implemented"
+                                          },
+                                          {
+                                              "name":  "Real-time web browsing",
+                                              "status":  "planned",
+                                              "detail":  "Public search uses corpus, not live web crawl"
+                                          },
+                                          {
+                                              "name":  "Vision / photo analysis",
+                                              "status":  "planned",
+                                              "detail":  "Not yet implemented"
+                                          },
+                                          {
+                                              "name":  "Fine-tuned construction weights live",
+                                              "status":  "blocked",
+                                              "detail":  "checkpoint-70000 awaiting safe export (AUX-017/018)"
+                                          }
+                                      ],
+                         "competitors":  [
+                                             "ChatGPT",
+                                             "Claude",
+                                             "Gemini",
+                                             "Copilot",
+                                             "Grok"
+                                         ],
+                         "competitiveMatrix":  [
+                                                   {
+                                                       "feature":  "Multi-model chat",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "yes",
+                                                                     "Grok":  "yes"
+                                                                 },
+                                                       "notes":  "All major players offer model selection; Auricrux gates premium models behind freemium tiers."
+                                                   },
+                                                   {
+                                                       "feature":  "Construction specialist corpus",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "no",
+                                                                     "Claude":  "no",
+                                                                     "Gemini":  "no",
+                                                                     "Copilot":  "no",
+                                                                     "Grok":  "no"
+                                                                 },
+                                                       "notes":  "Auricrux moat: grounded internal/public construction knowledge base with scoped search — not generic web training."
+                                                   },
+                                                   {
+                                                       "feature":  "Thinking / reasoning modes",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "yes"
+                                                                 },
+                                                       "notes":  "Quick/Auto/Deep modes backed by real model calls; Copilot depth varies by surface."
+                                                   },
+                                                   {
+                                                       "feature":  "Scoped knowledge search",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "partial",
+                                                                     "Claude":  "partial",
+                                                                     "Gemini":  "partial",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "Peers rely on RAG/connectors; Auricrux ships Internal/Public/Both corpus scopes out of the box."
+                                                   },
+                                                   {
+                                                       "feature":  "Speech-to-text",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "yes"
+                                                                 },
+                                                       "notes":  "Browser + MAUI native STT; Copilot mobile STT is surface-dependent."
+                                                   },
+                                                   {
+                                                       "feature":  "Text-to-speech",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "yes",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "Auto-speak after chat on web and mobile."
+                                                   },
+                                                   {
+                                                       "feature":  "Conversation memory + export",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "yes",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "Three persistence backends plus Markdown/JSON export for shareable transcripts."
+                                                   },
+                                                   {
+                                                       "feature":  "Document workspace",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "partial",
+                                                                     "Claude":  "partial",
+                                                                     "Gemini":  "partial",
+                                                                     "Copilot":  "yes",
+                                                                     "Grok":  "no"
+                                                                 },
+                                                       "notes":  "Upload/list/download folders; not a full cloud drive like M365 integration."
+                                                   },
+                                                   {
+                                                       "feature":  "Image generation",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "partial",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "yes",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "Local SD optional + offline construction SVG renderer when SD unavailable."
+                                                   },
+                                                   {
+                                                       "feature":  "Video generation",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "partial",
+                                                                     "Claude":  "no",
+                                                                     "Gemini":  "partial",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "no"
+                                                                 },
+                                                       "notes":  "Storyboard frame pack + ffmpeg stitch; not generative video like Sora/Veo."
+                                                   },
+                                                   {
+                                                       "feature":  "Enterprise OAuth/OIDC",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "yes",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "JWT + cookie/OIDC when Auth:Enabled; dev mode stays open by default."
+                                                   },
+                                                   {
+                                                       "feature":  "Freemium monetization",
+                                                       "auricrux":  "shipped",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "SQLite-backed plans, daily quotas, and model allow-lists enforced server-side."
+                                                   },
+                                                   {
+                                                       "feature":  "Agentic plugins / tool-use",
+                                                       "auricrux":  "planned",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "yes",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "Major gap: no plugin runtime or autonomous tool orchestration yet."
+                                                   },
+                                                   {
+                                                       "feature":  "Code interpreter",
+                                                       "auricrux":  "planned",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "partial",
+                                                                     "Gemini":  "partial",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "no"
+                                                                 },
+                                                       "notes":  "Not implemented; peers offer sandboxed Python or spreadsheet analysis."
+                                                   },
+                                                   {
+                                                       "feature":  "Live web browsing",
+                                                       "auricrux":  "planned",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "partial",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "yes"
+                                                                 },
+                                                       "notes":  "Public search scope uses corpus hits, not live crawl — honest gap."
+                                                   },
+                                                   {
+                                                       "feature":  "Vision / photo analysis",
+                                                       "auricrux":  "planned",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "yes",
+                                                                     "Claude":  "yes",
+                                                                     "Gemini":  "yes",
+                                                                     "Copilot":  "partial",
+                                                                     "Grok":  "partial"
+                                                                 },
+                                                       "notes":  "Not implemented; critical for field photo RFI workflows."
+                                                   },
+                                                   {
+                                                       "feature":  "Construction fine-tuned weights",
+                                                       "auricrux":  "blocked",
+                                                       "peers":  {
+                                                                     "ChatGPT":  "no",
+                                                                     "Claude":  "no",
+                                                                     "Gemini":  "no",
+                                                                     "Copilot":  "no",
+                                                                     "Grok":  "no"
+                                                                 },
+                                                       "notes":  "checkpoint-70000 not exported; auricrux-fca is system-prompt alias over llama3.2-class base (AUX-017 FAIL)."
+                                                   }
+                                               ],
+                         "parityScore":  {
+                                             "shippedCore":  14,
+                                             "planned":  4,
+                                             "blocked":  1,
+                                             "matrixRows":  17,
+                                             "auricruxUniqueAdvantages":  3,
+                                             "overallAssessment":  "PARTIAL — core chat/search/thinking/voice/workspace/media/auth/freemium/construction corpus are real; agentic tools, vision, web browse, and promoted fine-tune weights remain gaps vs. major players."
+                                         }
+                     },
+    "capturedAt":  "2026-07-28T08:25:33.9941427Z",
+    "topTags":  {
+                    "csi":  13,
+                    "osha":  10,
+                    "safety":  7,
+                    "commissioning":  6,
+                    "coordination":  5,
+                    "mep":  5,
+                    "billing":  4,
+                    "closeout":  4,
+                    "envelope":  4,
+                    "retainage":  4,
+                    "concrete":  3,
+                    "contract":  3
+                },
+    "corpusEntries":  80,
+    "shippedCore":  14,
+    "health":  {
+                   "status":  "healthy",
+                   "app":  "Auricrux",
+                   "version":  "1.0.0",
+                   "timestamp":  "2026-07-28T08:25:33.9418179Z",
+                   "ollamaReachable":  true,
+                   "primaryModelReady":  true,
+                   "primaryModel":  "auricrux-fca",
+                   "corpusEntries":  80,
+                   "memoryBackends":  [
+                                          "session",
+                                          "file-jsonl",
+                                          "sqlite"
+                                      ],
+                   "models":  [
+                                  "auricrux-fca",
+                                  "llama3.2",
+                                  "mistral"
+                              ],
+                   "runtimeMode":  "ollama-live"
+               },
+    "matrixRows":  17,
+    "proofType":  "capabilities-competitive-matrix",
+    "categories":  {
+                       "csi-division":  22,
+                       "general":  18,
+                       "safety":  10,
+                       "contracts":  7,
+                       "technology":  7,
+                       "commercial-billing":  4,
+                       "code":  4,
+                       "scheduling":  3,
+                       "estimating":  2,
+                       "closeout":  2,
+                       "cte-training":  1
+                   }
+}

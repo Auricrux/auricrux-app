@@ -34,7 +34,7 @@ public sealed class AuricruxApiIntegrationTests : IClassFixture<WebApplicationFa
         var payload = await response.Content.ReadFromJsonAsync<HealthPayload>();
         Assert.NotNull(payload);
         Assert.False(string.IsNullOrWhiteSpace(payload!.Status));
-        Assert.True(payload.CorpusEntries >= 55, "Construction corpus should have real depth (55+ entries).");
+        Assert.True(payload.CorpusEntries >= 75, "Construction corpus should have real depth (75+ entries).");
         Assert.False(string.IsNullOrWhiteSpace(payload.RuntimeMode));
     }
 

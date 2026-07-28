@@ -33,6 +33,47 @@ public sealed class ConstructionIntelligenceService
 
     public int CorpusEntryCount => _corpus.Count;
 
+    public CorpusStatsSnapshot GetCorpusStats()
+    {
+        var categories = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var tagCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var internalCount = 0;
+        var publicCount = 0;
+
+        foreach (var entry in _corpus)
+        {
+            if (entry.Scope.Equals("public", StringComparison.OrdinalIgnoreCase))
+            {
+                publicCount++;
+            }
+            else
+            {
+                internalCount++;
+            }
+
+            var category = InferCategory(entry);
+            categories[category] = categories.GetValueOrDefault(category) + 1;
+
+            foreach (var tag in entry.Tags)
+            {
+                tagCounts[tag] = tagCounts.GetValueOrDefault(tag) + 1;
+            }
+        }
+
+        return new CorpusStatsSnapshot
+        {
+            TotalEntries = _corpus.Count,
+            InternalEntries = internalCount,
+            PublicEntries = publicCount,
+            Categories = categories.OrderByDescending(kv => kv.Value).ToDictionary(kv => kv.Key, kv => kv.Value),
+            TopTags = tagCounts
+                .OrderByDescending(kv => kv.Value)
+                .ThenBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase)
+                .Take(12)
+                .ToDictionary(kv => kv.Key, kv => kv.Value)
+        };
+    }
+
     public IReadOnlyList<string> AvailableModels =>
     [
         _config["Auricrux:PrimaryModel"] ?? "auricrux",
@@ -277,5 +318,75 @@ public sealed class ConstructionIntelligenceService
         new("CTE Electrical Fundamentals", "internal", "Ohm's law, conduit fill awareness, and lockout/tagout for CTE learners.", ["cte", "electrical", "training"])
     ];
 
+    private static string InferCategory(ConstructionKnowledgeEntry entry)
+    {
+        var hay = (entry.Title + " " + string.Join(' ', entry.Tags)).ToLowerInvariant();
+        if (hay.Contains("csi division") || hay.Contains("division "))
+        {
+            return "csi-division";
+        }
+
+        if (hay.Contains("osha") || hay.Contains("fall protection") || hay.Contains("scaffold")
+            || hay.Contains("trench") || hay.Contains("confined space") || hay.Contains("silica")
+            || hay.Contains("heat illness") || hay.Contains("abatement"))
+        {
+            return "safety";
+        }
+
+        if (hay.Contains("aia") || hay.Contains("contract") || hay.Contains("lien"))
+        {
+            return "contracts";
+        }
+
+        if (hay.Contains("retainage") || hay.Contains("pay app") || hay.Contains("sov")
+            || hay.Contains("billing") || hay.Contains("prevailing wage"))
+        {
+            return "commercial-billing";
+        }
+
+        if (hay.Contains("cpm") || hay.Contains("scheduling") || hay.Contains("last planner")
+            || hay.Contains("delay") || hay.Contains("critical path"))
+        {
+            return "scheduling";
+        }
+
+        if (hay.Contains("takeoff") || hay.Contains("estimate") || hay.Contains("bid"))
+        {
+            return "estimating";
+        }
+
+        if (hay.Contains("closeout") || hay.Contains("punch") || hay.Contains("warranty"))
+        {
+            return "closeout";
+        }
+
+        if (hay.Contains("ibc") || hay.Contains("ada") || hay.Contains("egress") || hay.Contains("code"))
+        {
+            return "code";
+        }
+
+        if (hay.Contains("cte") || hay.Contains("training"))
+        {
+            return "cte-training";
+        }
+
+        if (hay.Contains("bim") || hay.Contains("vdc") || hay.Contains("commissioning")
+            || hay.Contains("drone") || hay.Contains("modular"))
+        {
+            return "technology";
+        }
+
+        return "general";
+    }
+
     private sealed record ConstructionKnowledgeEntry(string Title, string Scope, string Content, string[] Tags);
+}
+
+public sealed class CorpusStatsSnapshot
+{
+    public int TotalEntries { get; set; }
+    public int InternalEntries { get; set; }
+    public int PublicEntries { get; set; }
+    public IReadOnlyDictionary<string, int> Categories { get; set; } = new Dictionary<string, int>();
+    public IReadOnlyDictionary<string, int> TopTags { get; set; } = new Dictionary<string, int>();
 }

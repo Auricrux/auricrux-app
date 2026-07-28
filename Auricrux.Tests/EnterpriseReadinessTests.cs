@@ -45,12 +45,34 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         var payload = await response.Content.ReadFromJsonAsync<CapabilitiesPayload>();
         Assert.NotNull(payload);
         Assert.Equal("Auricrux", payload!.App);
-        Assert.True(payload.CorpusEntries >= 55, "Corpus should have 55+ entries after expansion.");
+        Assert.True(payload.CorpusEntries >= 75, "Corpus should have 75+ entries after expansion.");
         Assert.Contains("ChatGPT", payload.Competitors);
         Assert.Contains(payload.Features, f => f.Name.Contains("Multi-model chat") && f.Status == "shipped");
         Assert.Contains(payload.Features, f => f.Name.Contains("Fine-tuned") && f.Status == "blocked");
         Assert.False(payload.ConstructionMoat.PromotedFineTuneLive);
         Assert.Contains("PARTIAL", payload.ParityScore.OverallAssessment, StringComparison.OrdinalIgnoreCase);
+        Assert.True(payload.CompetitiveMatrix.Count >= 15, "Per-competitor matrix should cover major feature rows.");
+        Assert.Contains(payload.CompetitiveMatrix, r =>
+            r.Feature.Contains("Construction specialist corpus") && r.Auricrux == "shipped");
+        Assert.True(payload.CorpusStats.TotalEntries >= 75);
+        Assert.True(payload.CorpusStats.Categories.Count >= 5, "Corpus should span multiple domain categories.");
+        Assert.True(payload.ParityScore.MatrixRows >= 15);
+    }
+
+    [Fact]
+    public async Task Capabilities_matrix_honestly_marks_peer_gaps()
+    {
+        var response = await _client.GetAsync("/api/capabilities");
+        var payload = await response.Content.ReadFromJsonAsync<CapabilitiesPayload>();
+        Assert.NotNull(payload);
+
+        var agentic = payload!.CompetitiveMatrix.First(r => r.Feature.Contains("Agentic plugins"));
+        Assert.Equal("planned", agentic.Auricrux);
+        Assert.Equal("yes", agentic.Peers["ChatGPT"]);
+
+        var fineTune = payload.CompetitiveMatrix.First(r => r.Feature.Contains("fine-tuned weights"));
+        Assert.Equal("blocked", fineTune.Auricrux);
+        Assert.Equal("no", fineTune.Peers["Claude"]);
     }
 
     [Fact]
@@ -59,7 +81,7 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         var response = await _client.GetAsync("/api/health");
         var payload = await response.Content.ReadFromJsonAsync<HealthPayload>();
         Assert.NotNull(payload);
-        Assert.True(payload!.CorpusEntries >= 55);
+        Assert.True(payload!.CorpusEntries >= 75);
     }
 
     private sealed class HealthPayload
@@ -73,8 +95,23 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         public int CorpusEntries { get; set; }
         public List<string> Competitors { get; set; } = [];
         public List<FeaturePayload> Features { get; set; } = [];
+        public List<MatrixRowPayload> CompetitiveMatrix { get; set; } = [];
+        public CorpusStatsPayload CorpusStats { get; set; } = new();
         public MoatPayload ConstructionMoat { get; set; } = new();
         public ParityPayload ParityScore { get; set; } = new();
+    }
+
+    private sealed class MatrixRowPayload
+    {
+        public string Feature { get; set; } = string.Empty;
+        public string Auricrux { get; set; } = string.Empty;
+        public Dictionary<string, string> Peers { get; set; } = [];
+    }
+
+    private sealed class CorpusStatsPayload
+    {
+        public int TotalEntries { get; set; }
+        public Dictionary<string, int> Categories { get; set; } = [];
     }
 
     private sealed class FeaturePayload
@@ -91,5 +128,6 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
     private sealed class ParityPayload
     {
         public string OverallAssessment { get; set; } = string.Empty;
+        public int MatrixRows { get; set; }
     }
 }
