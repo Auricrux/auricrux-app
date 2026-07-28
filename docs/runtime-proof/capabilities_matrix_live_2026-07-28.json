@@ -1,0 +1,18 @@
+﻿{
+    "proofId":  "capabilities_matrix_live_2026-07-28-next-pass",
+    "capturedAtUtc":  "2026-07-28T15:20:09.0938521Z",
+    "baseUrl":  "https://fca-auricrux-api.azurewebsites.net",
+    "corpusEntries":  80,
+    "shippedCore":  14,
+    "matrixRows":  17,
+    "overallAssessment":  "PARTIAL — core chat/search/thinking/voice/workspace/media/auth/freemium/construction corpus are real; agentic tools, vision, web browse, and promoted fine-tune weights remain gaps vs. major players.",
+    "constructionMoat":  {
+                             "specialistModel":  "auricrux-fca",
+                             "corpusGroundedSearch":  true,
+                             "evalSuite":  "construction_god_suite_v1",
+                             "evalSuiteLastResult":  "30/30 (100%)",
+                             "promotedFineTuneLive":  false,
+                             "notes":  "Runtime serves auricrux-fca Ollama alias with construction system prompt; checkpoint-70000 fine-tune not yet exported."
+                         },
+    "smoke":  "6/6 PASS after corpus-80 redeploy"
+}
