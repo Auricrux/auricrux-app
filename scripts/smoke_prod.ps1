@@ -62,7 +62,7 @@ Invoke-SmokeCheck "GET /api/models" {
 }
 
 Invoke-SmokeCheck "POST /api/chat (real construction query)" {
-    $body = @{ query = "What is a sill plate?"; thinkingMode = "Quick"; searchScope = "Internal" } | ConvertTo-Json
+    $body = '{"query":"What is a sill plate?","thinkingMode":0,"searchScope":0}'
     $r = Invoke-RestMethod -Uri "$baseUrl/api/chat" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 120
     if (-not $r.content -or $r.content.Length -lt 10) { throw "Chat content missing or too short" }
     "contentLength=$($r.content.Length)"
