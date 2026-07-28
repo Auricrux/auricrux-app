@@ -32,7 +32,11 @@ public class AuricruxApiClient
     /// <summary>
     /// Send a chat query and get a response from Auricrux backend
     /// </summary>
-    public async Task<ChatResponse?> SendChatAsync(ChatRequest request, string? model = null, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse?> SendChatAsync(
+        ChatRequest request,
+        string? model = null,
+        string? accountEmail = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -46,7 +50,16 @@ public class AuricruxApiClient
                 ? "api/chat"
                 : $"api/chat?model={Uri.EscapeDataString(model.Trim())}";
 
-            var response = await _httpClient.PostAsJsonAsync(path, request, options, cancellationToken);
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, path)
+            {
+                Content = JsonContent.Create(request, options: options)
+            };
+            if (!string.IsNullOrWhiteSpace(accountEmail))
+            {
+                httpRequest.Headers.TryAddWithoutValidation("X-Auricrux-Email", accountEmail.Trim());
+            }
+
+            var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -176,6 +189,24 @@ public class AuricruxApiClient
         catch (Exception ex)
         {
             _logger.LogError($"Failed to register account: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<FreemiumAccount?> GetAccountAsync(string email, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync(
+                $"api/account/{Uri.EscapeDataString(email.Trim())}",
+                cancellationToken);
+            return response.IsSuccessStatusCode
+                ? await response.Content.ReadFromJsonAsync<FreemiumAccount>(CreateJsonOptions(), cancellationToken)
+                : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to get account: {ex.Message}");
             return null;
         }
     }
@@ -455,6 +486,7 @@ public class AuricruxService
         ThinkingMode thinkingMode = ThinkingMode.Auto,
         SearchScope searchScope = SearchScope.Both,
         string? model = null,
+        string? accountEmail = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -474,7 +506,7 @@ public class AuricruxService
                     .ToList()
             };
 
-            var response = await _apiClient.SendChatAsync(chatRequest, model, cancellationToken);
+            var response = await _apiClient.SendChatAsync(chatRequest, model, accountEmail, cancellationToken);
 
             if (response == null)
             {

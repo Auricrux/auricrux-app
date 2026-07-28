@@ -396,42 +396,16 @@
             var query = UserInput;
             UserInput = string.Empty;
             await EnsureAccount();
-            var (account, limitReached, consumeError) = await ApiClient.ConsumeAsync(AccountEmail.Trim());
-            if (limitReached)
-            {
-                StatusMessage = "Daily freemium limit reached — upgrade to Pro";
-                Messages.Add(new ChatMessageViewModel
-                {
-                    Role = "assistant",
-                    Content = "Freemium daily limit reached. Upgrade to Pro for higher capacity and multi-model access.",
-                    IsUser = false,
-                    Timestamp = DateTime.Now
-                });
-                return;
-            }
-
-            if (account is null)
-            {
-                StatusMessage = consumeError ?? "Quota check failed";
-                return;
-            }
-
-            Account = account;
-            if (string.Equals(Account.Plan, "free", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(SelectedModel, "llama3.2", StringComparison.OrdinalIgnoreCase))
-            {
-                SelectedModel = "llama3.2";
-            }
-
             Messages.Add(new ChatMessageViewModel { Role = "user", Content = query, IsUser = true, Timestamp = DateTime.Now });
             await ApiClient.AppendMemoryAsync(AuricruxService.SessionId, "user", query, MemoryBackend);
             await InvokeAsync(StateHasChanged);
 
             var (response, interaction) = await AuricruxService.ProcessQueryAsync(
-                query, SelectedThinkingMode, SelectedSearchScope, SelectedModel);
+                query, SelectedThinkingMode, SelectedSearchScope, SelectedModel, AccountEmail.Trim());
 
             if (response != null)
             {
+                Account = await ApiClient.GetAccountAsync(AccountEmail.Trim()) ?? Account;
                 Messages.Add(new ChatMessageViewModel
                 {
                     Role = "assistant",

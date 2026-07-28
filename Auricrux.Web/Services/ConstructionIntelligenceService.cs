@@ -31,6 +31,8 @@ public sealed class ConstructionIntelligenceService
         _corpus = LoadCorpus(env.ContentRootPath);
     }
 
+    public int CorpusEntryCount => _corpus.Count;
+
     public IReadOnlyList<string> AvailableModels =>
     [
         _config["Auricrux:PrimaryModel"] ?? "auricrux",

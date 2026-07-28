@@ -289,40 +289,22 @@ public class MainPageViewModel : INotifyPropertyChanged
 			});
 
 			await _apiClient.RegisterAccountAsync(AccountEmail);
-			var (consumeAccount, limitReached, consumeError) = await _apiClient.ConsumeAsync(AccountEmail);
-			if (limitReached)
-			{
-				StatusMessage = "Freemium daily limit reached — upgrade required";
-				Messages.Add(new ChatMessageViewModel
-				{
-					Role = "assistant",
-					Content = "You've hit today's freemium query limit. Upgrade to Pro for higher daily capacity.",
-					IsUser = false,
-					Timestamp = DateTime.Now
-				});
-				return;
-			}
-
-			if (consumeAccount is null)
-			{
-				StatusMessage = consumeError ?? "Quota check failed";
-				return;
-			}
-
-			QuotaLabel = $"{consumeAccount.Plan}: {consumeAccount.QueriesUsedToday}/{consumeAccount.DailyQueryLimit}";
-
-			var model = string.Equals(consumeAccount.Plan, "free", StringComparison.OrdinalIgnoreCase)
-				? "llama3.2"
-				: SelectedModel;
 
 			var (response, interaction) = await _auricruxService.ProcessQueryAsync(
 				query,
 				SelectedThinkingMode,
 				SelectedSearchScope,
-				model);
+				SelectedModel,
+				AccountEmail);
 
 			if (response != null)
 			{
+				var account = await _apiClient.GetAccountAsync(AccountEmail);
+				if (account is not null)
+				{
+					QuotaLabel = $"{account.Plan}: {account.QueriesUsedToday}/{account.DailyQueryLimit}";
+				}
+
 				_lastAnswer = response.Content;
 				Messages.Add(new ChatMessageViewModel
 				{

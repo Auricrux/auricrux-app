@@ -1,5 +1,4 @@
-using System.Collections.Concurrent;
-using Auricrux.Shared.Models;
+using Auricrux.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auricrux.Web.Controllers;
@@ -9,10 +8,8 @@ namespace Auricrux.Web.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/account")]
-public sealed class AccountController : ControllerBase
+public sealed class AccountController(FreemiumAccountStore accounts) : ControllerBase
 {
-    private static readonly ConcurrentDictionary<string, AuricruxAccount> Accounts = new(StringComparer.OrdinalIgnoreCase);
-
     [HttpGet("plans")]
     public ActionResult<object> Plans() => Ok(new
     {
@@ -33,65 +30,52 @@ public sealed class AccountController : ControllerBase
             return BadRequest(new { error = "Email is required." });
         }
 
-        var account = Accounts.GetOrAdd(email, _ => new AuricruxAccount
-        {
-            Email = email,
-            Plan = "free",
-            DailyQueryLimit = 25,
-            QueriesUsedToday = 0,
-            DayKey = DateOnly.FromDateTime(DateTime.UtcNow)
-        });
-
-        return Ok(account);
+        return Ok(accounts.Register(email));
     }
 
     [HttpGet("{email}")]
     public ActionResult<AuricruxAccount> Get(string email)
     {
-        if (!Accounts.TryGetValue(email.Trim().ToLowerInvariant(), out var account))
+        if (!accounts.TryGet(email, out var account) || account is null)
         {
             return NotFound();
         }
 
-        account.RolloverDay();
         return Ok(account);
     }
 
     [HttpPost("{email}/upgrade")]
     public ActionResult<AuricruxAccount> Upgrade(string email, [FromBody] UpgradeRequest request)
     {
-        var key = email.Trim().ToLowerInvariant();
-        if (!Accounts.TryGetValue(key, out var account))
+        if (!accounts.TryGet(email, out var account) || account is null)
         {
             return NotFound();
         }
 
-        account.Plan = request.Plan?.Trim().ToLowerInvariant() switch
+        if (!accounts.Upgrade(email, request.Plan ?? "free"))
         {
-            "pro" => "pro",
-            "pro-plus" => "pro-plus",
-            _ => "free"
-        };
-        account.DailyQueryLimit = account.Plan switch
-        {
-            "pro" => 500,
-            "pro-plus" => 5000,
-            _ => 25
-        };
+            return NotFound();
+        }
+
+        accounts.TryGet(email, out account);
         return Ok(account);
     }
 
     [HttpPost("{email}/consume")]
     public ActionResult<object> Consume(string email)
     {
-        var key = email.Trim().ToLowerInvariant();
-        if (!Accounts.TryGetValue(key, out var account))
+        if (!accounts.TryGet(email, out var account) || account is null)
         {
             return NotFound();
         }
 
-        account.RolloverDay();
-        if (account.QueriesUsedToday >= account.DailyQueryLimit)
+        var (ok, limitReached) = accounts.TryConsume(email);
+        if (!ok)
+        {
+            return NotFound();
+        }
+
+        if (limitReached)
         {
             return StatusCode(StatusCodes.Status402PaymentRequired, new
             {
@@ -101,7 +85,7 @@ public sealed class AccountController : ControllerBase
             });
         }
 
-        account.QueriesUsedToday += 1;
+        accounts.TryGet(email, out account);
         return Ok(account);
     }
 }
