@@ -393,6 +393,33 @@ public sealed class AuricruxApiIntegrationTests : IClassFixture<WebApplicationFa
         Assert.Contains("sill plate", body, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task Memory_export_returns_markdown_transcript()
+    {
+        var sessionId = $"export-{Guid.NewGuid():N}";
+        await _client.PostAsJsonAsync($"/api/memory/{sessionId}", new
+        {
+            role = "user",
+            content = "Explain retainage on a pay app.",
+            backend = "sqlite"
+        });
+        await _client.PostAsJsonAsync($"/api/memory/{sessionId}", new
+        {
+            role = "assistant",
+            content = "Retainage is typically 5-10% held until substantial completion.",
+            backend = "sqlite"
+        });
+
+        var export = await _client.GetAsync($"/api/memory/{sessionId}/export?backend=sqlite&format=markdown");
+        Assert.Equal(HttpStatusCode.OK, export.StatusCode);
+        Assert.Equal("text/markdown", export.Content.Headers.ContentType?.MediaType);
+        var body = await export.Content.ReadAsStringAsync();
+        Assert.Contains("# Auricrux conversation", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("retainage", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("## User", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("## Assistant", body, StringComparison.OrdinalIgnoreCase);
+    }
+
     // ---------- Workspace files ----------
 
     [Fact]

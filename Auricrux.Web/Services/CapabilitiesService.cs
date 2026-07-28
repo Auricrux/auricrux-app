@@ -33,6 +33,7 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                 Feature("Speech-to-text", "shipped", "Browser Web Speech API + MAUI native STT"),
                 Feature("Text-to-speech", "shipped", "speechSynthesis + MAUI TTS"),
                 Feature("Conversation memory", "shipped", "Session, JSONL, and SQLite backends"),
+                Feature("Conversation export (Markdown/JSON)", "shipped", "GET /api/memory/{sessionId}/export for shareable transcripts"),
                 Feature("Document workspace", "shipped", "Upload, list, download, folder CRUD"),
                 Feature("Image generation", "shipped", "Stable Diffusion optional + offline SVG renderer"),
                 Feature("Video generation", "shipped", "Storyboard frames + ffmpeg stitch when available"),
@@ -49,7 +50,7 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
             Competitors = ["ChatGPT", "Claude", "Gemini", "Copilot", "Grok"],
             ParityScore = new ParityScoreSummary
             {
-                ShippedCore = 13,
+                ShippedCore = 14,
                 Planned = 4,
                 Blocked = 1,
                 OverallAssessment = "PARTIAL — core chat/search/thinking/voice/workspace/media/auth/freemium are real; agentic tools, vision, web browse, and promoted fine-tune weights remain gaps vs. major players."

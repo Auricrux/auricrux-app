@@ -119,6 +119,38 @@ public sealed class ConversationMemoryService
         }
     }
 
+    public string ToMarkdown(string sessionId, IReadOnlyList<MemoryTurn> turns)
+    {
+        var lines = new List<string>
+        {
+            $"# Auricrux conversation — `{sessionId}`",
+            "",
+            $"Exported: {DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ} UTC",
+            ""
+        };
+
+        if (turns.Count == 0)
+        {
+            lines.Add("_No turns recorded for this session._");
+            return string.Join(Environment.NewLine, lines);
+        }
+
+        foreach (var turn in turns)
+        {
+            var heading = turn.Role.Equals("assistant", StringComparison.OrdinalIgnoreCase)
+                ? "Assistant"
+                : turn.Role.Equals("user", StringComparison.OrdinalIgnoreCase)
+                    ? "User"
+                    : turn.Role;
+            lines.Add($"## {heading} ({turn.CreatedUtc:yyyy-MM-dd HH:mm:ss} UTC)");
+            lines.Add("");
+            lines.Add(turn.Content.Trim());
+            lines.Add("");
+        }
+
+        return string.Join(Environment.NewLine, lines);
+    }
+
     private void EnsureSqlite()
     {
         using var conn = new SqliteConnection($"Data Source={_sqlitePath}");

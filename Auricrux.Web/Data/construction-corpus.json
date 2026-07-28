@@ -358,5 +358,35 @@
     "scope": "public",
     "content": "Public works projects require Davis-Bacon or state prevailing wage rates by classification, with certified payroll (WH-347) submitted weekly. Misclassification of laborers vs. operators is a common audit finding — job descriptions must match actual tasks performed.",
     "tags": ["prevailing wage", "davis-bacon", "payroll", "public works"]
+  },
+  {
+    "title": "Retainage on Pay Applications (AIA G702/G703)",
+    "scope": "internal",
+    "content": "Retainage is a percentage (typically 5–10% on private work, up to 10% on many public jobs) withheld from each progress payment until substantial completion. On AIA G702/G703 pay apps, retainage is tracked on the Schedule of Values and released in two stages: partial release at substantial completion and final release after punch-list closeout, lien waivers, and owner acceptance. Never certify a pay app without verifying stored materials, lien waivers for prior months, and that billed percent complete matches field observation.",
+    "tags": ["retainage", "pay application", "aia g702", "g703", "billing", "sov"]
+  },
+  {
+    "title": "Schedule of Values (SOV) Setup and Front-Loading Risk",
+    "scope": "internal",
+    "content": "The SOV allocates the contract sum across line items for monthly billing. Front-loading (billing high early-value items like mobilization/site work disproportionately) triggers owner/GC scrutiny and can cause negative cash flow later. Balance SOV line weights to actual cost curves; tie each line to bid breakdown and update only via approved change orders.",
+    "tags": ["sov", "schedule of values", "billing", "cash flow", "estimating"]
+  },
+  {
+    "title": "Lien Waivers and Conditional vs. Unconditional",
+    "scope": "internal",
+    "content": "Conditional lien waivers take effect upon payment clearance; unconditional waivers are effective immediately upon signing and should only be exchanged after funds are verified in the bank. On multi-tier projects, collect waivers from subs and suppliers before releasing retainage. State statutes (e.g., Texas Property Code Ch. 53, California Civil Code §8132) govern form and timing — use state-specific templates, not generic one-liners.",
+    "tags": ["lien waiver", "payment", "subcontractor", "legal", "retainage"]
+  },
+  {
+    "title": "Pay Application Certification and Stored Materials",
+    "scope": "internal",
+    "content": "The architect/owner's rep certifies percent complete per SOV line — not the contractor's self-reported invoice alone. Stored materials require off-site storage insurance, photos, and sometimes a dual-payee check to the supplier. Retainage applies to stored materials unless the contract explicitly excludes them. Reject certification if prior waivers, insurance certs, or safety incidents are open.",
+    "tags": ["pay app", "certification", "stored materials", "retainage", "billing"]
+  },
+  {
+    "title": "Final Payment and Closeout Documentation",
+    "scope": "internal",
+    "content": "Final payment release requires: punch-list zero or agreed completion date, as-built drawings, O&M manuals, warranties, commissioning reports, affidavit of payment to subs, and final unconditional lien waivers. Retainage release is often the last lever — do not sign final waiver until all disputed change orders and deductive items are resolved in writing.",
+    "tags": ["closeout", "final payment", "retainage", "lien waiver", "punch list"]
   }
 ]

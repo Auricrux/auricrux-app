@@ -1,0 +1,38 @@
+{
+  "proofId": "live_ollama_auricrux_chat_2026-07-28",
+  "capturedAtUtc": "2026-07-28T07:11:00Z",
+  "claims": ["AUX-007", "AUX-010", "AUX-030"],
+  "host": "https://fca-auricrux-api.azurewebsites.net",
+  "purpose": "Live Azure App Service proof that Auricrux serves real Ollama-backed chat (not mock shell), with construction-domain retainage answer.",
+  "health": {
+    "route": "GET /api/health",
+    "status": 200,
+    "statusText": "healthy",
+    "runtimeMode": "ollama-live",
+    "ollamaReachable": true,
+    "primaryModelReady": true,
+    "primaryModel": "auricrux-fca",
+    "corpusEntries": 65,
+    "models": ["auricrux-fca", "llama3.2", "mistral"]
+  },
+  "chat": {
+    "route": "POST /api/chat",
+    "request": {
+      "query": "What is retainage on a construction pay application and how is it typically released?",
+      "thinkingMode": 1,
+      "searchScope": 0
+    },
+    "status": 200,
+    "processingTimeMs": 40229,
+    "responseLengthChars": 1177,
+    "responsePreview": "Retainage on a construction pay application is typically 10% to 20%, depending on the project scope, contract type, and jurisdiction.\n\nIn the United States, the common practice for retainage is:\n- 10% for routine, standard work (e.g., framing, electrical rough-in)\n- 15% for more complex or high-risk work (e.g., structural steel, soil conditions)\n- 20% for high-profile or high-risk projects (e.g., bridge construction, hazardous materials)\n\nRetainage is usually held back from the initial payment and released at substantial completion or final acceptance, subject to punch-list closeout and lien waiver requirements.",
+    "domainSignal": "Answer references retainage percentages, pay application context, and release at substantial completion — not a generic LLM refusal."
+  },
+  "customDomain": {
+    "auricrux.futurecontractorsofamerica.com": {
+      "status": "404",
+      "note": "Porkbun DNS not pointed — AUX-020 stays PARTIAL"
+    }
+  },
+  "verdict": "PASS on azurewebsites.net live Ollama chat; custom domain still founder-gated."
+}

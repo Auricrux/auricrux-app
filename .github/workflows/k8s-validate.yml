@@ -48,21 +48,7 @@ jobs:
           kubectl create namespace auricrux-prod --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply --dry-run=server -f k8s-deployment.yaml
           # Ingress file includes cert-manager ClusterIssuer; kind has no cert-manager CRDs.
-          # Validate non-CRD ingress objects only (Service/Ingress/NodePort).
-          python3 - <<'PY'
-from pathlib import Path
-import re
-text = Path("k8s-ingress.yaml").read_text()
-docs = re.split(r"(?m)^---\s*$", text)
-keep = []
-for doc in docs:
-    if "kind: ClusterIssuer" in doc:
-        continue
-    if doc.strip():
-        keep.append(doc.strip())
-Path("/tmp/k8s-ingress-no-crd.yaml").write_text("\n---\n".join(keep) + "\n")
-print(f"kept {len(keep)} docs (ClusterIssuer stripped for kind)")
-PY
+          python3 scripts/k8s-strip-cluster-issuer-for-kind.py
           kubectl apply --dry-run=server -f /tmp/k8s-ingress-no-crd.yaml
           ./kind delete cluster --name auricrux-validate
           echo "- kind dry-run (server-side): **PASS** (ClusterIssuer skipped — requires cert-manager CRDs)" >> "$GITHUB_STEP_SUMMARY"

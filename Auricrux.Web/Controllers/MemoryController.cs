@@ -26,6 +26,35 @@ public sealed class MemoryController(ConversationMemoryService memory) : Control
         return Ok(new { sessionId, backend = backend.ToLowerInvariant(), turns });
     }
 
+    [HttpGet("{sessionId}/export")]
+    public async Task<IActionResult> Export(
+        string sessionId,
+        [FromQuery] string backend = "sqlite",
+        [FromQuery] string format = "markdown",
+        [FromQuery] int take = 200,
+        CancellationToken cancellationToken = default)
+    {
+        if (!TryParseBackend(backend, out var parsed))
+        {
+            return BadRequest(new { error = "backend must be session | file-jsonl | sqlite" });
+        }
+
+        var normalizedFormat = format.Trim().ToLowerInvariant();
+        if (normalizedFormat is not ("markdown" or "md" or "json"))
+        {
+            return BadRequest(new { error = "format must be markdown | json" });
+        }
+
+        var turns = await memory.ListAsync(sessionId, parsed, take, cancellationToken);
+        if (normalizedFormat == "json")
+        {
+            return Ok(new { sessionId, backend = backend.ToLowerInvariant(), turns });
+        }
+
+        var markdown = memory.ToMarkdown(sessionId, turns);
+        return Content(markdown, "text/markdown; charset=utf-8");
+    }
+
     [HttpPost("{sessionId}")]
     public async Task<IActionResult> Append(
         string sessionId,
