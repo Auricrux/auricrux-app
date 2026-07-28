@@ -17,7 +17,7 @@
   ./scripts/smoke_prod.ps1 -BaseUrl "https://auricrux.futurecontractorsofamerica.com"
 #>
 param(
-    [string]$BaseUrl = "https://auricrux.futurecontractorsofamerica.com"
+    [string]$BaseUrl = "https://fca-auricrux-api.azurewebsites.net"
 )
 
 $ErrorActionPreference = "Stop"
@@ -69,9 +69,11 @@ Invoke-SmokeCheck "POST /api/chat (real construction query)" {
 }
 
 Invoke-SmokeCheck "POST /api/thinking (non-mock reasoning)" {
-    $body = @{ query = "How do I sequence a concrete pour after formwork?"; thinkingMode = "Deep" } | ConvertTo-Json
-    $r = Invoke-RestMethod -Uri "$baseUrl/api/thinking" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 120
+    # ThinkingRequest binds `Mode` (enum), not chat's thinkingMode — Deep can overload Ollama/App Service (503).
+    $body = '{"query":"How do I sequence a concrete pour after formwork?","mode":0}'
+    $r = Invoke-RestMethod -Uri "$baseUrl/api/thinking" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 180
     if (-not $r.result) { throw "No result field in thinking response" }
+    if ($r.result -match '(?i)mock|placeholder|lorem ipsum') { throw "Thinking result looks mocked" }
     "resultLength=$($r.result.Length)"
 }
 

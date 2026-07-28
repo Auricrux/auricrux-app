@@ -1,0 +1,12 @@
+{
+  "proofId": "auricrux-acr-push-2026-07-28",
+  "capturedAtUtc": "2026-07-28T14:54:30Z",
+  "claim": "AUX-024",
+  "registry": "auricruxacr.azurecr.io",
+  "repository": "auricrux-web",
+  "tags": ["latest", "pass-202607281047"],
+  "digest": "sha256:a58b301bc007291282a630ffcb348a4f270137980e78888faf8c9db13bc5722c",
+  "method": "az acr build -r auricruxacr -t auricrux-web:latest -f Dockerfile .",
+  "verdict": "IMAGE_BUILT_AND_PUSHED_TO_ACR",
+  "notes": "No local Docker Engine required — Azure Container Registry cloud build. Image is pullable with ACR credentials: docker pull auricruxacr.azurecr.io/auricrux-web:latest"
+}

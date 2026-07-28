@@ -21,4 +21,11 @@
     <ProjectReference Include="..\Auricrux.Shared\Auricrux.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Data\construction-corpus.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

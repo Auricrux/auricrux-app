@@ -19,8 +19,14 @@ dotnet publish (Join-Path $root "Auricrux.Web\Auricrux.Web.csproj") -c $Configur
 
 Write-Host "Creating deployment zip..." -ForegroundColor Cyan
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath
-
+Push-Location $publishDir
+# tar produces forward-slash zip entries; Compress-Archive can leave stale/odd paths on Windows.
+tar -a -cf $zipPath *
+Pop-Location
+# Ensure construction corpus is present in the published output (80 grounded entries).
+$corpusPub = Join-Path $publishDir "Data\construction-corpus.json"
+$corpusSrc = Join-Path $root "Auricrux.Web\Data\construction-corpus.json"
+if (Test-Path $corpusSrc) { Copy-Item -Force $corpusSrc $corpusPub }
 Write-Host "Deploying to $WebAppName..." -ForegroundColor Cyan
 az webapp deploy --resource-group $ResourceGroup --name $WebAppName --src-path $zipPath --type zip
 
