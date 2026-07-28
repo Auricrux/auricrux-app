@@ -5,6 +5,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
+COPY ["Directory.Build.props", "global.json", "./"]
 COPY ["Auricrux.Web/Auricrux.Web.csproj", "Auricrux.Web/"]
 COPY ["Auricrux.Shared/Auricrux.Shared.csproj", "Auricrux.Shared/"]
 RUN dotnet restore "Auricrux.Web/Auricrux.Web.csproj"
