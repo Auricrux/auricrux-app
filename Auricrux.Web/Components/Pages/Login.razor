@@ -1,0 +1,60 @@
+@page "/login"
+@using System.Net.Http.Json
+@inject NavigationManager Nav
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="d-flex flex-column align-items-center justify-content-center vh-100" style="background:#0f1c18;color:#f4f1ea;">
+    <div class="card p-4" style="max-width:28rem;background:#1a2e28;border:1px solid #c4a35a;">
+        <h2 style="font-family:Georgia,serif;">Auricrux Sign In</h2>
+        @if (_loading)
+        {
+            <p>Checking authentication configuration…</p>
+        }
+        else if (!_authEnabled)
+        {
+            <p class="opacity-75">Authentication is disabled in this environment (anonymous dev mode). No sign-in required.</p>
+            <a class="btn btn-outline-light" href="/">Continue to Auricrux</a>
+        }
+        else if (!_oidcConfigured)
+        {
+            <p class="opacity-75">Auth is enabled but no OIDC client is configured (Auth:ClientId). Set Auth:ClientId/ClientSecret to enable interactive sign-in.</p>
+        }
+        else
+        {
+            <p class="opacity-75">Sign in with your organization identity provider to continue.</p>
+            <a class="btn" style="background:#c4a35a;color:#111;" href="/account/login?returnUrl=/">Sign in with SSO</a>
+        }
+    </div>
+</div>
+
+@code {
+    private bool _loading = true;
+    private bool _authEnabled;
+    private bool _oidcConfigured;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(Nav.BaseUri);
+            var status = await client.GetFromJsonAsync<AuthStatus>("account/auth-status");
+            _authEnabled = status?.AuthEnabled ?? false;
+            _oidcConfigured = status?.OidcConfigured ?? false;
+        }
+        catch
+        {
+            _authEnabled = false;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed class AuthStatus
+    {
+        public bool AuthEnabled { get; set; }
+        public bool OidcConfigured { get; set; }
+    }
+}

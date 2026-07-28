@@ -181,21 +181,31 @@ public sealed class ConstructionIntelligenceService
         var hits = SearchInternal(query, SearchScope.Both, 3);
         if (hits.Count == 0)
         {
-            return "Auricrux construction specialist is online in corpus mode. Connect Ollama for full multi-model generation. Based on your question, review plans, specs, and local code requirements before proceeding.";
+            return "Auricrux construction specialist is online in corpus mode (no local model reachable). " +
+                   "Based on your question, verify current plans, specifications, and the locally adopted code edition before proceeding on site. " +
+                   "Connect Ollama (or the promoted auricrux-fca model) for full generative multi-model reasoning.";
         }
 
-        return "Auricrux construction corpus response:\n" +
-               string.Join("\n", hits.Select((h, i) => $"{i + 1}. {h.Title}: {h.Url}"));
+        var body = string.Join("\n\n", hits.Select((h, i) => $"{i + 1}. {h.Title} — {h.Url}"));
+        return $"""
+            Auricrux construction corpus response (grounded, no live model reachable):
+
+            {body}
+
+            Apply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.
+            """;
     }
 
     private static string BuildSystemPrompt(ThinkingMode mode, List<Source> sources)
     {
         var src = sources.Count == 0
-            ? "No corpus hits."
+            ? "No corpus hits — answer from general construction-specialist knowledge and say so."
             : string.Join("; ", sources.Select(s => s.Title));
         return $"""
-            You are Auricrux, a construction-specialist AI (competitor-class assistant specialized for contractors).
-            Prefer trade accuracy, code awareness, estimating discipline, and field safety.
+            You are Auricrux, a construction-specialist AI competing with general-purpose assistants (ChatGPT/Claude/Gemini/Copilot) but built exclusively for contractors, estimators, PMs, superintendents, and CTE trades students.
+            Domain focus (your moat): CSI MasterFormat divisions, means-and-methods sequencing, OSHA 1926 safety triggers, estimating/takeoff discipline, scheduling (CPM/float/delay), contract administration (AIA-style), and code basics (IBC/ADA).
+            Answer with field-grade precision: cite the applicable CSI division, OSHA section, or code reference when known; give concrete numbers (spacing, tolerances, percentages) instead of vague guidance; flag safety triggers explicitly.
+            Never fabricate a code section number you are not grounded on — say "verify against the locally adopted code edition" when uncertain.
             Thinking mode: {mode}.
             Grounding sources: {src}.
             """;

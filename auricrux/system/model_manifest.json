@@ -45,5 +45,23 @@
     "productionFinalLabel": "awaiting-safe-export-of-checkpoint-70000-plus-eval",
     "tokenFactory": "do-not-tamper"
   },
-  "recordedAtUtc": "2026-07-26T20:10:00Z"
+  "recordedAtUtc": "2026-07-26T20:10:00Z",
+  "auricruxFcaAlias": {
+    "modelId": "auricrux-fca",
+    "status": "verified-live-interim-alias",
+    "kind": "system-prompt-alias-over-base",
+    "baseModel": "llama3.2:3b",
+    "note": "Named, pullable Ollama model that Auricrux.Web serves by default (Auricrux:PrimaryModel). It is NOT the fine-tuned true-god checkpoint-70000 adapter — it is llama3.2:3b with the Auricrux construction system prompt baked in via Modelfile. It exists so the product always answers as a branded specialist instead of a bare llama3.2 label, while the true fine-tuned export is still pending (see trueGodRun/migrationPolicy above).",
+    "modelfilePath": "auricrux/system/Modelfile.auricrux-fca",
+    "pullInstructions": [
+      "ollama pull llama3.2:3b",
+      "ollama create auricrux-fca -f auricrux/system/Modelfile.auricrux-fca",
+      "ollama run auricrux-fca \"What is a sill plate?\""
+    ],
+    "verifiedLocallyAtUtc": "2026-07-28T02:35:00Z",
+    "verifiedSampleQuery": "What is a sill plate?",
+    "verifiedResponseLatencyMs": 49337,
+    "evalSuite": "eval/construction_god_suite_v1.json",
+    "evalSuiteLastRunResult": "30/30 cases passed (100%) via Auricrux.Eval against the live ConstructionIntelligenceService corpus + graceful-fallback runtime — see eval/reports/construction_god_suite_v1_report.md"
+  }
 }

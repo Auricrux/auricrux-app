@@ -4,7 +4,10 @@ using Auricrux.Shared.Services;
 using Auricrux.Web.Components;
 using Auricrux.Web.Middleware;
 using Auricrux.Web.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -72,11 +75,22 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+// Default-deny by design: Auth:Enabled must be explicitly true AND an Authority configured
+// before any authentication/authorization middleware is registered. When enabled, API clients
+// (mobile/curl) authenticate with a JWT bearer token; browsers get an interactive OIDC login
+// (Authorization Code flow) backed by a cookie session, wired via Auth:ClientId below.
 var authEnabled = builder.Configuration.GetValue("Auth:Enabled", false);
 var authAuthority = builder.Configuration["Auth:Authority"];
+var oidcClientId = builder.Configuration["Auth:ClientId"];
+var oidcConfigured = authEnabled && !string.IsNullOrWhiteSpace(authAuthority) && !string.IsNullOrWhiteSpace(oidcClientId);
 if (authEnabled && !string.IsNullOrWhiteSpace(authAuthority))
 {
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    var authBuilder = builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        })
         .AddJwtBearer(options =>
         {
             options.Authority = authAuthority.TrimEnd('/');
@@ -86,7 +100,31 @@ if (authEnabled && !string.IsNullOrWhiteSpace(authAuthority))
                 ValidateAudience = !string.IsNullOrWhiteSpace(builder.Configuration["Auth:Audience"]),
                 ValidateIssuer = true
             };
+        })
+        .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+        {
+            options.LoginPath = "/login";
+            options.AccessDeniedPath = "/login";
         });
+
+    if (oidcConfigured)
+    {
+        authBuilder.AddOpenIdConnect("oidc", options =>
+        {
+            options.Authority = authAuthority.TrimEnd('/');
+            options.ClientId = oidcClientId;
+            options.ClientSecret = builder.Configuration["Auth:ClientSecret"];
+            options.ResponseType = "code";
+            options.SaveTokens = true;
+            options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.GetClaimsFromUserInfoEndpoint = true;
+            options.Scope.Clear();
+            options.Scope.Add("openid");
+            options.Scope.Add("profile");
+            options.Scope.Add("email");
+        });
+    }
+
     builder.Services.AddAuthorization();
 }
 
@@ -119,7 +157,39 @@ if (authEnabled && !string.IsNullOrWhiteSpace(authAuthority))
 {
     app.UseAuthentication();
     app.UseAuthorization();
+
+    if (oidcConfigured)
+    {
+        app.MapGet("/account/login", (string? returnUrl) =>
+            Results.Challenge(
+                new AuthenticationProperties { RedirectUri = string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl },
+                ["oidc"]));
+
+        app.MapPost("/account/logout", (HttpContext ctx) =>
+            Results.SignOut(
+                new AuthenticationProperties { RedirectUri = "/" },
+                [CookieAuthenticationDefaults.AuthenticationScheme, "oidc"]));
+    }
 }
+
+// Reads Auth:* live from IConfiguration (not the builder-time-captured locals above) so this
+// endpoint — and integration tests that layer configuration on after the host is built — always
+// see the actual effective configuration.
+app.MapGet("/account/auth-status", (IConfiguration liveConfig) =>
+{
+    var liveAuthEnabled = liveConfig.GetValue("Auth:Enabled", false);
+    var liveAuthority = liveConfig["Auth:Authority"];
+    var liveClientId = liveConfig["Auth:ClientId"];
+    var liveOidcConfigured = liveAuthEnabled
+        && !string.IsNullOrWhiteSpace(liveAuthority)
+        && !string.IsNullOrWhiteSpace(liveClientId);
+
+    return Results.Ok(new
+    {
+        authEnabled = liveAuthEnabled,
+        oidcConfigured = liveOidcConfigured
+    });
+});
 
 app.MapStaticAssets();
 app.MapControllers().RequireRateLimiting("api");

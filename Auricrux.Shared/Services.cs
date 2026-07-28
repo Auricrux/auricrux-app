@@ -30,6 +30,18 @@ public class AuricruxApiClient
     }
 
     /// <summary>
+    /// Attaches (or clears, when null/empty) a bearer token to every subsequent request.
+    /// Used by the mobile OIDC token storage path (AUX-021) once a client has signed in
+    /// and a token is loaded from secure storage.
+    /// </summary>
+    public void SetBearerToken(string? accessToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = string.IsNullOrWhiteSpace(accessToken)
+            ? null
+            : new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+    }
+
+    /// <summary>
     /// Send a chat query and get a response from Auricrux backend
     /// </summary>
     public async Task<ChatResponse?> SendChatAsync(

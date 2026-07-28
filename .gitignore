@@ -74,3 +74,11 @@ node_modules/
 *.pdb
 *.ilk
 *.res
+
+# Auricrux runtime data (SQLite/JSONL/media generated at run/test time)
+Auricrux.Web/Data/accounts/
+Auricrux.Web/Data/memory/
+Auricrux.Web/Data/media/
+Auricrux.Web/Data/workspace/
+Auricrux.Tests/Data/
+eval/reports/

@@ -2,61 +2,271 @@
   {
     "title": "CSI Division 03 Concrete",
     "scope": "internal",
-    "content": "Concrete placement, curing, and formwork sequencing for commercial work. Verify mix design, cold-weather protections, and strength tests before stripping forms.",
-    "tags": ["concrete", "formwork", "csi", "testing"]
+    "content": "Concrete placement, curing, and formwork sequencing for commercial work. Verify mix design, cold-weather protections, and strength tests before stripping forms. Break cylinders at 7 and 28 days; do not strip vertical forms before initial set or slabs before 500-750 psi per ACI 347 guidance.",
+    "tags": ["concrete", "formwork", "csi", "testing", "aci"]
+  },
+  {
+    "title": "CSI Division 04 Masonry",
+    "scope": "internal",
+    "content": "CMU and brick veneer coordination: mortar joint tooling, control joint spacing (typically 20-25 ft or per manufacturer), weep holes at 24-32 in on center, and flashing above openings to shed water out of the cavity.",
+    "tags": ["masonry", "cmu", "brick", "flashing", "csi"]
+  },
+  {
+    "title": "CSI Division 05 Metals / Structural Steel",
+    "scope": "internal",
+    "content": "Structural steel erection sequencing: verify anchor bolt survey before steel delivery, torque bolts per RCSC specification (snug-tight then turn-of-nut or DTI washers for slip-critical), and confirm AISC-certified fabricator shop drawings before fabrication release.",
+    "tags": ["steel", "structural", "erection", "aisc", "csi"]
+  },
+  {
+    "title": "CSI Division 06 Wood, Plastics, Composites / Rough Framing",
+    "scope": "internal",
+    "content": "Rough framing sequence: sill plate with sill sealer and anchor bolts at 6 ft o.c. max, floor joists per span tables, wall studs at 16 in o.c. (24 in for advanced framing), and roof truss bracing per manufacturer's truss placement diagram before sheathing.",
+    "tags": ["framing", "wood", "sill plate", "trusses", "csi"]
+  },
+  {
+    "title": "CSI Division 07 Thermal and Moisture Protection",
+    "scope": "internal",
+    "content": "Building envelope continuity: weather-resistive barrier lapped shingle-style over flashing, self-adhered membrane at penetrations and rough openings, and continuous insulation to reduce thermal bridging per IECC climate zone requirements.",
+    "tags": ["envelope", "waterproofing", "insulation", "wrb", "csi"]
+  },
+  {
+    "title": "CSI Division 07 Roofing Systems",
+    "scope": "internal",
+    "content": "Low-slope roofing (TPO/EPDM) requires tapered insulation for positive drainage, hot-air or adhesive-welded seams inspected by a probe test, and perimeter/corner enhanced fastening per wind uplift design. Steep-slope shingle roofs need ice-and-water shield at eaves/valleys and proper nailing pattern per manufacturer wind rating.",
+    "tags": ["roofing", "tpo", "shingles", "waterproofing", "wind uplift"]
+  },
+  {
+    "title": "CSI Division 08 Openings / Windows and Doors",
+    "scope": "internal",
+    "content": "Window and door rough opening tolerances: typically 1/2 in larger than unit width/height for shim space, flashing integrated with WRB using a sill pan and head flashing, and fire-rated door assemblies must retain listed hardware and self-closing devices.",
+    "tags": ["windows", "doors", "flashing", "fire rating"]
   },
   {
     "title": "CSI Division 09 Finishes",
     "scope": "internal",
-    "content": "Drywall, flooring, and paint coordination with punch and closeout. Protect finished work during remaining trades.",
-    "tags": ["finishes", "punch", "closeout"]
+    "content": "Drywall, flooring, and paint coordination with punch and closeout. Tape and finish to Level 4 or 5 per specification before priming; protect finished floors and casework during remaining trades and MEP commissioning.",
+    "tags": ["finishes", "punch", "closeout", "drywall"]
   },
   {
-    "title": "AIA A201 General Conditions",
-    "scope": "public",
-    "content": "Contractual roles for owner, architect, and contractor. Change orders require written authorization and time/price impact documentation.",
-    "tags": ["aia", "contract", "change"]
-  },
-  {
-    "title": "OSHA Fall Protection",
-    "scope": "public",
-    "content": "Fall protection triggers and competent person duties on elevated work. Inspect harnesses and anchor points daily.",
-    "tags": ["osha", "safety", "fall"]
-  },
-  {
-    "title": "Bid Leveling Checklist",
+    "title": "CSI Division 09 Painting and Coatings",
     "scope": "internal",
-    "content": "Normalize alternates, allowances, unit prices, exclusions, and schedule assumptions before award recommendation.",
-    "tags": ["bid", "estimate", "award"]
+    "content": "Sequence painting after drywall finishing, HVAC balancing dust settles, and prior to flooring installation. Verify moisture content of substrates and manufacturer-required recoat windows; document VOC compliance for occupied buildings.",
+    "tags": ["paint", "coatings", "finishes", "voc"]
   },
   {
-    "title": "RFI Best Practices",
+    "title": "CSI Division 21 Fire Suppression",
     "scope": "internal",
-    "content": "Write RFIs with drawing references, conflict description, schedule impact, and a proposed solution for faster architect response.",
-    "tags": ["rfi", "design", "coordination"]
+    "content": "Sprinkler system coordination: hydraulic calculations sized to hazard classification (light/ordinary/extra), head spacing per NFPA 13, and fire pump/backflow testing before certificate of occupancy.",
+    "tags": ["fire suppression", "sprinkler", "nfpa", "mep"]
   },
   {
-    "title": "Pay Application SOV",
+    "title": "CSI Division 22 Plumbing Rough-In",
     "scope": "internal",
-    "content": "Align schedule of values to cost codes for AIA-style G702/G703 billing. Retainage and stored materials must match contract terms.",
-    "tags": ["billing", "payapp", "sov"]
+    "content": "Plumbing rough-in sequencing: DWV slope minimum 1/4 in per foot, vent stack sizing per fixture unit count, and pressure test supply lines before insulation/drywall cover. Coordinate sleeve locations with structural before concrete placement.",
+    "tags": ["plumbing", "dwv", "rough-in", "mep"]
+  },
+  {
+    "title": "CSI Division 23 HVAC",
+    "scope": "internal",
+    "content": "HVAC ductwork sizing follows Manual D/ACCA calculations; seal all joints per SMACNA leakage class, balance air per Manual J load, and commission economizer/BAS controls before TAB report sign-off.",
+    "tags": ["hvac", "ductwork", "smacna", "mep", "commissioning"]
+  },
+  {
+    "title": "CSI Division 26 Electrical Fundamentals",
+    "scope": "internal",
+    "content": "Electrical rough-in: panel schedule load calculations per NEC Article 220, conduit fill limited to 40% for 3+ conductors, and GFCI/AFCI protection required per NEC 210.8/210.12 in wet and habitable locations respectively.",
+    "tags": ["electrical", "nec", "panel", "conduit"]
   },
   {
     "title": "CTE Electrical Fundamentals",
     "scope": "internal",
-    "content": "Ohm's law, conduit fill awareness, and lockout/tagout fundamentals for CTE electrical pathways.",
-    "tags": ["cte", "electrical", "training"]
+    "content": "Ohm's law (V=IR), conduit fill awareness, and lockout/tagout fundamentals for CTE electrical pathways. Series circuits share current, parallel circuits share voltage; always verify de-energized state with a rated meter before touching conductors.",
+    "tags": ["cte", "electrical", "training", "lockout tagout"]
+  },
+  {
+    "title": "AIA A201 General Conditions",
+    "scope": "public",
+    "content": "Contractual roles for owner, architect, and contractor. Change orders require written authorization and time/price impact documentation. The architect interprets contract documents; disputes route through the initial decision maker before mediation/arbitration per Article 15.",
+    "tags": ["aia", "contract", "change", "legal"]
+  },
+  {
+    "title": "AIA A101 Owner-Contractor Agreement Basics",
+    "scope": "public",
+    "content": "Stipulated-sum agreements fix the contract sum subject to authorized change orders; cost-plus agreements reimburse cost plus fee with a guaranteed maximum price (GMP) commonly used to share savings/overruns per negotiated terms.",
+    "tags": ["aia", "contract", "gmp", "stipulated sum"]
+  },
+  {
+    "title": "OSHA Fall Protection",
+    "scope": "public",
+    "content": "Fall protection triggers at 6 ft in construction (29 CFR 1926.501). Inspect harnesses and anchor points daily; guardrails, safety nets, or personal fall arrest systems are the three accepted control methods. A competent person must evaluate the work area continuously.",
+    "tags": ["osha", "safety", "fall", "1926.501"]
+  },
+  {
+    "title": "OSHA Trenching and Excavation Safety",
+    "scope": "public",
+    "content": "Trenches 5 ft or deeper require protective systems (sloping, shoring, or shielding) unless in stable rock, per 29 CFR 1926 Subpart P. A competent person must classify soil type (A, B, or C) and inspect daily and after rain events.",
+    "tags": ["osha", "excavation", "trenching", "safety"]
+  },
+  {
+    "title": "OSHA Scaffold Safety",
+    "scope": "public",
+    "content": "Scaffolds must be erected, moved, and dismantled under the supervision of a competent person, capable of supporting 4x the intended load, with guardrails above 10 ft and full planking with no more than 1 in gaps.",
+    "tags": ["osha", "scaffold", "safety"]
+  },
+  {
+    "title": "OSHA Crane and Rigging Safety",
+    "scope": "public",
+    "content": "Only qualified/certified operators may run cranes per 1926 Subpart CC; establish a controlled lift plan for critical picks, verify load charts against radius/boom angle, and maintain a minimum approach distance from energized power lines.",
+    "tags": ["osha", "crane", "rigging", "safety"]
+  },
+  {
+    "title": "Bid Leveling Checklist",
+    "scope": "internal",
+    "content": "Normalize alternates, allowances, unit prices, exclusions, and schedule assumptions before award recommendation. Confirm bonding capacity, insurance certificates, and scope clarifications are captured in a written qualification log for every subcontractor bid.",
+    "tags": ["bid", "estimate", "award"]
+  },
+  {
+    "title": "Quantity Takeoff Estimating Method",
+    "scope": "internal",
+    "content": "Takeoff quantities from drawings by CSI division, apply unit costs from historical data or RSMeans, add waste factors (5-15% depending on trade), and separate labor, material, equipment, and subcontractor cost buckets before applying markup and contingency.",
+    "tags": ["estimating", "takeoff", "unit cost", "rsmeans"]
+  },
+  {
+    "title": "RFI Best Practices",
+    "scope": "internal",
+    "content": "Write RFIs with drawing references, conflict description, schedule impact, and a proposed solution for faster architect response. Log RFI issue and response dates to prove schedule impact if a delay claim becomes necessary.",
+    "tags": ["rfi", "design", "coordination"]
+  },
+  {
+    "title": "Submittal Review Workflow",
+    "scope": "internal",
+    "content": "Submittals route subcontractor > general contractor (GC review/stamp) > architect/engineer for approval; track long-lead items (switchgear, elevators, curtain wall) separately and start submittal review before mobilization to protect the schedule.",
+    "tags": ["submittals", "coordination", "long lead"]
+  },
+  {
+    "title": "Pay Application SOV",
+    "scope": "internal",
+    "content": "Align schedule of values to cost codes for AIA-style G702/G703 billing. Retainage (commonly 5-10%) and stored materials must match contract terms; never bill above actual percent complete to avoid over-billing exposure.",
+    "tags": ["billing", "payapp", "sov"]
   },
   {
     "title": "Job Cost Variance",
     "scope": "internal",
-    "content": "Compare committed cost, actual cost, and forecast to complete weekly. Flag overruns before pay apps are certified.",
+    "content": "Compare committed cost, actual cost, and forecast (estimate to complete) weekly by cost code. Flag overruns before pay apps are certified and update the job cost forecast so surprises never surface only at project closeout.",
     "tags": ["jobcost", "finance", "forecast"]
+  },
+  {
+    "title": "Change Order Pricing and Documentation",
+    "scope": "internal",
+    "content": "Price change orders with labor, material, equipment, sub markup, and overhead/profit consistent with the contract's markup schedule; document time impact with a fragnet showing the change tied into the critical path schedule.",
+    "tags": ["change order", "pricing", "schedule impact"]
+  },
+  {
+    "title": "Critical Path Method Scheduling",
+    "scope": "internal",
+    "content": "CPM scheduling identifies the longest sequence of dependent activities (the critical path) with zero float; activities off the critical path have float that can absorb minor delays without moving substantial completion.",
+    "tags": ["scheduling", "cpm", "critical path"]
+  },
+  {
+    "title": "Schedule Delay and Time Impact Analysis",
+    "scope": "internal",
+    "content": "A time impact analysis inserts a delay fragnet into the as-planned schedule to isolate its net effect on the critical path, distinguishing excusable/compensable delays (owner-caused) from non-excusable delays (contractor-caused).",
+    "tags": ["scheduling", "delay claims", "tia"]
+  },
+  {
+    "title": "Punch List and Substantial Completion",
+    "scope": "internal",
+    "content": "Substantial completion means the owner can use the space for its intended purpose; a punch list documents remaining minor items with responsible party and target date, typically completed within a defined retainage-release window.",
+    "tags": ["punch list", "closeout", "substantial completion"]
   },
   {
     "title": "Warranty Closeout Package",
     "scope": "internal",
-    "content": "Collect O&M manuals, attic stock, training attendance, and warranty start dates before substantial completion.",
+    "content": "Collect O&M manuals, attic stock, training attendance, and warranty start dates before substantial completion. A complete closeout binder protects the owner and reduces post-occupancy callback disputes.",
     "tags": ["warranty", "closeout", "om"]
+  },
+  {
+    "title": "Quality Control Inspection Hold Points",
+    "scope": "internal",
+    "content": "Establish inspection hold points before concealment (rebar before pour, rough-in before drywall, waterproofing before backfill) with photo documentation logged by date, location, and inspector to defend against future defect claims.",
+    "tags": ["quality control", "inspection", "documentation"]
+  },
+  {
+    "title": "Building Code Basics (IBC)",
+    "scope": "public",
+    "content": "The International Building Code classifies occupancy (A, B, E, F, H, I, M, R, S, U) and construction type (I-V, fire-resistance rated) which together set allowable height/area, egress width, and fire separation requirements.",
+    "tags": ["ibc", "code", "occupancy", "egress"]
+  },
+  {
+    "title": "Means of Egress Requirements",
+    "scope": "public",
+    "content": "Egress capacity is calculated from occupant load using code-prescribed factors per square foot by use; two remote exits are typically required above defined occupant thresholds, with maximum common path of travel and dead-end corridor limits per IBC Chapter 10.",
+    "tags": ["egress", "ibc", "life safety"]
+  },
+  {
+    "title": "ADA Accessibility Basics",
+    "scope": "public",
+    "content": "ADA/ANSI A117.1 requires accessible routes with 36 in min clear width, ramps at 1:12 max slope, accessible restroom clearances, and door hardware operable with a closed fist (lever, not knob) without tight grasping.",
+    "tags": ["ada", "accessibility", "code"]
+  },
+  {
+    "title": "Sitework and Erosion Control",
+    "scope": "internal",
+    "content": "SWPPP (Stormwater Pollution Prevention Plan) requires silt fence/inlet protection before land disturbance, stabilized construction entrance to limit tracking, and inspection after every 0.5 in rain event per NPDES permit conditions.",
+    "tags": ["sitework", "swppp", "erosion control", "stormwater"]
+  },
+  {
+    "title": "Earthwork and Compaction Testing",
+    "scope": "internal",
+    "content": "Compact structural fill in lifts (typically 8-12 in loose) and verify with a nuclear density gauge or sand-cone test to reach the specified percent of Standard/Modified Proctor before placing footings or slabs.",
+    "tags": ["earthwork", "compaction", "proctor", "testing"]
+  },
+  {
+    "title": "Concrete Slab-on-Grade Best Practices",
+    "scope": "internal",
+    "content": "Provide a vapor retarder directly under slabs per ACI 302, control joints at roughly 24-36x slab thickness (in feet) spacing, and avoid finishing (troweling) before bleed water evaporates to prevent surface crazing.",
+    "tags": ["concrete", "slab", "vapor barrier", "control joints"]
+  },
+  {
+    "title": "Curtain Wall and Building Envelope Testing",
+    "scope": "internal",
+    "content": "Perform mock-up water penetration testing (ASTM E1105) and air infiltration testing (ASTM E783) on curtain wall systems before full production run to catch flashing/sealant failures early.",
+    "tags": ["curtain wall", "envelope", "testing", "astm"]
+  },
+  {
+    "title": "LEED and Sustainable Construction",
+    "scope": "public",
+    "content": "LEED certification tracks credits across sustainable sites, water efficiency, energy/atmosphere, materials/resources, and indoor environmental quality; construction waste management plans (diverting 50-75%+ from landfill) are a common low-cost credit.",
+    "tags": ["leed", "sustainability", "green building"]
+  },
+  {
+    "title": "Prefabrication and Modular Construction",
+    "scope": "public",
+    "content": "Prefabricated MEP racks and modular volumetric units compress field schedule by shifting labor to a controlled factory environment; success depends on early tolerance coordination (design for manufacture and assembly) between trades.",
+    "tags": ["prefabrication", "modular", "dfma"]
+  },
+  {
+    "title": "Insurance and Bonding Basics",
+    "scope": "public",
+    "content": "Performance and payment bonds guarantee project completion and subcontractor/supplier payment; commercial general liability and builder's risk insurance protect against third-party claims and property loss during construction, respectively.",
+    "tags": ["insurance", "bonding", "risk management"]
+  },
+  {
+    "title": "Lien Rights and Notice Requirements",
+    "scope": "public",
+    "content": "Mechanic's lien rights protect unpaid contractors/suppliers but require strict statutory notices (preliminary notice, notice of intent) and filing deadlines that vary by state; missing a deadline can forfeit lien rights entirely.",
+    "tags": ["lien", "legal", "payment"]
+  },
+  {
+    "title": "Confined Space Entry Safety",
+    "scope": "public",
+    "content": "Permit-required confined spaces (manholes, tanks, vaults) need atmospheric testing for oxygen/toxics/flammability, continuous ventilation, an attendant outside, and a rescue plan before any entry per 29 CFR 1926 Subpart AA.",
+    "tags": ["osha", "confined space", "safety"]
+  },
+  {
+    "title": "Silica Dust and Respiratory Protection",
+    "scope": "public",
+    "content": "OSHA's respirable crystalline silica standard (1926.1153) requires engineering controls (wet cutting, vacuum dust collection) for concrete cutting/grinding tasks, with a written exposure control plan and medical surveillance above action levels.",
+    "tags": ["osha", "silica", "respiratory protection"]
   }
 ]

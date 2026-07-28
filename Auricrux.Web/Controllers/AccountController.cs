@@ -16,8 +16,8 @@ public sealed class AccountController(FreemiumAccountStore accounts) : Controlle
         plans = new[]
         {
             new { id = "free", name = "Freemium", price = 0m, cadence = "month", dailyQueries = 25, models = new[] { "llama3.2" } },
-            new { id = "pro", name = "Pro", price = 29m, cadence = "month", dailyQueries = 500, models = new[] { "llama3.2", "mistral", "auricrux" } },
-            new { id = "pro-plus", name = "Pro Plus", price = 79m, cadence = "month", dailyQueries = 5000, models = new[] { "llama3.2", "mistral", "auricrux" } }
+            new { id = "pro", name = "Pro", price = 29m, cadence = "month", dailyQueries = 500, models = new[] { "llama3.2", "mistral", "auricrux", "auricrux-fca" } },
+            new { id = "pro-plus", name = "Pro Plus", price = 79m, cadence = "month", dailyQueries = 5000, models = new[] { "llama3.2", "mistral", "auricrux", "auricrux-fca" } }
         }
     });
 

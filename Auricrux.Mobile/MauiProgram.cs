@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Auricrux.Shared.Services;
 using Auricrux.Shared.Models;
+using Auricrux.Mobile.Services;
 
 namespace Auricrux.Mobile;
 
@@ -55,6 +56,7 @@ public static class MauiProgram
 			.AddSingleton<MainPageViewModel>()
 			.AddSingleton<SpeechToTextService>()
 			.AddSingleton<AnswerExportService>()
+			.AddSingleton<SecureTokenStore>()
 			.AddHttpClient<AuricruxApiClient>()
 			.ConfigureHttpClient((sp, client) =>
 			{

@@ -2,4 +2,6 @@
   <Project Path="Auricrux.Mobile/Auricrux.Mobile.csproj" />
   <Project Path="Auricrux.Shared/Auricrux.Shared.csproj" />
   <Project Path="Auricrux.Web/Auricrux.Web.csproj" />
+  <Project Path="Auricrux.Tests/Auricrux.Tests.csproj" />
+  <Project Path="Auricrux.Eval/Auricrux.Eval.csproj" />
 </Solution>

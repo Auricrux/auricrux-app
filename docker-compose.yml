@@ -1,0 +1,61 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: auricrux-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+      - ./auricrux/system:/auricrux-system:ro
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # One-shot job: pulls the llama3.2:3b base model and creates/tags the
+  # auricrux-fca specialist alias (AUX-017) from the checked-in Modelfile.
+  # Safe to re-run; `ollama create` overwrites the existing tag idempotently.
+  ollama-model-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ./auricrux/system:/auricrux-system:ro
+    environment:
+      OLLAMA_HOST: "http://ollama:11434"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        echo "Pulling base model llama3.2:3b ...";
+        ollama pull llama3.2:3b;
+        echo "Creating auricrux-fca alias from Modelfile ...";
+        ollama create auricrux-fca -f /auricrux-system/Modelfile.auricrux-fca;
+        echo "auricrux-fca ready:";
+        ollama list;
+    restart: "no"
+
+  auricrux-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: auricrux-web
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    ports:
+      - "8080:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      Auricrux__OllamaUrl: "http://ollama:11434"
+      Auricrux__PrimaryModel: "auricrux-fca"
+      Auricrux__SecondaryModel: "llama3.2"
+    volumes:
+      - auricrux-data:/app/Data
+
+volumes:
+  ollama-data:
+  auricrux-data:

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Auricrux.Mobile.Services;
 using Auricrux.Shared.Models;
 using Auricrux.Shared.Services;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,9 @@ public class MainPageViewModel : INotifyPropertyChanged
 	private readonly TextToSpeechService _ttsService;
 	private readonly SpeechToTextService _sttService;
 	private readonly AnswerExportService _exportService;
+	private readonly SecureTokenStore _tokenStore;
 	private readonly ILogger<MainPageViewModel> _logger;
+	private bool _isSignedIn;
 
 	private string _userInput = string.Empty;
 	private bool _isLoading;
@@ -120,6 +123,12 @@ public class MainPageViewModel : INotifyPropertyChanged
 		set { _autoSpeakEnabled = value; OnPropertyChanged(); }
 	}
 
+	public bool IsSignedIn
+	{
+		get => _isSignedIn;
+		private set { _isSignedIn = value; OnPropertyChanged(); }
+	}
+
 	public ICommand SendMessageCommand { get; }
 	public ICommand ClearHistoryCommand { get; }
 	public ICommand RateUpCommand { get; }
@@ -131,6 +140,7 @@ public class MainPageViewModel : INotifyPropertyChanged
 	public ICommand ShareLastCommand { get; }
 	public ICommand SpeakLastCommand { get; }
 	public ICommand RefreshHealthCommand { get; }
+	public ICommand SignOutCommand { get; }
 
 	public MainPageViewModel(
 		AuricruxService auricruxService,
@@ -139,6 +149,7 @@ public class MainPageViewModel : INotifyPropertyChanged
 		TextToSpeechService ttsService,
 		SpeechToTextService sttService,
 		AnswerExportService exportService,
+		SecureTokenStore tokenStore,
 		ILogger<MainPageViewModel> logger)
 	{
 		_auricruxService = auricruxService;
@@ -147,6 +158,7 @@ public class MainPageViewModel : INotifyPropertyChanged
 		_ttsService = ttsService;
 		_sttService = sttService;
 		_exportService = exportService;
+		_tokenStore = tokenStore;
 		_logger = logger;
 
 		ConnectionLabel = _config.ApiEndpoint;
@@ -162,6 +174,7 @@ public class MainPageViewModel : INotifyPropertyChanged
 		ShareLastCommand = new AsyncRelayCommand(ShareLast);
 		SpeakLastCommand = new AsyncRelayCommand(SpeakLast);
 		RefreshHealthCommand = new AsyncRelayCommand(CheckHealthAsync);
+		SignOutCommand = new AsyncRelayCommand(SignOutAsync);
 
 		Messages.Add(new ChatMessageViewModel
 		{
@@ -174,11 +187,33 @@ public class MainPageViewModel : INotifyPropertyChanged
 
 	public async Task CheckHealthAsync()
 	{
+		await RestoreStoredSessionAsync();
 		StatusMessage = "Checking connection…";
 		IsOnline = await _apiClient.HealthCheckAsync();
 		StatusMessage = IsOnline
 			? "Ready"
 			: "Backend offline or model warming — wait a moment and retry";
+	}
+
+	/// <summary>
+	/// Mobile OIDC token storage path (AUX-021): on launch, load any previously persisted
+	/// access token from the platform secure keystore and attach it to the API client so
+	/// the session survives an app restart without re-authenticating.
+	/// </summary>
+	private async Task RestoreStoredSessionAsync()
+	{
+		var token = await _tokenStore.GetTokenAsync();
+		_apiClient.SetBearerToken(token);
+		IsSignedIn = !string.IsNullOrWhiteSpace(token);
+	}
+
+	private async Task SignOutAsync()
+	{
+		_tokenStore.ClearToken();
+		_apiClient.SetBearerToken(null);
+		IsSignedIn = false;
+		StatusMessage = "Signed out";
+		await Task.CompletedTask;
 	}
 
 	private void CycleThinking()
