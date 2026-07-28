@@ -44,6 +44,8 @@ jobs:
           chmod +x ./kind
           ./kind create cluster --name auricrux-validate
           kubectl cluster-info
+          # Namespace must exist for real (server dry-run does not create it).
+          kubectl create namespace auricrux-prod --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply --dry-run=server -f k8s-deployment.yaml
           kubectl apply --dry-run=server -f k8s-ingress.yaml
           ./kind delete cluster --name auricrux-validate
