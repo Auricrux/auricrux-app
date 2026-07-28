@@ -46,8 +46,8 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                 MatrixRows = matrix.Count,
                 AuricruxUniqueAdvantages = matrix.Count(r => r.Auricrux == "shipped" && r.Peers.Values.All(p => p is "no" or "partial")),
                 OverallAssessment =
-                    "PARTIAL — core chat/search/thinking/voice/workspace/media/auth/freemium/construction corpus are real; " +
-                    "agentic tools, vision, web browse, and promoted fine-tune weights remain gaps vs. major players."
+                    "PARTIAL — core chat/search/thinking/voice/workspace/media/auth/freemium/construction corpus/web-browse are real; " +
+                    "agentic tools, vision, and promoted fine-tune weights remain gaps vs. major players."
             }
         };
     }
@@ -68,9 +68,9 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
         Feature("Freemium monetization", "shipped", "SQLite-backed plans, quotas, model gating"),
         Feature("FCA ecosystem entitlements", "shipped", "Link Auricrux account to FCA when configured"),
         Feature("Construction specialist corpus", "shipped", $"{corpusEntries} grounded entries across CSI/OSHA/PM/billing/code"),
+        Feature("Live web browsing", "shipped", "POST /api/browse fetches http(s) URL text (SSRF-guarded) and LLM-summarizes for construction Q&A"),
         Feature("Agentic tool-use / plugins", "planned", "Not yet implemented"),
         Feature("Native code interpreter", "planned", "Not yet implemented"),
-        Feature("Real-time web browsing", "planned", "Public search uses corpus, not live web crawl"),
         Feature("Vision / photo analysis", "planned", "Not yet implemented"),
         Feature("Fine-tuned construction weights live", "blocked", "checkpoint-70000 awaiting safe export (AUX-017/018)")
     ];
@@ -105,8 +105,8 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
             "Major gap: no plugin runtime or autonomous tool orchestration yet."),
         Matrix("Code interpreter", "planned", yes, partial, partial, partial, no,
             "Not implemented; peers offer sandboxed Python or spreadsheet analysis."),
-        Matrix("Live web browsing", "planned", yes, partial, yes, partial, yes,
-            "Public search scope uses corpus hits, not live crawl — honest gap."),
+        Matrix("Live web browsing", "shipped", yes, partial, yes, partial, yes,
+            "POST /api/browse: SSRF-guarded URL fetch + LLM construction summarize (not an autonomous agent browser)."),
         Matrix("Vision / photo analysis", "planned", yes, yes, yes, partial, partial,
             "Not implemented; critical for field photo RFI workflows."),
         Matrix("Construction fine-tuned weights", "blocked", no, no, no, no, no,

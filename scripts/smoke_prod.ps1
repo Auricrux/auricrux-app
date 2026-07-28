@@ -91,6 +91,14 @@ Invoke-SmokeCheck "GET /api/capabilities (feature parity matrix)" {
     "shippedCore=$($r.parityScore.shippedCore) corpus=$($r.corpusEntries)"
 }
 
+Invoke-SmokeCheck "POST /api/browse (live URL fetch + summarize)" {
+    $body = '{"url":"https://example.com/","question":"Summarize for a contractor in one sentence."}'
+    $r = Invoke-RestMethod -Uri "$baseUrl/api/browse" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 180
+    if (-not $r.success) { throw "Browse failed: $($r.error)" }
+    if (-not $r.summary -or $r.summary.Length -lt 10) { throw "Browse summary missing" }
+    "extracted=$($r.extractedChars) summaryLength=$($r.summary.Length)"
+}
+
 Write-Host ""
 $report = [ordered]@{
     baseUrl = $baseUrl

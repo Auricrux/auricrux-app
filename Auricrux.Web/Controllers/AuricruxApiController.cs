@@ -11,6 +11,7 @@ public sealed class AuricruxApiController(
     BackendHealthService health,
     CapabilitiesService capabilities,
     FreemiumAccountStore accounts,
+    WebBrowseService webBrowse,
     ILogger<AuricruxApiController> logger) : ControllerBase
 {
     [HttpGet("health")]
@@ -82,6 +83,20 @@ public sealed class AuricruxApiController(
         }
 
         return Ok(intelligence.Search(request));
+    }
+
+    [HttpPost("browse")]
+    public async Task<ActionResult<WebBrowseResponse>> PostBrowse(
+        [FromBody] WebBrowseRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await webBrowse.BrowseAsync(request, cancellationToken);
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
     }
 
     [HttpPost("feedback/{interactionId:guid}")]

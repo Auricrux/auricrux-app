@@ -154,6 +154,45 @@ public sealed class AuricruxApiIntegrationTests : IClassFixture<WebApplicationFa
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    // ---------- Web browse ----------
+
+    [Fact]
+    public async Task Browse_blocks_loopback_ssrf()
+    {
+        var response = await _client.PostAsJsonAsync("/api/browse", new
+        {
+            url = "http://127.0.0.1/",
+            question = "Anything?"
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Browse_requires_absolute_http_url()
+    {
+        var response = await _client.PostAsJsonAsync("/api/browse", new
+        {
+            url = "not-a-url",
+            question = "Anything?"
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Browse_fetches_public_page_and_returns_summary()
+    {
+        var response = await _client.PostAsJsonAsync("/api/browse", new
+        {
+            url = "https://example.com/",
+            question = "What is this page about for a contractor?"
+        });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("success", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("summary", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("\"success\":false", json, StringComparison.OrdinalIgnoreCase);
+    }
+
     // ---------- Chat + feedback ----------
 
     [Fact]

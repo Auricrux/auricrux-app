@@ -22,6 +22,11 @@ builder.Services.AddHttpClient(nameof(ConstructionIntelligenceService));
 builder.Services.AddHttpClient(nameof(MediaGenerationService));
 builder.Services.AddHttpClient(nameof(FcaAccountLinkService));
 builder.Services.AddHttpClient(nameof(BackendHealthService));
+builder.Services.AddHttpClient(nameof(WebBrowseService), client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(45);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("AuricruxWebBrowse/1.0 (+construction)");
+});
 builder.Services.AddSingleton<ConstructionIntelligenceService>();
 builder.Services.AddSingleton<MediaGenerationService>();
 builder.Services.AddSingleton<WorkspaceStorageService>();
@@ -29,6 +34,7 @@ builder.Services.AddSingleton<ConversationMemoryService>();
 builder.Services.AddSingleton<FcaAccountLinkService>();
 builder.Services.AddSingleton<FreemiumAccountStore>();
 builder.Services.AddSingleton<BackendHealthService>();
+builder.Services.AddSingleton<WebBrowseService>();
 builder.Services.AddSingleton<CapabilitiesService>();
 builder.Services.AddSingleton(sp =>
 {

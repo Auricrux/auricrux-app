@@ -48,6 +48,7 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         Assert.True(payload.CorpusEntries >= 75, "Corpus should have 75+ entries after expansion.");
         Assert.Contains("ChatGPT", payload.Competitors);
         Assert.Contains(payload.Features, f => f.Name.Contains("Multi-model chat") && f.Status == "shipped");
+        Assert.Contains(payload.Features, f => f.Name.Contains("Live web browsing") && f.Status == "shipped");
         Assert.Contains(payload.Features, f => f.Name.Contains("Fine-tuned") && f.Status == "blocked");
         Assert.False(payload.ConstructionMoat.PromotedFineTuneLive);
         Assert.Contains("PARTIAL", payload.ParityScore.OverallAssessment, StringComparison.OrdinalIgnoreCase);
@@ -69,6 +70,9 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         var agentic = payload!.CompetitiveMatrix.First(r => r.Feature.Contains("Agentic plugins"));
         Assert.Equal("planned", agentic.Auricrux);
         Assert.Equal("yes", agentic.Peers["ChatGPT"]);
+
+        var browse = payload.CompetitiveMatrix.First(r => r.Feature.Contains("Live web browsing"));
+        Assert.Equal("shipped", browse.Auricrux);
 
         var fineTune = payload.CompetitiveMatrix.First(r => r.Feature.Contains("fine-tuned weights"));
         Assert.Equal("blocked", fineTune.Auricrux);
