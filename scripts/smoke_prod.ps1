@@ -82,6 +82,13 @@ Invoke-SmokeCheck "POST /api/search (retrieved corpus hits)" {
     "resultCount=$($r.results.Count)"
 }
 
+Invoke-SmokeCheck "GET /api/capabilities (feature parity matrix)" {
+    $r = Invoke-RestMethod -Uri "$baseUrl/api/capabilities" -Method Get -TimeoutSec 30
+    if (-not $r.features -or $r.features.Count -lt 10) { throw "Capabilities matrix missing or too shallow" }
+    if (-not $r.constructionMoat) { throw "Construction moat summary missing" }
+    "shippedCore=$($r.parityScore.shippedCore) corpus=$($r.corpusEntries)"
+}
+
 Write-Host ""
 $report = [ordered]@{
     baseUrl = $baseUrl

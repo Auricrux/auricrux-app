@@ -9,6 +9,7 @@ namespace Auricrux.Web.Controllers;
 public sealed class AuricruxApiController(
     ConstructionIntelligenceService intelligence,
     BackendHealthService health,
+    CapabilitiesService capabilities,
     FreemiumAccountStore accounts,
     ILogger<AuricruxApiController> logger) : ControllerBase
 {
@@ -30,6 +31,9 @@ public sealed class AuricruxApiController(
 
     [HttpGet("models")]
     public ActionResult<object> ListModels() => Ok(new { models = intelligence.AvailableModels });
+
+    [HttpGet("capabilities")]
+    public ActionResult<CapabilitiesReport> GetCapabilities() => Ok(capabilities.GetReport());
 
     [HttpPost("chat")]
     public async Task<ActionResult<ChatResponse>> Chat(

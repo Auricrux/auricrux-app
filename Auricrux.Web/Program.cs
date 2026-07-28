@@ -29,6 +29,7 @@ builder.Services.AddSingleton<ConversationMemoryService>();
 builder.Services.AddSingleton<FcaAccountLinkService>();
 builder.Services.AddSingleton<FreemiumAccountStore>();
 builder.Services.AddSingleton<BackendHealthService>();
+builder.Services.AddSingleton<CapabilitiesService>();
 builder.Services.AddSingleton(sp =>
 {
     var configured = builder.Configuration["Auricrux:ApiEndpoint"]
@@ -142,6 +143,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCorrelationId();
+app.UseApiExceptionHandling();
 app.UseAuricruxApiMiddleware();
 app.UseCors("auricrux");
 app.UseRateLimiter();

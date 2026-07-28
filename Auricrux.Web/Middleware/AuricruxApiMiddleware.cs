@@ -1,7 +1,9 @@
+using System.Diagnostics;
+
 namespace Auricrux.Web.Middleware;
 
 /// <summary>
-/// Security headers and request logging for API routes.
+/// Security headers and structured request logging for API routes.
 /// </summary>
 public sealed class AuricruxApiMiddleware(RequestDelegate next, ILogger<AuricruxApiMiddleware> logger)
 {
@@ -9,12 +11,27 @@ public sealed class AuricruxApiMiddleware(RequestDelegate next, ILogger<Auricrux
     {
         ApplySecurityHeaders(context);
 
-        if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogDebug("API {Method} {Path}", context.Request.Method, context.Request.Path);
-        }
+        var isApi = context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase);
+        var sw = isApi ? Stopwatch.StartNew() : null;
 
-        await next(context);
+        try
+        {
+            await next(context);
+        }
+        finally
+        {
+            if (isApi)
+            {
+                sw!.Stop();
+                logger.LogInformation(
+                    "API {Method} {Path} -> {StatusCode} in {ElapsedMs}ms (correlation={CorrelationId})",
+                    context.Request.Method,
+                    context.Request.Path,
+                    context.Response.StatusCode,
+                    sw.ElapsedMilliseconds,
+                    context.TraceIdentifier);
+            }
+        }
     }
 
     private static void ApplySecurityHeaders(HttpContext context)

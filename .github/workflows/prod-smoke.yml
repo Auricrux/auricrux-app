@@ -1,0 +1,44 @@
+name: Production Smoke
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Production base URL to smoke test'
+        required: false
+        default: 'https://fca-auricrux-api.azurewebsites.net'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run production smoke script
+        shell: pwsh
+        run: |
+          $base = '${{ github.event.inputs.base_url }}'
+          if ([string]::IsNullOrWhiteSpace($base)) { $base = 'https://fca-auricrux-api.azurewebsites.net' }
+          ./scripts/smoke_prod.ps1 -BaseUrl $base
+
+      - name: Probe custom domain (informational)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          try {
+            Invoke-RestMethod -Uri 'https://auricrux.futurecontractorsofamerica.com/api/health' -TimeoutSec 20
+            Write-Host '::notice::Custom domain /api/health responded — AUX-020 may be ready to promote.'
+          } catch {
+            Write-Host '::warning::Custom domain still not routing to fca-auricrux-api (AUX-020 PARTIAL). DNS/Porkbun CNAME required — see deployment-packages/CUSTOM_DOMAIN_SETUP.md'
+          }
+
+      - name: Upload smoke report
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-smoke-report
+          path: eval/reports/prod_smoke_last_run.json

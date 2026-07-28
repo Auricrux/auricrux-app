@@ -268,5 +268,95 @@
     "scope": "public",
     "content": "OSHA's respirable crystalline silica standard (1926.1153) requires engineering controls (wet cutting, vacuum dust collection) for concrete cutting/grinding tasks, with a written exposure control plan and medical surveillance above action levels.",
     "tags": ["osha", "silica", "respiratory protection"]
+  },
+  {
+    "title": "CSI Division 10 Specialties",
+    "scope": "internal",
+    "content": "Division 10 covers toilet partitions, lockers, fire extinguishers, signage, and access flooring. Coordinate rough-in blocking for wall-mounted accessories before drywall, verify ADA reach ranges for dispensers, and sequence fire extinguisher cabinets after paint but before final inspection.",
+    "tags": ["csi", "specialties", "division 10", "ada"]
+  },
+  {
+    "title": "CSI Division 11 Equipment",
+    "scope": "internal",
+    "content": "Kitchen, lab, and industrial equipment require early submittal review for utility rough-ins (gas, water, electrical, exhaust). Verify floor loading, seismic anchorage, and manufacturer startup/commissioning requirements before substantial completion.",
+    "tags": ["csi", "equipment", "division 11", "commissioning"]
+  },
+  {
+    "title": "CSI Division 12 Furnishings",
+    "scope": "internal",
+    "content": "Loose furnishings and window treatments are often owner-furnished/contractor-installed (OFCI). Protect finished surfaces during delivery, verify anchor ratings for wall-mounted casework, and coordinate installation after final clean but before owner move-in.",
+    "tags": ["csi", "furnishings", "division 12", "ofci"]
+  },
+  {
+    "title": "CSI Division 13 Special Construction",
+    "scope": "internal",
+    "content": "Pre-engineered metal buildings, clean rooms, and modular units need foundation/settlement tolerances verified before erection. Anchor bolt templates must match shop drawings; field welding requires qualified welders and inspection per AWS D1.1 when applicable.",
+    "tags": ["csi", "special construction", "division 13", "pembs"]
+  },
+  {
+    "title": "CSI Division 14 Conveying Equipment",
+    "scope": "internal",
+    "content": "Elevators and escalators are long-lead items requiring pit depth, overhead clearance, and machine-room ventilation per manufacturer and ASME A17.1. Start submittals at contract award; no hoistway work is complete until inspector witness test and state certificate.",
+    "tags": ["csi", "elevator", "division 14", "long lead"]
+  },
+  {
+    "title": "CSI Division 31 Earthwork",
+    "scope": "internal",
+    "content": "Mass grading, cut/fill balance, and export/import tracking affect cost and schedule. Verify geotechnical report recommendations for over-excavation and structural fill; proof-roll subgrade before placing aggregate base or vapor barrier.",
+    "tags": ["csi", "earthwork", "division 31", "geotechnical"]
+  },
+  {
+    "title": "CSI Division 32 Exterior Improvements",
+    "scope": "internal",
+    "content": "Paving, curbs, sidewalks, and landscaping close out the site. Asphalt placement needs compacted subgrade and minimum ambient/base temperatures; concrete flatwork requires control joints and curing before traffic. Coordinate irrigation blow-out for cold climates.",
+    "tags": ["csi", "sitework", "division 32", "paving"]
+  },
+  {
+    "title": "CSI Division 33 Utilities",
+    "scope": "internal",
+    "content": "Site utilities (water, sewer, storm, gas, electric) require utility locates (811), trench safety, and pressure testing before backfill. As-built survey and record drawings are required for easements and future maintenance access.",
+    "tags": ["csi", "utilities", "division 33", "as-built"]
+  },
+  {
+    "title": "BIM and VDC Coordination",
+    "scope": "internal",
+    "content": "Building Information Modeling clash detection (Navisworks/Solibri) should run at 30%, 60%, and 90% design milestones and again at fabrication-level LOD 350. Federated models need agreed origin, shared coordinates, and a single clash matrix owner assigned to each trade.",
+    "tags": ["bim", "vdc", "clash detection", "coordination"]
+  },
+  {
+    "title": "Drone Survey and Progress Monitoring",
+    "scope": "public",
+    "content": "UAV photogrammetry supports stockpile volume calculations, earthwork progress verification, and as-built roof surveys. FAA Part 107 certification, NOTAM/TFR checks, and site-specific flight plans are required before operating on active job sites.",
+    "tags": ["drone", "survey", "progress", "photogrammetry"]
+  },
+  {
+    "title": "Lean Construction and Last Planner System",
+    "scope": "public",
+    "content": "Last Planner System uses weekly work planning with constraint analysis, PPC (percent plan complete) tracking, and lookahead schedules to reduce variability. Daily huddles surface blockers before they hit the critical path.",
+    "tags": ["lean", "last planner", "scheduling", "productivity"]
+  },
+  {
+    "title": "Modular Off-Site Construction Logistics",
+    "scope": "internal",
+    "content": "Volumetric modular delivery requires crane pick plans, route surveys for oversize transport, and weather windows for set-day lifts. Module weatherproofing caps and temporary bracing must stay in place until permanent connections are inspected.",
+    "tags": ["modular", "logistics", "crane", "set day"]
+  },
+  {
+    "title": "Thermal Imaging and Building Envelope Commissioning",
+    "scope": "internal",
+    "content": "Infrared thermography during blower-door testing reveals air leakage paths and missing insulation. ASTM E1186 and RESNET standards guide acceptable temperature differentials; remediate before close-in when possible to avoid destructive rework.",
+    "tags": ["commissioning", "thermal imaging", "envelope", "blower door"]
+  },
+  {
+    "title": "Construction Daily Report Best Practices",
+    "scope": "internal",
+    "content": "Daily reports should capture weather (for delay documentation), manpower by trade, equipment on site, work performed, deliveries, visitors, safety incidents/near-misses, and RFI/submittal status. Photos with date/time/GPS strengthen delay and extra-work claims.",
+    "tags": ["daily report", "documentation", "field", "claims"]
+  },
+  {
+    "title": "Prevailing Wage and Certified Payroll",
+    "scope": "public",
+    "content": "Public works projects require Davis-Bacon or state prevailing wage rates by classification, with certified payroll (WH-347) submitted weekly. Misclassification of laborers vs. operators is a common audit finding — job descriptions must match actual tasks performed.",
+    "tags": ["prevailing wage", "davis-bacon", "payroll", "public works"]
   }
 ]

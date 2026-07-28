@@ -1,0 +1,45 @@
+name: Apple Platform Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Auricrux.Mobile/**'
+      - 'Auricrux.Shared/**'
+      - 'Directory.Build.props'
+      - '.github/workflows/apple-build.yml'
+  pull_request:
+    paths:
+      - 'Auricrux.Mobile/**'
+      - 'Auricrux.Shared/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios-maccatalyst:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui
+
+      - name: Build iOS (device)
+        run: dotnet build Auricrux.Mobile/Auricrux.Mobile.csproj -c Release -f net10.0-ios --no-restore || dotnet build Auricrux.Mobile/Auricrux.Mobile.csproj -c Release -f net10.0-ios
+
+      - name: Build Mac Catalyst
+        run: dotnet build Auricrux.Mobile/Auricrux.Mobile.csproj -c Release -f net10.0-maccatalyst --no-restore || dotnet build Auricrux.Mobile/Auricrux.Mobile.csproj -c Release -f net10.0-maccatalyst
+
+      - name: Report build result
+        run: |
+          echo "### Apple Platform Build" >> "$GITHUB_STEP_SUMMARY"
+          echo "- iOS (net10.0-ios): **built on macos-latest**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Mac Catalyst (net10.0-maccatalyst): **built on macos-latest**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Note: IPA/App Store signing requires Apple Developer certificates (founder-only)" >> "$GITHUB_STEP_SUMMARY"

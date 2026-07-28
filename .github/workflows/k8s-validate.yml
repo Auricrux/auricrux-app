@@ -1,0 +1,50 @@
+name: K8s Manifest Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'k8s-deployment.yaml'
+      - 'k8s-ingress.yaml'
+      - 'Dockerfile'
+      - '.github/workflows/k8s-validate.yml'
+  pull_request:
+    paths:
+      - 'k8s-deployment.yaml'
+      - 'k8s-ingress.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Validate manifests against Kubernetes schemas
+        run: |
+          set -euo pipefail
+          kubeconform -summary -ignore-missing-schemas k8s-deployment.yaml
+          kubeconform -summary -ignore-missing-schemas k8s-ingress.yaml
+          echo "### K8s Manifest Validation" >> "$GITHUB_STEP_SUMMARY"
+          echo "- kubeconform: **PASS** (deployment + ingress schemas valid)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Live cluster deploy: **not attempted** (no cluster credentials in CI — AUX-025 stays PARTIAL until founder provides kubeconfig)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dry-run against kind cluster (optional local validation)
+        run: |
+          set -euo pipefail
+          curl -Lo ./kind "https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64"
+          chmod +x ./kind
+          ./kind create cluster --name auricrux-validate
+          kubectl cluster-info
+          kubectl apply --dry-run=server -f k8s-deployment.yaml
+          kubectl apply --dry-run=server -f k8s-ingress.yaml
+          ./kind delete cluster --name auricrux-validate
+          echo "- kind dry-run (server-side): **PASS**" >> "$GITHUB_STEP_SUMMARY"
