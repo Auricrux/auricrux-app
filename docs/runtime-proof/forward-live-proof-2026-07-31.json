@@ -1,0 +1,30 @@
+{
+  "capturedAt": "2026-07-31T20:44:29Z",
+  "summary": "Forward live proof: vision endpoint + DualRun sole-writer + FORWARD capabilities assessment on production GCP hosts.",
+  "auricrux": {
+    "host": "https://auricrux.futurecontractorsofamerica.com",
+    "capabilities": {
+      "visionStatus": "shipped",
+      "overallAssessmentStartsWith": "FORWARD",
+      "shippedCore": 18
+    },
+    "visionProbe": {
+      "endpoint": "POST /api/vision",
+      "http": 200,
+      "timeSeconds": 8.27,
+      "success": true,
+      "engine": "field-intake-checklist",
+      "includesScaffoldChecklist": true,
+      "includesRfiDraft": true
+    }
+  },
+  "fcaEcosystem": {
+    "host": "https://api.futurecontractorsofamerica.com",
+    "health": {
+      "dualRun": { "globalExit": true, "writerMode": "sole" }
+    },
+    "claim": "FCA-058 PASS",
+    "proof": "docs/runtime-proof/gcp-dual-run-sole-writer-2026-07-31.json"
+  },
+  "stance": "prove-them-wrong-do-not-redefine-down"
+}

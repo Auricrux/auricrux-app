@@ -116,10 +116,13 @@ jobs:
 
           sleep 8
           echo "=== probes ==="
-          curl -fsS http://127.0.0.1:4000/health || true; echo
-          curl -fsS -w "cap4000=%{http_code}\n" http://127.0.0.1:4000/api/capabilities | head -c 400; echo
-          curl -fsS -w "cap5001=%{http_code}\n" http://127.0.0.1:5001/api/capabilities | head -c 400; echo
-          curl -fsS -w "tools=%{http_code}\n" http://127.0.0.1:5001/api/agent/tools | head -c 400; echo
+          curl -fsS -o /tmp/ax-health.json http://127.0.0.1:4000/health || true; echo
+          curl -fsS -o /tmp/ax-cap4000.json -w "cap4000=%{http_code}\n" http://127.0.0.1:4000/api/capabilities
+          head -c 400 /tmp/ax-cap4000.json; echo
+          curl -fsS -o /tmp/ax-cap5001.json -w "cap5001=%{http_code}\n" http://127.0.0.1:5001/api/capabilities
+          head -c 400 /tmp/ax-cap5001.json; echo
+          curl -fsS -o /tmp/ax-tools.json -w "tools=%{http_code}\n" http://127.0.0.1:5001/api/agent/tools
+          head -c 400 /tmp/ax-tools.json; echo
           sudo docker ps --filter name=auricrux --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
           REMOTE
           gcloud compute scp /tmp/swap-auricrux.sh "${INSTANCE}:/tmp/swap-auricrux.sh" \
