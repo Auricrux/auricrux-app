@@ -1,20 +1,25 @@
 name: GCP VM Cutover Deploy
 
-# Deploys new Auricrux web to the existing production VM
-# (auricrux-mobile-prod / instance-20260715-113528 / 35.239.225.224)
+# Production VM: auricrux-mobile-prod / instance-20260715-113528 / 35.239.225.224
 on:
   workflow_dispatch:
     inputs:
       step:
-        description: "probe-ssh | add-ssh-key | deploy-auricrux"
+        description: "inspect | deploy-auricrux | deploy-ecosystem-api"
         required: true
-        default: "probe-ssh"
+        default: "inspect"
 
 jobs:
   vm:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      CLOUDSDK_CORE_PROJECT: auricrux-mobile-prod
+      CLOUDSDK_PROJECT: auricrux-mobile-prod
+      GCLOUD_PROJECT: auricrux-mobile-prod
+      GCP_PROJECT: auricrux-mobile-prod
+      GOOGLE_CLOUD_PROJECT: auricrux-mobile-prod
     steps:
       - uses: actions/checkout@v4
 
@@ -24,9 +29,42 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Cutover against production VM
-        env:
-          STEP: ${{ inputs.step }}
+      - name: Ensure SSH key
+        run: |
+          set -euo pipefail
+          if [ ! -f "$HOME/.ssh/google_compute_engine" ]; then
+            ssh-keygen -t rsa -f "$HOME/.ssh/google_compute_engine" -N "" -C "github-cutover"
+          fi
+
+      - name: Inspect VM runtime
+        if: inputs.step == 'inspect'
+        run: |
+          set -euo pipefail
+          PROJECT=auricrux-mobile-prod
+          ZONE=us-central1-b
+          INSTANCE=instance-20260715-113528
+          gcloud config set project "$PROJECT"
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet --command='
+            set -e
+            echo HOST=$(hostname)
+            echo USER=$(whoami)
+            uname -a
+            echo "=== docker ==="
+            docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}" || true
+            echo "=== listeners ==="
+            sudo ss -tlnp | head -40 || true
+            echo "=== nginx ==="
+            ls /etc/nginx/sites-enabled 2>/dev/null || ls /etc/nginx/conf.d 2>/dev/null || true
+            sudo nginx -T 2>/dev/null | head -120 || true
+            echo "=== systemd auricrux/fca ==="
+            systemctl list-units --type=service --all | grep -Ei "auricrux|fca|kestrel|nginx|docker" || true
+            echo "=== disk/mem ==="
+            df -h / /var 2>/dev/null || df -h /
+            free -m
+          '
+
+      - name: Deploy Auricrux (docker on VM)
+        if: inputs.step == 'deploy-auricrux'
         run: |
           set -euo pipefail
           PROJECT=auricrux-mobile-prod
@@ -34,42 +72,29 @@ jobs:
           INSTANCE=instance-20260715-113528
           gcloud config set project "$PROJECT"
 
-          echo "=== instance describe ==="
-          gcloud compute instances describe "$INSTANCE" --zone="$ZONE" \
-            --format='yaml(name,status,networkInterfaces[0].accessConfigs[0].natIP,metadata.items[].key)' 2>&1 || true
+          # Pack context (exclude heavy/unneeded)
+          tar --exclude='.git' --exclude='_publish' --exclude='artifacts' --exclude='**/bin' --exclude='**/obj' \
+            -czf /tmp/auricrux-src.tgz .
 
-          if [ "$STEP" = "probe-ssh" ]; then
-            echo "=== try SSH via IAP ==="
-            gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" \
-              --tunnel-through-iap --command='hostname; whoami; uname -a; command -v docker; command -v dotnet; ls /var/www 2>/dev/null; sudo -n true && echo sudo_ok || echo no_sudo' \
-              --quiet 2>&1 || true
-            exit 0
-          fi
+          gcloud compute scp /tmp/auricrux-src.tgz "${INSTANCE}:/tmp/auricrux-src.tgz" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
 
-          # Generate ephemeral key for this job
-          ssh-keygen -t ed25519 -f /tmp/cutover_key -N "" -C "github-cutover"
-          PUB=$(cat /tmp/cutover_key.pub)
-          # Prefer github-actions-ci as username for OS Login-less metadata SSH
-          USERNAME=cutover
-          META_LINE="$USERNAME:$PUB"
-          echo "=== add SSH metadata key ==="
-          # Fetch existing ssh-keys and append
-          EXISTING=$(gcloud compute instances describe "$INSTANCE" --zone="$ZONE" --format="value(metadata.items.filter(key:ssh-keys).extract(value).flatten())" 2>/dev/null || true)
-          COMBINED="$EXISTING"$'\n'"$META_LINE"
-          gcloud compute instances add-metadata "$INSTANCE" --zone="$ZONE" \
-            --metadata=ssh-keys="$COMBINED" 2>&1
-
-          sleep 5
-          echo "=== SSH with ephemeral key ==="
-          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" \
-            --ssh-key-file=/tmp/cutover_key \
-            --command="hostname; whoami; uname -a; command -v docker || true; command -v dotnet || true; df -h /; free -m" \
-            2>&1 || true
-
-          if [ "$STEP" != "deploy-auricrux" ]; then
-            echo "Stopping after add-ssh-key"
-            exit 0
-          fi
-
-          echo "Deploy step reserved for follow-up once SSH confirmed"
-          exit 0
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet --command='
+            set -euo pipefail
+            sudo mkdir -p /opt/auricrux-app
+            sudo tar -xzf /tmp/auricrux-src.tgz -C /opt/auricrux-app
+            cd /opt/auricrux-app
+            sudo docker build -t auricrux-web:cutover -f Dockerfile .
+            sudo docker rm -f auricrux-web-cutover 2>/dev/null || true
+            # Publish on 5080 locally; nginx/host routing may already map auricrux host — inspect bind next.
+            sudo docker run -d --name auricrux-web-cutover --restart unless-stopped \
+              -p 127.0.0.1:5080:8080 \
+              -e ASPNETCORE_URLS=http://0.0.0.0:8080 \
+              -e ASPNETCORE_ENVIRONMENT=Production \
+              -e Auricrux__OllamaUrl=http://127.0.0.1:11434 \
+              -e Auricrux__PrimaryModel=auricrux-fca \
+              auricrux-web:cutover
+            sleep 3
+            curl -fsS http://127.0.0.1:5080/health || curl -fsS http://127.0.0.1:5080/api/health || true
+            sudo docker ps --filter name=auricrux-web-cutover
+          '
