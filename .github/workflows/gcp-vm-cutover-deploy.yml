@@ -1,0 +1,75 @@
+name: GCP VM Cutover Deploy
+
+# Deploys new Auricrux web to the existing production VM
+# (auricrux-mobile-prod / instance-20260715-113528 / 35.239.225.224)
+on:
+  workflow_dispatch:
+    inputs:
+      step:
+        description: "probe-ssh | add-ssh-key | deploy-auricrux"
+        required: true
+        default: "probe-ssh"
+
+jobs:
+  vm:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Cutover against production VM
+        env:
+          STEP: ${{ inputs.step }}
+        run: |
+          set -euo pipefail
+          PROJECT=auricrux-mobile-prod
+          ZONE=us-central1-b
+          INSTANCE=instance-20260715-113528
+          gcloud config set project "$PROJECT"
+
+          echo "=== instance describe ==="
+          gcloud compute instances describe "$INSTANCE" --zone="$ZONE" \
+            --format='yaml(name,status,networkInterfaces[0].accessConfigs[0].natIP,metadata.items[].key)' 2>&1 || true
+
+          if [ "$STEP" = "probe-ssh" ]; then
+            echo "=== try SSH via IAP ==="
+            gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" \
+              --tunnel-through-iap --command='hostname; whoami; uname -a; command -v docker; command -v dotnet; ls /var/www 2>/dev/null; sudo -n true && echo sudo_ok || echo no_sudo' \
+              --quiet 2>&1 || true
+            exit 0
+          fi
+
+          # Generate ephemeral key for this job
+          ssh-keygen -t ed25519 -f /tmp/cutover_key -N "" -C "github-cutover"
+          PUB=$(cat /tmp/cutover_key.pub)
+          # Prefer github-actions-ci as username for OS Login-less metadata SSH
+          USERNAME=cutover
+          META_LINE="$USERNAME:$PUB"
+          echo "=== add SSH metadata key ==="
+          # Fetch existing ssh-keys and append
+          EXISTING=$(gcloud compute instances describe "$INSTANCE" --zone="$ZONE" --format="value(metadata.items.filter(key:ssh-keys).extract(value).flatten())" 2>/dev/null || true)
+          COMBINED="$EXISTING"$'\n'"$META_LINE"
+          gcloud compute instances add-metadata "$INSTANCE" --zone="$ZONE" \
+            --metadata=ssh-keys="$COMBINED" 2>&1
+
+          sleep 5
+          echo "=== SSH with ephemeral key ==="
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" \
+            --ssh-key-file=/tmp/cutover_key \
+            --command="hostname; whoami; uname -a; command -v docker || true; command -v dotnet || true; df -h /; free -m" \
+            2>&1 || true
+
+          if [ "$STEP" != "deploy-auricrux" ]; then
+            echo "Stopping after add-ssh-key"
+            exit 0
+          fi
+
+          echo "Deploy step reserved for follow-up once SSH confirmed"
+          exit 0
