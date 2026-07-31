@@ -1,12 +1,12 @@
 name: GCP Cutover Build Ecosystem API
 
-# Builds current Auricrux/fca-ecosystem API, pushes to Artifact Registry (auricrux-mobile-prod/fca),
-# then recreates fca-api on the production VM behind Caddy (api.* → :5000).
+# Builds current Auricrux/fca-ecosystem API on the production VM (docker build),
+# tags into local + Artifact Registry, recreates fca-api (api.* → :5000 via Caddy).
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: "checkout-probe | build-push | swap-vm | full"
+        description: "checkout-probe | build-swap | swap-only | full"
         required: true
         default: "full"
 
@@ -16,15 +16,11 @@ jobs:
     permissions:
       contents: read
     env:
-      CLOUDSDK_CORE_PROJECT: auricrux-mobile-prod
-      CLOUDSDK_PROJECT: auricrux-mobile-prod
-      GCLOUD_PROJECT: auricrux-mobile-prod
-      GCP_PROJECT: auricrux-mobile-prod
-      GOOGLE_CLOUD_PROJECT: auricrux-mobile-prod
       REGION: us-central1
       AR_IMAGE: us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/fca-ecosystem-api:latest
       ZONE: us-central1-b
       INSTANCE: instance-20260715-113528
+      PROJECT: auricrux-mobile-prod
     steps:
       - name: Checkout auricrux-app
         uses: actions/checkout@v4
@@ -43,83 +39,119 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
+      - name: Force auricrux-mobile-prod project
+        run: |
+          set -euo pipefail
+          # setup-gcloud exports the SA home project (fca-contractor-command); override hard.
+          unset CLOUDSDK_CORE_PROJECT CLOUDSDK_PROJECT GCLOUD_PROJECT GCP_PROJECT GOOGLE_CLOUD_PROJECT || true
+          export CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod
+          export CLOUDSDK_PROJECT=auricrux-mobile-prod
+          export GCLOUD_PROJECT=auricrux-mobile-prod
+          export GCP_PROJECT=auricrux-mobile-prod
+          export GOOGLE_CLOUD_PROJECT=auricrux-mobile-prod
+          echo "CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "CLOUDSDK_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GCLOUD_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GCP_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          gcloud config set project auricrux-mobile-prod
+          gcloud config get-value project
+
       - name: Checkout probe result
         if: inputs.action == 'checkout-probe'
         run: |
           set -euo pipefail
           test -f fca-ecosystem/infra/docker/Dockerfile.api
           echo "CHECKOUT_OK"
-          ls fca-ecosystem/infra/docker
           git -C fca-ecosystem rev-parse --short HEAD
 
-      - name: Cloud Build + push API image
-        if: inputs.action == 'build-push' || inputs.action == 'full'
+      - name: Pack + SCP ecosystem source to VM
+        if: inputs.action == 'build-swap' || inputs.action == 'full'
         run: |
           set -euo pipefail
-          gcloud config set project auricrux-mobile-prod
-          gcloud artifacts repositories describe fca --location="$REGION" --project=auricrux-mobile-prod \
-            || gcloud artifacts repositories create fca --repository-format=docker --location="$REGION" --project=auricrux-mobile-prod
+          tar --exclude='.git' --exclude='**/bin' --exclude='**/obj' --exclude='node_modules' \
+            --exclude='apps/web/dist' --exclude='_publish' --exclude='artifacts' \
+            -czf /tmp/fca-ecosystem-src.tgz -C fca-ecosystem .
+          ls -lh /tmp/fca-ecosystem-src.tgz
+          gcloud compute scp /tmp/fca-ecosystem-src.tgz "${INSTANCE}:/tmp/fca-ecosystem-src.tgz" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
 
-          cat > /tmp/cloudbuild.api.yaml <<'EOF'
-          steps:
-            - name: gcr.io/cloud-builders/docker
-              args: ['build', '-t', 'us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/fca-ecosystem-api:latest', '-f', 'infra/docker/Dockerfile.api', '.']
-          images:
-            - us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/fca-ecosystem-api:latest
-          timeout: 2400s
-          options:
-            machineType: E2_HIGHCPU_8
-          EOF
-          # Strip leading spaces introduced by YAML block indent
-          sed -i 's/^          //' /tmp/cloudbuild.api.yaml
-          cat /tmp/cloudbuild.api.yaml
-
-          gcloud builds submit fca-ecosystem \
-            --project=auricrux-mobile-prod \
-            --config=/tmp/cloudbuild.api.yaml
-          echo "Pushed $AR_IMAGE"
-
-      - name: Swap fca-api on VM
-        if: inputs.action == 'swap-vm' || inputs.action == 'full'
+      - name: Build on VM + swap fca-api
+        if: inputs.action == 'build-swap' || inputs.action == 'full' || inputs.action == 'swap-only'
         run: |
           set -euo pipefail
-          PROJECT=auricrux-mobile-prod
-          gcloud config set project "$PROJECT"
-          # Write remote script to avoid quoting hell
-          cat > /tmp/swap-fca-api.sh <<EOF
+          cat > /tmp/build-swap-fca-api.sh <<'REMOTE'
           #!/bin/bash
           set -euo pipefail
-          IMAGE="${AR_IMAGE}"
+          IMAGE="us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/fca-ecosystem-api:latest"
+          LOCAL_TAG="fca-ecosystem-api:cutover"
+
+          if [ -f /tmp/fca-ecosystem-src.tgz ]; then
+            sudo rm -rf /opt/fca-ecosystem-build
+            sudo mkdir -p /opt/fca-ecosystem-build
+            sudo tar -xzf /tmp/fca-ecosystem-src.tgz -C /opt/fca-ecosystem-build
+            cd /opt/fca-ecosystem-build
+            echo "=== docker build ==="
+            sudo docker build -t "$LOCAL_TAG" -t "$IMAGE" -f infra/docker/Dockerfile.api .
+            # Best-effort push (VM SA may lack AR writer)
+            TOKEN=$(curl -fsS -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token' | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])')
+            echo "$TOKEN" | sudo docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev || true
+            sudo docker push "$IMAGE" || echo "AR push skipped/failed — using local tag"
+            RUN_IMAGE="$LOCAL_TAG"
+          else
+            echo "No source tarball — pulling AR image only"
+            TOKEN=$(curl -fsS -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token' | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])')
+            echo "$TOKEN" | sudo docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
+            sudo docker pull "$IMAGE"
+            RUN_IMAGE="$IMAGE"
+          fi
+
           echo "=== before ==="
           sudo docker ps --filter name=fca-api --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
-          TOKEN=\$(curl -fsS -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token' | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])')
-          echo "\$TOKEN" | sudo docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
-          sudo docker pull "\$IMAGE"
           sudo docker inspect fca-api --format '{{range .Config.Env}}{{println .}}{{end}}' | sudo tee /tmp/fca-api.env >/dev/null
-          NETWORK=\$(sudo docker inspect fca-api --format '{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}' || true)
-          echo "NETWORK=\$NETWORK"
+          NETWORK=$(sudo docker inspect fca-api --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' || true)
+          echo "NETWORK=$NETWORK"
+
           sudo docker stop fca-api || true
-          sudo docker rename fca-api "fca-api-prev-\$(date +%s)" || true
+          sudo docker rename fca-api "fca-api-prev-$(date +%s)" || true
+
           ENV_ARGS=()
           while IFS= read -r line; do
-            [ -n "\$line" ] || continue
-            ENV_ARGS+=(-e "\$line")
+            [ -n "$line" ] || continue
+            # Drop image-baked ASPNETCORE_HTTP_PORTS so URLS=5000 wins cleanly
+            case "$line" in
+              ASPNETCORE_HTTP_PORTS=*) continue ;;
+            esac
+            ENV_ARGS+=(-e "$line")
           done < /tmp/fca-api.env
-          if [ -n "\$NETWORK" ]; then
-            sudo docker run -d --name fca-api --restart unless-stopped --network "\$NETWORK" -p 5000:5000 "\${ENV_ARGS[@]}" "\$IMAGE"
+
+          if [ -n "$NETWORK" ]; then
+            sudo docker run -d --name fca-api --restart unless-stopped --network "$NETWORK" \
+              -p 5000:5000 \
+              "${ENV_ARGS[@]}" \
+              "$RUN_IMAGE"
           else
-            sudo docker run -d --name fca-api --restart unless-stopped -p 5000:5000 "\${ENV_ARGS[@]}" "\$IMAGE"
+            sudo docker run -d --name fca-api --restart unless-stopped \
+              -p 5000:5000 \
+              "${ENV_ARGS[@]}" \
+              "$RUN_IMAGE"
           fi
-          sleep 15
+
+          # Wait for listen
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsS http://127.0.0.1:5000/api/health >/tmp/health.json 2>/dev/null; then
+              break
+            fi
+            sleep 3
+          done
           echo "=== after ==="
           sudo docker ps --filter name=fca-api --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
-          curl -fsS http://127.0.0.1:5000/api/health || true; echo
-          curl -fsS -w "catalog_http=%{http_code}\n" http://127.0.0.1:5000/api/catalog || true; echo
-          curl -k -fsS -w "caddy_catalog_http=%{http_code}\n" -H 'Host: api.futurecontractorsofamerica.com' https://127.0.0.1/api/catalog || true; echo
-          sudo docker logs fca-api --tail 60 2>&1 || true
-          EOF
-          sed -i 's/^          //' /tmp/swap-fca-api.sh
-          gcloud compute scp /tmp/swap-fca-api.sh "${INSTANCE}:/tmp/swap-fca-api.sh" \
+          echo "health:"; cat /tmp/health.json 2>/dev/null || curl -fsS http://127.0.0.1:5000/api/health || true; echo
+          echo "catalog:"; curl -fsS -w "\nhttp=%{http_code}\n" http://127.0.0.1:5000/api/catalog || true
+          echo "caddy:"; curl -k -fsS -w "\nhttp=%{http_code}\n" -H 'Host: api.futurecontractorsofamerica.com' https://127.0.0.1/api/catalog || true
+          sudo docker logs fca-api --tail 80 2>&1 || true
+          REMOTE
+          gcloud compute scp /tmp/build-swap-fca-api.sh "${INSTANCE}:/tmp/build-swap-fca-api.sh" \
             --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
           gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet \
-            --command='bash /tmp/swap-fca-api.sh'
+            --command='bash /tmp/build-swap-fca-api.sh'
