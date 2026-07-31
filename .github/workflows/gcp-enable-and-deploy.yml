@@ -1,0 +1,84 @@
+name: GCP Enable And Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "probe | enable-apis | deploy-auricrux"
+        required: true
+        default: "enable-apis"
+
+jobs:
+  gcp:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Discover + enable + optional deploy
+        env:
+          ACTION: ${{ inputs.action }}
+        run: |
+          set -euo pipefail
+          CREDS="${GOOGLE_GHA_CREDS_PATH:-$GOOGLE_APPLICATION_CREDENTIALS}"
+          PROJECT=$(python3 -c "import json,os; print(json.load(open('$CREDS'))['project_id'])")
+          EMAIL=$(python3 -c "import json,os; print(json.load(open('$CREDS'))['client_email'])")
+          echo "SA=$EMAIL PROJECT=$PROJECT ACTION=$ACTION"
+          gcloud config set project "$PROJECT"
+
+          echo "=== projects accessible ==="
+          gcloud projects list --format='table(projectId,name,projectNumber)' 2>&1 || true
+
+          if [ "$ACTION" = "enable-apis" ] || [ "$ACTION" = "deploy-auricrux" ]; then
+            for api in run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com compute.googleapis.com secretmanager.googleapis.com; do
+              echo "Enabling $api ..."
+              gcloud services enable "$api" --project="$PROJECT" 2>&1 || echo "enable failed for $api (continuing)"
+            done
+          fi
+
+          echo "=== compute instances ==="
+          gcloud compute instances list --project="$PROJECT" --format='table(name,zone,status,networkInterfaces[0].accessConfigs[0].natIP)' 2>&1 || true
+
+          # Also try calyndra-mobile if accessible
+          for p in calyndra-mobile fca-ecosystem fca-contractor-command; do
+            echo "=== try project $p instances ==="
+            gcloud compute instances list --project="$p" --format='table(name,zone,status,networkInterfaces[0].accessConfigs[0].natIP)' 2>&1 || true
+          done
+
+          echo "=== cloud run ==="
+          gcloud run services list --project="$PROJECT" --platform=managed 2>&1 || true
+
+          if [ "$ACTION" != "deploy-auricrux" ]; then
+            echo "Stopping before deploy (action=$ACTION)"
+            exit 0
+          fi
+
+          REGION=us-central1
+          REPO=auricrux
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/${REPO}/auricrux-web:cutover"
+
+          gcloud artifacts repositories describe "$REPO" --location="$REGION" --project="$PROJECT" 2>/dev/null \
+            || gcloud artifacts repositories create "$REPO" --repository-format=docker --location="$REGION" --project="$PROJECT"
+
+          gcloud builds submit --project="$PROJECT" --tag "$IMAGE" .
+
+          gcloud run deploy auricrux-web \
+            --project="$PROJECT" \
+            --image="$IMAGE" \
+            --region="$REGION" \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --memory=1Gi \
+            --cpu=1 \
+            --max-instances=3 \
+            --set-env-vars="ASPNETCORE_URLS=http://0.0.0.0:8080,ASPNETCORE_ENVIRONMENT=Production"
+
+          gcloud run services describe auricrux-web --project="$PROJECT" --region="$REGION" --format='value(status.url)'
