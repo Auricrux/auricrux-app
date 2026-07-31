@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-07-31T19:27:25Z",
+  "summary": "auricrux.futurecontractorsofamerica.com now serves the current Auricrux.Web cutover image on the GCP VM (Caddy → :5001 for /api/*, :4000 for UI).",
+  "probes": {
+    "https://auricrux.futurecontractorsofamerica.com/api/capabilities": {
+      "http": 200,
+      "corpusEntries": 80,
+      "shippedCore": 17,
+      "includesAgentAndCalc": true
+    },
+    "https://auricrux.futurecontractorsofamerica.com/api/agent/tools": {
+      "http": 200,
+      "tools": ["corpus_search", "web_browse", "concrete_volume_cy", "rebar_weight_lb", "board_feet", "percent_of", "unit_convert"]
+    },
+    "https://auricrux.futurecontractorsofamerica.com/health": {
+      "http": 200,
+      "note": "May report degraded until Ollama host-gateway env is applied; corpus-fallback still serves grounded routes"
+    }
+  },
+  "ci": {
+    "workflow": "gcp-cutover-build-auricrux.yml",
+    "runId": 30658889022
+  }
+}

@@ -25,7 +25,7 @@ Do not soften claims.
 | AUX-017 | Product runtime serves promoted specialist weights (not interim llama3.2 alias only) | model_manifest.json | Moat | Ollama / export | Model id + eval | FAIL |
 | AUX-018 | True-god checkpoint-70000 evaluated and safely exported to product | model_manifest.json | Moat | train / export | Eval suite + GGUF | FAIL |
 | AUX-019 | Construction god eval suite PASS for promoted model | model_manifest.json | Moat | eval | Suite report | PASS |
-| AUX-020 | Live API at auricrux.futurecontractorsofamerica.com/api/chat is the appâ€™s real backend | model_manifest.json | Platform | edge + client | Clientâ†’edge chat | PARTIAL |
+| AUX-020 | Live API at auricrux.futurecontractorsofamerica.com/api/chat is the app real backend | model_manifest.json | Platform | edge + client | docs/runtime-proof/gcp-auricrux-cutover-2026-07-31.json (capabilities + agent/tools 200) | PASS |
 | AUX-021 | Authentication (OAuth2/OIDC) on web and mobile | README Security | Platform | Web / Mobile | Auth gate | PASS |
 | AUX-022 | Database-backed conversation persistence | README; MemoryController | Product | ConversationMemoryService | History survives restart | PASS |
 | AUX-023 | Android APK built, signed, and shippable | DEPLOYMENT_FINAL_REPORT | Client | Auricrux.Mobile | APK artifact | PASS |
@@ -62,7 +62,7 @@ Do not soften claims.
 | AUX-024 | **PASS 2026-07-28.** Image build already CI-proven; **registry push now proven** via Azure Container Registry cloud build: `az acr build -r auricruxacr -t auricrux-web:latest` â†’ `auricruxacr.azurecr.io/auricrux-web:latest` digest `sha256:a58b301bc007291282a630ffcb348a4f270137980e78888faf8c9db13bc5722c` (tags `latest` + `pass-202607281047`). Proof: `docs/runtime-proof/auricrux-acr-push-2026-07-28.json` + `scripts/acr-build-push.ps1`. Docker Hub secrets still optional for Hub mirror. |
 | AUX-025 | Production-shaped `k8s-deployment.yaml` + `k8s-ingress.yaml`. Added `.github/workflows/k8s-validate.yml`: kubeconform schema validation + kind cluster server-side dry-run on every push â€” proves manifests are syntactically valid and apply-able. Fixed YAML workflow parse error (f816cd4 inline Python broke Actions parser) by moving ClusterIssuer strip to `scripts/k8s-strip-cluster-issuer-for-kind.py`. **No live cluster credentials** in CI or dev environment â€” stays PARTIAL until founder provides kubeconfig for a real deploy. |
 | AUX-027 | Construction eval suite scores 30/30 (100%) on keyword-grounded domain accuracy (CSI/OSHA/estimating/scheduling/contracts/code), which is real evidence of domain correctness â€” but no blind side-by-side quality comparison against ChatGPT/Claude/Gemini has been run, so "flagship-peer output" is unproven. Added `eval/PEER_COMPARISON_RUBRIC.md` (0â€“5 scoring rubric across domain accuracy/actionability/safety diligence/field practicality/concision, at-parity threshold, and the run procedure) plus `eval/peer_comparison_template.json` (blank per-question answer/score scaffold for Auricrux vs. ChatGPT vs. Claude vs. Gemini). No peer API keys are available in this dev environment, so **no comparison has actually been run** â€” the rubric is methodology, not a result. Per instruction ("keep FAIL only if no peer comparison"): **stays FAIL** until a real blind run exists. |
-| AUX-020 / AUX-030 | **Azure live 2026-07-28 next pass:** `corpusEntries=80`, smoke **6/6 PASS** on `https://fca-auricrux-api.azurewebsites.net` (health/models/chat/thinking/search/capabilities). Proof: `docs/runtime-proof/capabilities_matrix_live_2026-07-28.json`. **AUX-030 PASS.** **AUX-020 PARTIAL:** custom domain `auricrux.futurecontractorsofamerica.com` still 404 — Porkbun DNS. |
+| AUX-020 / AUX-030 | **Azure live 2026-07-28 next pass:** `corpusEntries=80`, smoke **6/6 PASS** on `https://fca-auricrux-api.azurewebsites.net` (health/models/chat/thinking/search/capabilities). Proof: `docs/runtime-proof/capabilities_matrix_live_2026-07-28.json`. **AUX-030 PASS.** **AUX-020 PASS 2026-07-31:** custom domain serves capabilities/agent via GCP Caddy (`docs/runtime-proof/gcp-auricrux-cutover-2026-07-31.json`). |
 
 ## Status legend
 
@@ -76,4 +76,4 @@ See [DATA_SCALE.md](DATA_SCALE.md): Autodesk-class ~100GB+ install â†’ ~200
 
 ## Row count
 
-**36 claims** — 27 PASS / 6 PARTIAL / 3 FAIL (2026-07-30: agent+calc shipped deepening AUX-001/002; AUX-017/018/027 FAIL; AUX-020 PARTIAL pending Porkbun)
+**36 claims** — 28 PASS / 5 PARTIAL / 3 FAIL (2026-07-31: AUX-020 PASS on GCP custom domain; AUX-017/018/027 FAIL)
