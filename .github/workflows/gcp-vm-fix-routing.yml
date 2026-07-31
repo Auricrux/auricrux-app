@@ -1,0 +1,95 @@
+name: GCP VM Fix Routing
+
+on:
+  workflow_dispatch:
+    inputs:
+      step:
+        description: "inspect-caddy | fix-fca-api | smoke"
+        required: true
+        default: "inspect-caddy"
+
+jobs:
+  vm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Run
+        env:
+          STEP: ${{ inputs.step }}
+          CLOUDSDK_CORE_PROJECT: auricrux-mobile-prod
+          CLOUDSDK_PROJECT: auricrux-mobile-prod
+        run: |
+          set -euo pipefail
+          PROJECT=auricrux-mobile-prod
+          ZONE=us-central1-b
+          INSTANCE=instance-20260715-113528
+          # Force project (auth action may export fca-contractor-command)
+          unset CLOUDSDK_CORE_PROJECT CLOUDSDK_PROJECT GCLOUD_PROJECT GCP_PROJECT GOOGLE_CLOUD_PROJECT || true
+          export CLOUDSDK_CORE_PROJECT=$PROJECT CLOUDSDK_PROJECT=$PROJECT
+          gcloud config set project "$PROJECT"
+
+          ssh() {
+            gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet --command="$1"
+          }
+
+          if [ "$STEP" = "inspect-caddy" ]; then
+            ssh '
+              set -e
+              echo "=== caddyfile candidates ==="
+              sudo find /etc /opt /home /var -name "Caddyfile*" 2>/dev/null | head -40
+              echo "=== caddy adapt ==="
+              sudo caddy version || true
+              ps aux | grep -i caddy | grep -v grep || true
+              echo "=== docker health fca-api ==="
+              sudo docker inspect fca-api --format "{{json .State.Health}}" 2>/dev/null | head -c 2000; echo
+              sudo docker logs fca-api --tail 80 2>&1 || true
+              echo "=== local curls ==="
+              curl -fsS -H "Host: api.futurecontractorsofamerica.com" http://127.0.0.1/api/health || true; echo
+              curl -fsS -H "Host: api.futurecontractorsofamerica.com" http://127.0.0.1:5000/api/health || true; echo
+              curl -fsS -H "Host: api.futurecontractorsofamerica.com" http://127.0.0.1:5000/api/catalog || true; echo
+              curl -fsS -H "Host: auricrux.futurecontractorsofamerica.com" http://127.0.0.1:4000/health || true; echo
+              curl -fsS -H "Host: auricrux.futurecontractorsofamerica.com" http://127.0.0.1:5001/health || true; echo
+              echo "=== caddy config dump ==="
+              sudo curl -fsS http://127.0.0.1:2019/config/ 2>/dev/null | head -c 8000 || true; echo
+            '
+            exit 0
+          fi
+
+          if [ "$STEP" = "fix-fca-api" ]; then
+            ssh '
+              set -euo pipefail
+              echo "Pulling latest fca-ecosystem-api..."
+              sudo docker pull us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/fca-ecosystem-api:latest
+              sudo docker pull us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/auricrux-api:latest || true
+              # Recreate fca-api with same published ports if compose exists
+              if [ -f /opt/fca/docker-compose.yml ]; then
+                cd /opt/fca && sudo docker compose up -d --force-recreate fca-api
+              elif [ -f /opt/auricrux/docker-compose.yml ]; then
+                cd /opt/auricrux && sudo docker compose up -d --force-recreate fca-api
+              else
+                echo "No compose file found; restarting container with same config"
+                sudo docker inspect fca-api > /tmp/fca-api.inspect.json
+                # Soft restart first
+                sudo docker restart fca-api
+              fi
+              sleep 8
+              sudo docker ps --filter name=fca-api
+              curl -fsS http://127.0.0.1:5000/api/health || true; echo
+              curl -fsS http://127.0.0.1:5000/api/catalog || true; echo
+              sudo docker logs fca-api --tail 40 2>&1 || true
+            '
+            exit 0
+          fi
+
+          if [ "$STEP" = "smoke" ]; then
+            ssh '
+              set -e
+              echo PUBLIC-like via caddy host headers:
+              curl -k -fsS -H "Host: api.futurecontractorsofamerica.com" https://127.0.0.1/api/health || curl -fsS -H "Host: api.futurecontractorsofamerica.com" http://127.0.0.1/api/health || true; echo
+              curl -k -fsS -H "Host: api.futurecontractorsofamerica.com" https://127.0.0.1/api/catalog || curl -fsS -H "Host: api.futurecontractorsofamerica.com" http://127.0.0.1/api/catalog || true; echo
+              curl -k -fsS -H "Host: auricrux.futurecontractorsofamerica.com" https://127.0.0.1/api/capabilities || curl -fsS -H "Host: auricrux.futurecontractorsofamerica.com" http://127.0.0.1:4000/api/capabilities || true; echo
+            '
+          fi
