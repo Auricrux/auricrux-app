@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-07-31T20:25:00Z",
+  "summary": "Hardened remaining Cursor-clearable gaps against Google loftiness critique: ship construction field vision, narrow public wedge, DualRun public health signal + exit workflow, specialist wedge proof (not AUX-027).",
+  "auricrux": {
+    "vision": {
+      "endpoint": "POST /api/vision",
+      "tests": "Vision_analyzes_png_and_returns_field_checklist + Vision_requires_image PASS",
+      "honesty": "Field-intake + checklist + RFI draft always; pixel vision when Auricrux:VisionModel set"
+    },
+    "capabilitiesAssessment": "WEDGE PASS / GENERAL PARTIAL",
+    "wedgeDoc": "docs/WEDGE_SCOPE.md",
+    "specialistWedgeReport": "eval/reports/specialist_wedge_v1_report.json"
+  },
+  "fcaEcosystem": {
+    "healthDualRun": "/api/health.dualRun.{globalExit,writerMode}",
+    "dualRunExitWorkflow": "auricrux-app/.github/workflows/gcp-cutover-dual-run-exit.yml",
+    "fca058": "FAIL until workflow run + rebuild prove sole on api.*"
+  },
+  "stillFounderOnly": [
+    "FCA-011 ecosystem CNAME",
+    "AUX-017/018 checkpoint export",
+    "AUX-027 peer API keys",
+    "Apple IPA / kubeconfig"
+  ]
+}

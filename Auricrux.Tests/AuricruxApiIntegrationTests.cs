@@ -251,6 +251,40 @@ public sealed class AuricruxApiIntegrationTests : IClassFixture<WebApplicationFa
         Assert.Contains("concrete_volume_cy", json);
     }
 
+    // ---------- Vision / field photo ----------
+
+    [Fact]
+    public async Task Vision_requires_image()
+    {
+        var response = await _client.PostAsJsonAsync("/api/vision", new
+        {
+            prompt = "Check for fall hazards",
+            focus = "safety"
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Vision_analyzes_png_and_returns_field_checklist()
+    {
+        // 1×1 PNG
+        const string png =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+        var response = await _client.PostAsJsonAsync("/api/vision", new
+        {
+            imageBase64 = png,
+            prompt = "Scaffold safety check before pour",
+            focus = "safety"
+        });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("\"success\":true", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("checklist", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("rfiDraft", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("png", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("scaffold", json, StringComparison.OrdinalIgnoreCase);
+    }
+
     // ---------- Chat + feedback ----------
 
     [Fact]

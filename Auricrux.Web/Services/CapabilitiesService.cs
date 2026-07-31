@@ -46,8 +46,9 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                 MatrixRows = matrix.Count,
                 AuricruxUniqueAdvantages = matrix.Count(r => r.Auricrux == "shipped" && r.Peers.Values.All(p => p is "no" or "partial")),
                 OverallAssessment =
-                    "PARTIAL — chat/search/thinking/voice/workspace/media/auth/freemium/corpus/browse/agent/calc are real; " +
-                    "vision and promoted fine-tune weights remain gaps vs. major players."
+                    "WEDGE PASS / GENERAL PARTIAL — construction OS beachhead is real " +
+                    "(corpus/search/thinking/agent/calc/browse/field-vision/auth/freemium); " +
+                    "not claiming full ChatGPT-class general AI; fine-tune weights still blocked (AUX-017)."
             }
         };
     }
@@ -71,7 +72,7 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
         Feature("Live web browsing", "shipped", "POST /api/browse fetches http(s) URL text (SSRF-guarded) and LLM-summarizes for construction Q&A"),
         Feature("Agentic tool-use / plugins", "shipped", "POST /api/agent bounded tool loop: corpus_search, web_browse, construction calc tools"),
         Feature("Native code interpreter", "shipped", "POST /api/calc deterministic construction calculator (volume/rebar/BF/percent/units) — not sandboxed Python"),
-        Feature("Vision / photo analysis", "planned", "Not yet implemented"),
+        Feature("Vision / photo analysis", "shipped", "POST /api/vision construction field-photo intake + RFI draft; Ollama VisionModel optional for pixels"),
         Feature("Fine-tuned construction weights live", "blocked", "checkpoint-70000 awaiting safe export (AUX-017/018)")
     ];
 
@@ -107,8 +108,8 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
             "Deterministic construction calculator (/api/calc); not a sandboxed Python notebook like ChatGPT."),
         Matrix("Live web browsing", "shipped", yes, partial, yes, partial, yes,
             "POST /api/browse: SSRF-guarded URL fetch + LLM construction summarize (not an autonomous agent browser)."),
-        Matrix("Vision / photo analysis", "planned", yes, yes, yes, partial, partial,
-            "Not implemented; critical for field photo RFI workflows."),
+        Matrix("Vision / photo analysis", "shipped", yes, yes, yes, partial, partial,
+            "POST /api/vision: field-photo intake + OSHA/quality/RFI checklist + draft RFI; pixel vision when Auricrux:VisionModel set."),
         Matrix("Construction fine-tuned weights", "blocked", no, no, no, no, no,
             "checkpoint-70000 not exported; auricrux-fca is system-prompt alias over llama3.2-class base (AUX-017 FAIL).")
     ];

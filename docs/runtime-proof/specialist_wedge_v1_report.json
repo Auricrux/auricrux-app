@@ -1,0 +1,22 @@
+{
+  "capturedAt": "2026-07-31T20:20:00Z",
+  "title": "specialist_wedge_v1",
+  "purpose": "Narrow-scope construction beachhead proof (Google critique). Not AUX-027 peer parity.",
+  "domainSuite": {
+    "suite": "construction_god_suite_v1",
+    "passed": 30,
+    "total": 30,
+    "passRate": 1.0,
+    "report": "eval/reports/construction_god_suite_v1_report.json"
+  },
+  "corpus": {
+    "entries": 80,
+    "categories": 11
+  },
+  "wedgeVerdict": "PASS",
+  "aux027FlagshipPeer": "FAIL",
+  "notes": [
+    "Wedge PASS answers narrow-scope criticism with measurable construction specialist accuracy.",
+    "AUX-027 stays FAIL until blind peer comparison against ChatGPT/Claude/Gemini is executed."
+  ]
+}

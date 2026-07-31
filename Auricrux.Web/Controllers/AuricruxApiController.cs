@@ -14,6 +14,7 @@ public sealed class AuricruxApiController(
     WebBrowseService webBrowse,
     ConstructionAgentService agent,
     ConstructionCalculatorService calculator,
+    ConstructionVisionService vision,
     ILogger<AuricruxApiController> logger) : ControllerBase
 {
     [HttpGet("health")]
@@ -145,6 +146,20 @@ public sealed class AuricruxApiController(
         var args = request.Args ?? new Dictionary<string, double>();
         var result = calculator.Evaluate(request.Operation, args);
         return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost("vision")]
+    public async Task<ActionResult<VisionAnalysisResponse>> PostVision(
+        [FromBody] VisionAnalysisRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await vision.AnalyzeAsync(request, cancellationToken);
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
     }
 
     [HttpPost("feedback/{interactionId:guid}")]

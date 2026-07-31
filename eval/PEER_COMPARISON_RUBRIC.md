@@ -54,6 +54,9 @@ available in an environment permitted to call them.
 
 - Domain-eval evidence (keyword-grounded, self-graded): **exists**, 30/30 — see
   `eval/reports/construction_god_suite_v1_report.md`.
+- Specialist wedge (narrow-scope) report: **exists** — see
+  `docs/runtime-proof/specialist_wedge_v1_report.md` (answers Google "narrow the scope" without
+  claiming flagship peer parity).
 - Blind peer-quality comparison: **does not exist yet** — this file + the template below are the
   methodology only, not a result.
 - AUX-027 verdict: stays **FAIL** per the claim's explicit "flagship-peer output" bar, which

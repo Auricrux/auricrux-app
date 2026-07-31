@@ -51,7 +51,8 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         Assert.Contains(payload.Features, f => f.Name.Contains("Live web browsing") && f.Status == "shipped");
         Assert.Contains(payload.Features, f => f.Name.Contains("Fine-tuned") && f.Status == "blocked");
         Assert.False(payload.ConstructionMoat.PromotedFineTuneLive);
-        Assert.Contains("PARTIAL", payload.ParityScore.OverallAssessment, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("WEDGE", payload.ParityScore.OverallAssessment, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(payload.Features, f => f.Name.Contains("Vision") && f.Status == "shipped");
         Assert.True(payload.CompetitiveMatrix.Count >= 15, "Per-competitor matrix should cover major feature rows.");
         Assert.Contains(payload.CompetitiveMatrix, r =>
             r.Feature.Contains("Construction specialist corpus") && r.Auricrux == "shipped");
@@ -76,6 +77,9 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
 
         var code = payload.CompetitiveMatrix.First(r => r.Feature.Contains("Code interpreter"));
         Assert.Equal("shipped", code.Auricrux);
+
+        var vision = payload.CompetitiveMatrix.First(r => r.Feature.Contains("Vision"));
+        Assert.Equal("shipped", vision.Auricrux);
 
         var fineTune = payload.CompetitiveMatrix.First(r => r.Feature.Contains("fine-tuned weights"));
         Assert.Equal("blocked", fineTune.Auricrux);
