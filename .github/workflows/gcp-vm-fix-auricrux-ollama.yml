@@ -1,0 +1,59 @@
+name: GCP VM Fix Auricrux Ollama
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    env:
+      ZONE: us-central1-b
+      INSTANCE: instance-20260715-113528
+      PROJECT: auricrux-mobile-prod
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Recreate with Ollama URL
+        run: |
+          set -euo pipefail
+          echo "CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "CLOUDSDK_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GCLOUD_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GCP_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          gcloud config set project auricrux-mobile-prod
+          cat > /tmp/fix-ollama.sh <<'REMOTE'
+          #!/bin/bash
+          set -euo pipefail
+          # Bridge gateway to host docker network (ollama on host :11434)
+          GW=$(ip -4 route show default | awk '{print $3; exit}')
+          OLLAMA_URL="http://${GW}:11434"
+          echo "OLLAMA_URL=$OLLAMA_URL"
+          curl -fsS "$OLLAMA_URL/api/tags" | head -c 200 || true; echo
+
+          recreate() {
+            local NAME="$1" HOSTPORT="$2"
+            NETWORK=$(sudo docker inspect "$NAME" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+            sudo docker stop "$NAME"
+            sudo docker rename "$NAME" "${NAME}-prev-$(date +%s)"
+            sudo docker run -d --name "$NAME" --restart unless-stopped --network "$NETWORK" \
+              -p "127.0.0.1:${HOSTPORT}:80" \
+              --add-host=host.docker.internal:host-gateway \
+              -e ASPNETCORE_URLS=http://0.0.0.0:80 \
+              -e ASPNETCORE_ENVIRONMENT=Production \
+              -e Auricrux__OllamaUrl="$OLLAMA_URL" \
+              -e Auricrux__PrimaryModel=auricrux-fca \
+              auricrux-web:cutover
+          }
+          recreate auricrux-web 4000
+          recreate auricrux-api 5001
+          sleep 6
+          curl -fsS http://127.0.0.1:5001/health; echo
+          curl -fsS https://auricrux.futurecontractorsofamerica.com/health || curl -fsS http://127.0.0.1:5001/health; echo
+          REMOTE
+          gcloud compute scp /tmp/fix-ollama.sh "${INSTANCE}:/tmp/fix-ollama.sh" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet \
+            --command='bash /tmp/fix-ollama.sh'
