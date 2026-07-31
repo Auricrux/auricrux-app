@@ -1,0 +1,63 @@
+name: GCP VM Deep Inspect
+
+on:
+  workflow_dispatch:
+
+jobs:
+  vm:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDSDK_CORE_PROJECT: auricrux-mobile-prod
+      CLOUDSDK_PROJECT: auricrux-mobile-prod
+      GCLOUD_PROJECT: auricrux-mobile-prod
+      GCP_PROJECT: auricrux-mobile-prod
+      GOOGLE_CLOUD_PROJECT: auricrux-mobile-prod
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Deep inspect
+        run: |
+          set -euo pipefail
+          PROJECT=auricrux-mobile-prod
+          ZONE=us-central1-b
+          INSTANCE=instance-20260715-113528
+          gcloud config set project "$PROJECT"
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet --command='
+            set -e
+            echo "=== /etc/caddy/Caddyfile ==="
+            sudo cat /etc/caddy/Caddyfile
+            echo "=== compose candidates ==="
+            sudo find /opt /home /var/www /root -name "docker-compose*.yml" 2>/dev/null | head -40
+            ls -la /opt 2>/dev/null || true
+            ls -la /opt/fca 2>/dev/null || true
+            ls -la /opt/auricrux 2>/dev/null || true
+            echo "=== fca-api inspect (image/env/cmd/health) ==="
+            sudo docker inspect fca-api --format "Image={{.Config.Image}}
+Id={{.Image}}
+Status={{.State.Status}} Health={{.State.Health.Status}}
+Cmd={{json .Config.Cmd}}
+Entrypoint={{json .Config.Entrypoint}}
+Env={{json .Config.Env}}
+Ports={{json .NetworkSettings.Ports}}
+Mounts={{json .Mounts}}
+NetworkMode={{.HostConfig.NetworkMode}}
+RestartPolicy={{.HostConfig.RestartPolicy.Name}}
+HC={{json .Config.Healthcheck}}"
+            echo "=== images ==="
+            sudo docker images | head -40
+            echo "=== route probes ==="
+            for p in /health /api/health /api/catalog /swagger/index.html /openapi/v1.json; do
+              code=$(curl -sS -o /tmp/body -w "%{http_code}" "http://127.0.0.1:5000$p" || echo err)
+              echo "$p -> $code $(head -c 120 /tmp/body | tr "\n" " ")"
+            done
+            echo "=== auricrux-api probes ==="
+            for p in /health /api/capabilities /api/agent/tools; do
+              code=$(curl -sS -o /tmp/body -w "%{http_code}" "http://127.0.0.1:5001$p" || echo err)
+              echo "$p -> $code $(head -c 120 /tmp/body | tr "\n" " ")"
+            done
+            echo "=== AR auth test ==="
+            sudo gcloud auth configure-docker us-central1-docker.pkg.dev -q 2>/dev/null || true
+            sudo docker pull us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/fca-ecosystem-api:latest 2>&1 | tail -20 || true
+          '

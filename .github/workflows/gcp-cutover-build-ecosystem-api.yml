@@ -1,0 +1,159 @@
+name: GCP Cutover Build Ecosystem API
+
+# Builds current Auricrux/fca-ecosystem API, pushes to Artifact Registry (auricrux-mobile-prod/fca),
+# then recreates fca-api on the production VM behind Caddy (api.* → :5000).
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "checkout-probe | build-push | swap-vm | full"
+        required: true
+        default: "full"
+
+jobs:
+  cutover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CLOUDSDK_CORE_PROJECT: auricrux-mobile-prod
+      CLOUDSDK_PROJECT: auricrux-mobile-prod
+      GCLOUD_PROJECT: auricrux-mobile-prod
+      GCP_PROJECT: auricrux-mobile-prod
+      GOOGLE_CLOUD_PROJECT: auricrux-mobile-prod
+      REGION: us-central1
+      AR_IMAGE: us-central1-docker.pkg.dev/auricrux-mobile-prod/fca/fca-ecosystem-api:latest
+      ZONE: us-central1-b
+      INSTANCE: instance-20260715-113528
+    steps:
+      - name: Checkout auricrux-app
+        uses: actions/checkout@v4
+
+      - name: Checkout fca-ecosystem (sibling private repo)
+        id: eco
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: Auricrux/fca-ecosystem
+          path: fca-ecosystem
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auth GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Checkout probe result
+        if: inputs.action == 'checkout-probe'
+        run: |
+          set -euo pipefail
+          if [ -f fca-ecosystem/infra/docker/Dockerfile.api ]; then
+            echo "CHECKOUT_OK"
+            ls fca-ecosystem/infra/docker
+          else
+            echo "CHECKOUT_FAILED — GITHUB_TOKEN cannot read Auricrux/fca-ecosystem"
+            exit 1
+          fi
+
+      - name: Ensure ecosystem source on runner
+        if: inputs.action == 'build-push' || inputs.action == 'full' || inputs.action == 'swap-vm'
+        run: |
+          set -euo pipefail
+          if [ ! -f fca-ecosystem/infra/docker/Dockerfile.api ]; then
+            echo "Cross-repo checkout failed; fetching via gh api with GITHUB_TOKEN"
+            mkdir -p fca-ecosystem
+            curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/Auricrux/fca-ecosystem/tarball/main" \
+              -o /tmp/eco.tgz || true
+            if [ -s /tmp/eco.tgz ]; then
+              tar -xzf /tmp/eco.tgz -C fca-ecosystem --strip-components=1
+            fi
+          fi
+          if [ ! -f fca-ecosystem/infra/docker/Dockerfile.api ]; then
+            echo "Still missing ecosystem source — will try clone on VM from mirror tarball upload"
+            # Bundle empty marker; swap step may use existing AR image rebuild from VM git
+            echo "NEED_VM_SOURCE=1" >> "$GITHUB_ENV"
+          else
+            echo "NEED_VM_SOURCE=0" >> "$GITHUB_ENV"
+            echo "Ecosystem source ready"
+            head -5 fca-ecosystem/infra/docker/Dockerfile.api
+          fi
+
+      - name: Cloud Build + push API image
+        if: (inputs.action == 'build-push' || inputs.action == 'full') && env.NEED_VM_SOURCE != '1'
+        run: |
+          set -euo pipefail
+          gcloud config set project auricrux-mobile-prod
+          gcloud artifacts repositories describe fca --location="$REGION" --project=auricrux-mobile-prod \
+            || gcloud artifacts repositories create fca --repository-format=docker --location="$REGION" --project=auricrux-mobile-prod
+          # Grant Cloud Build SA push if needed — submit uses cloudbuild SA
+          gcloud builds submit fca-ecosystem \
+            --project=auricrux-mobile-prod \
+            --tag "$AR_IMAGE" \
+            --timeout=2400s \
+            --machine-type=e2-highcpu-8
+          echo "Pushed $AR_IMAGE"
+
+      - name: Build on VM via SCP (fallback)
+        if: (inputs.action == 'build-push' || inputs.action == 'full') && env.NEED_VM_SOURCE == '1'
+        run: |
+          set -euo pipefail
+          echo "FATAL: no ecosystem source on runner and cannot build. Need GH_PAT for Auricrux/fca-ecosystem or secret sync."
+          exit 1
+
+      - name: Swap fca-api on VM
+        if: inputs.action == 'swap-vm' || inputs.action == 'full'
+        run: |
+          set -euo pipefail
+          PROJECT=auricrux-mobile-prod
+          gcloud config set project "$PROJECT"
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet --command="
+            set -euo pipefail
+            echo '=== before ==='
+            sudo docker ps --filter name=fca-api --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+            # Capture recreate args from existing container
+            IMAGE='$AR_IMAGE'
+            sudo gcloud auth configure-docker us-central1-docker.pkg.dev -q || true
+            # Prefer docker login via SA metadata / access token
+            TOKEN=\$(curl -fsS -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token' | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"access_token\"])')
+            echo \"\$TOKEN\" | sudo docker login -u oauth2accesstoken --password-stdin us-central1-docker.pkg.dev
+            sudo docker pull \"\$IMAGE\"
+
+            # Preserve env file from inspect
+            sudo docker inspect fca-api --format '{{range .Config.Env}}{{println .}}{{end}}' | sudo tee /tmp/fca-api.env >/dev/null
+            NETWORK=\$(sudo docker inspect fca-api --format '{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}')
+            echo NETWORK=\$NETWORK
+
+            sudo docker stop fca-api || true
+            sudo docker rename fca-api fca-api-prev-\$(date +%s) || true
+
+            # Recreate with same host port mapping and env; join same network
+            ENV_ARGS=()
+            while IFS= read -r line; do
+              [ -n \"\$line\" ] || continue
+              ENV_ARGS+=(-e \"\$line\")
+            done < /tmp/fca-api.env
+
+            if [ -n \"\$NETWORK\" ]; then
+              sudo docker run -d --name fca-api --restart unless-stopped \
+                --network \"\$NETWORK\" \
+                -p 5000:5000 \
+                \"\${ENV_ARGS[@]}\" \
+                \"\$IMAGE\"
+            else
+              sudo docker run -d --name fca-api --restart unless-stopped \
+                -p 5000:5000 \
+                \"\${ENV_ARGS[@]}\" \
+                \"\$IMAGE\"
+            fi
+
+            sleep 12
+            echo '=== after ==='
+            sudo docker ps --filter name=fca-api --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+            curl -fsS http://127.0.0.1:5000/api/health || true; echo
+            curl -fsS http://127.0.0.1:5000/api/catalog || true; echo
+            curl -k -fsS -H 'Host: api.futurecontractorsofamerica.com' https://127.0.0.1/api/catalog || true; echo
+            sudo docker logs fca-api --tail 50 2>&1 || true
+          "
