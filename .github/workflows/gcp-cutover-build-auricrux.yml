@@ -1,0 +1,139 @@
+name: GCP Cutover Build Auricrux
+
+# Builds current auricrux-app on the production VM and swaps auricrux-web (:4000)
+# + auricrux-api (:5001) so Caddy host auricrux.* serves latest capabilities/agent.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "build-swap | caddy-api-to-web | full"
+        required: true
+        default: "full"
+
+jobs:
+  cutover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      ZONE: us-central1-b
+      INSTANCE: instance-20260715-113528
+      PROJECT: auricrux-mobile-prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Force project
+        run: |
+          set -euo pipefail
+          echo "CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "CLOUDSDK_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GCLOUD_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GCP_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          echo "GOOGLE_CLOUD_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          gcloud config set project auricrux-mobile-prod
+
+      - name: Pack + SCP source
+        if: inputs.action == 'build-swap' || inputs.action == 'full'
+        run: |
+          set -euo pipefail
+          tar --exclude='.git' --exclude='**/bin' --exclude='**/obj' --exclude='_publish' \
+            --exclude='artifacts' --exclude='node_modules' \
+            -czf /tmp/auricrux-src.tgz .
+          ls -lh /tmp/auricrux-src.tgz
+          gcloud compute scp /tmp/auricrux-src.tgz "${INSTANCE}:/tmp/auricrux-src.tgz" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
+
+      - name: Build + swap containers
+        if: inputs.action == 'build-swap' || inputs.action == 'full'
+        run: |
+          set -euo pipefail
+          cat > /tmp/swap-auricrux.sh <<'REMOTE'
+          #!/bin/bash
+          set -euo pipefail
+          TAG=auricrux-web:cutover
+          sudo rm -rf /opt/auricrux-app-build
+          sudo mkdir -p /opt/auricrux-app-build
+          sudo tar -xzf /tmp/auricrux-src.tgz -C /opt/auricrux-app-build
+          cd /opt/auricrux-app-build
+          sudo docker build -t "$TAG" -f Dockerfile .
+
+          swap_one() {
+            local NAME="$1" HOSTPORT="$2" CONTAINERPORT="$3"
+            echo "=== swap $NAME ==="
+            sudo docker inspect "$NAME" --format '{{range .Config.Env}}{{println .}}{{end}}' | sudo tee "/tmp/${NAME}.env" >/dev/null || true
+            NETWORK=$(sudo docker inspect "$NAME" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null || true)
+            # Prefer binding to localhost only when previous did (auricrux-api was 127.0.0.1:5001)
+            BIND=$(sudo docker inspect "$NAME" --format '{{range $p,$conf := .NetworkSettings.Ports}}{{range $conf}}{{.HostIp}}:{{.HostPort}}->{{$p}} {{end}}{{end}}' 2>/dev/null || true)
+            echo "prev ports: $BIND network=$NETWORK"
+            sudo docker stop "$NAME" || true
+            sudo docker rename "$NAME" "${NAME}-prev-$(date +%s)" || true
+
+            ENV_ARGS=()
+            if [ -f "/tmp/${NAME}.env" ]; then
+              while IFS= read -r line; do
+                [ -n "$line" ] || continue
+                case "$line" in
+                  ASPNETCORE_HTTP_PORTS=*) continue ;;
+                  PATH=*) continue ;;
+                  ASPNET_VERSION=*) continue ;;
+                  DOTNET_VERSION=*) continue ;;
+                  APP_UID=*) continue ;;
+                  DOTNET_RUNNING_IN_CONTAINER=*) continue ;;
+                  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=*) continue ;;
+                esac
+                ENV_ARGS+=(-e "$line")
+              done < "/tmp/${NAME}.env"
+            fi
+            # Ensure URLs match container listen port
+            ENV_ARGS+=(-e "ASPNETCORE_URLS=http://0.0.0.0:${CONTAINERPORT}")
+            ENV_ARGS+=(-e "ASPNETCORE_ENVIRONMENT=Production")
+
+            PUBLISH="127.0.0.1:${HOSTPORT}:${CONTAINERPORT}"
+            if [ -n "$NETWORK" ]; then
+              sudo docker run -d --name "$NAME" --restart unless-stopped --network "$NETWORK" \
+                -p "$PUBLISH" \
+                --add-host=host.docker.internal:host-gateway \
+                "${ENV_ARGS[@]}" \
+                "$TAG"
+            else
+              sudo docker run -d --name "$NAME" --restart unless-stopped \
+                -p "$PUBLISH" \
+                --add-host=host.docker.internal:host-gateway \
+                "${ENV_ARGS[@]}" \
+                "$TAG"
+            fi
+          }
+
+          # Web listens on 80 in Dockerfile; map host 4000->80 and host 5001->80
+          swap_one auricrux-web 4000 80
+          swap_one auricrux-api 5001 80
+
+          sleep 8
+          echo "=== probes ==="
+          curl -fsS http://127.0.0.1:4000/health || true; echo
+          curl -fsS -w "cap4000=%{http_code}\n" http://127.0.0.1:4000/api/capabilities | head -c 400; echo
+          curl -fsS -w "cap5001=%{http_code}\n" http://127.0.0.1:5001/api/capabilities | head -c 400; echo
+          curl -fsS -w "tools=%{http_code}\n" http://127.0.0.1:5001/api/agent/tools | head -c 400; echo
+          sudo docker ps --filter name=auricrux --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+          REMOTE
+          gcloud compute scp /tmp/swap-auricrux.sh "${INSTANCE}:/tmp/swap-auricrux.sh" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet \
+            --command='bash /tmp/swap-auricrux.sh'
+
+      - name: Public smoke
+        if: always() && (inputs.action == 'build-swap' || inputs.action == 'full')
+        run: |
+          set -euo pipefail
+          sleep 3
+          curl -fsS -w "\nhealth=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/health || true
+          curl -fsS -w "\ncap=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/api/capabilities | head -c 500 || true
+          echo
+          curl -fsS -w "\ntools=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/api/agent/tools | head -c 500 || true
+          echo
