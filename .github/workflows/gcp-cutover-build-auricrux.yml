@@ -132,8 +132,16 @@ jobs:
         run: |
           set -euo pipefail
           sleep 3
-          curl -fsS -w "\nhealth=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/health || true
-          curl -fsS -w "\ncap=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/api/capabilities | head -c 500 || true
-          echo
-          curl -fsS -w "\ntools=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/api/agent/tools | head -c 500 || true
-          echo
+          curl -fsS -o /tmp/ax-health.json -w "health=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/health || true
+          curl -fsS -o /tmp/ax-cap.json -w "cap=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/api/capabilities
+          head -c 500 /tmp/ax-cap.json; echo
+          curl -fsS -o /tmp/ax-tools.json -w "tools=%{http_code}\n" https://auricrux.futurecontractorsofamerica.com/api/agent/tools
+          head -c 500 /tmp/ax-tools.json; echo
+          # Prove vision is reachable without hanging the job if Ollama is down.
+          printf '%s' '{"imageBase64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==","prompt":"Scaffold safety","focus":"safety"}' > /tmp/vision.json
+          curl -fsS -m 25 -o /tmp/ax-vision.json -w "vision=%{http_code}\n" \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/vision.json \
+            https://auricrux.futurecontractorsofamerica.com/api/vision
+          grep -q '"success":true' /tmp/ax-vision.json
+          head -c 400 /tmp/ax-vision.json; echo

@@ -72,7 +72,17 @@ public sealed class ConstructionVisionService(
 
         if (!string.IsNullOrWhiteSpace(visionModel))
         {
-            llmAnalysis = await TryVisionModelAsync(visionModel, bytes, prompt, focus, ct);
+            using var visionCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            visionCts.CancelAfter(TimeSpan.FromSeconds(12));
+            try
+            {
+                llmAnalysis = await TryVisionModelAsync(visionModel, bytes, prompt, focus, visionCts.Token);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                logger.LogWarning("Vision model timed out; using field-intake checklist");
+            }
+
             if (!string.IsNullOrWhiteSpace(llmAnalysis))
             {
                 engine = $"ollama-vision:{visionModel}";
@@ -80,8 +90,22 @@ public sealed class ConstructionVisionService(
         }
 
         // If no dedicated vision model, still try primary text model with meta + checklist context
-        // (honest: not pixel vision — construction-grounded intake synthesis).
-        llmAnalysis ??= await TryTextSynthesisAsync(prompt, focus, meta, checklist, ct);
+        // (honest: not pixel vision — construction-grounded intake synthesis). Short timeout so
+        // unreachable Ollama never hangs the field-photo path.
+        if (llmAnalysis is null)
+        {
+            using var synthCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            synthCts.CancelAfter(TimeSpan.FromSeconds(8));
+            try
+            {
+                llmAnalysis = await TryTextSynthesisAsync(prompt, focus, meta, checklist, synthCts.Token);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                logger.LogDebug("Text synthesis timed out; using offline checklist analysis");
+            }
+        }
+
         if (llmAnalysis is not null && engine.StartsWith("field-", StringComparison.Ordinal))
         {
             engine = "field-intake-llm-synthesis";
