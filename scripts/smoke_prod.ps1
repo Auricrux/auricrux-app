@@ -99,6 +99,23 @@ Invoke-SmokeCheck "POST /api/browse (live URL fetch + summarize)" {
     "extracted=$($r.extractedChars) summaryLength=$($r.summary.Length)"
 }
 
+Invoke-SmokeCheck "POST /api/calc (construction calculator)" {
+    $body = '{"operation":"concrete_volume_cy","args":{"lengthFt":20,"widthFt":10,"depthIn":6}}'
+    $r = Invoke-RestMethod -Uri "$baseUrl/api/calc" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 30
+    if (-not $r.success) { throw "Calc failed: $($r.error)" }
+    if ($r.value -lt 3.5 -or $r.value -gt 3.9) { throw "Unexpected CY value $($r.value)" }
+    "value=$($r.value) $($r.unit)"
+}
+
+Invoke-SmokeCheck "POST /api/agent (tool loop)" {
+    $body = '{"query":"How many cubic yards for a 20x10 ft slab 6 inches thick?"}'
+    $r = Invoke-RestMethod -Uri "$baseUrl/api/agent" -Method Post -Body $body -ContentType "application/json" -TimeoutSec 240
+    if (-not $r.success) { throw "Agent failed: $($r.error)" }
+    if (-not $r.finalAnswer) { throw "Agent finalAnswer missing" }
+    if (-not $r.steps -or $r.steps.Count -lt 1) { throw "Agent steps missing" }
+    "steps=$($r.steps.Count) answerLength=$($r.finalAnswer.Length)"
+}
+
 Write-Host ""
 $report = [ordered]@{
     baseUrl = $baseUrl

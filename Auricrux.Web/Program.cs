@@ -35,6 +35,8 @@ builder.Services.AddSingleton<FcaAccountLinkService>();
 builder.Services.AddSingleton<FreemiumAccountStore>();
 builder.Services.AddSingleton<BackendHealthService>();
 builder.Services.AddSingleton<WebBrowseService>();
+builder.Services.AddSingleton<ConstructionCalculatorService>();
+builder.Services.AddSingleton<ConstructionAgentService>();
 builder.Services.AddSingleton<CapabilitiesService>();
 builder.Services.AddSingleton(sp =>
 {

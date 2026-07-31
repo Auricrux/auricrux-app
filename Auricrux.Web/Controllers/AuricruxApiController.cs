@@ -12,6 +12,8 @@ public sealed class AuricruxApiController(
     CapabilitiesService capabilities,
     FreemiumAccountStore accounts,
     WebBrowseService webBrowse,
+    ConstructionAgentService agent,
+    ConstructionCalculatorService calculator,
     ILogger<AuricruxApiController> logger) : ControllerBase
 {
     [HttpGet("health")]
@@ -97,6 +99,52 @@ public sealed class AuricruxApiController(
         }
 
         return Ok(response);
+    }
+
+    [HttpGet("agent/tools")]
+    public ActionResult<object> ListAgentTools() => Ok(new { tools = agent.ListTools() });
+
+    [HttpPost("agent")]
+    public async Task<ActionResult<AgentResponse>> PostAgent(
+        [FromBody] AgentRequest request,
+        [FromQuery] string? model,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+        {
+            return BadRequest(new { error = "Query is required." });
+        }
+
+        var response = await agent.RunAsync(request, model, cancellationToken);
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return Ok(response);
+    }
+
+    [HttpPost("calc")]
+    public ActionResult<CalcResult> PostCalc([FromBody] CalcRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Operation))
+        {
+            return BadRequest(CalcResult.Fail("Operation is required."));
+        }
+
+        if (request.Operation.Equals("unit_convert", StringComparison.OrdinalIgnoreCase))
+        {
+            if (request.From is null || request.To is null || request.Value is null)
+            {
+                return BadRequest(CalcResult.Fail("unit_convert requires value, from, to."));
+            }
+
+            return Ok(calculator.ConvertUnits(request.Value.Value, request.From, request.To));
+        }
+
+        var args = request.Args ?? new Dictionary<string, double>();
+        var result = calculator.Evaluate(request.Operation, args);
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 
     [HttpPost("feedback/{interactionId:guid}")]

@@ -46,8 +46,8 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                 MatrixRows = matrix.Count,
                 AuricruxUniqueAdvantages = matrix.Count(r => r.Auricrux == "shipped" && r.Peers.Values.All(p => p is "no" or "partial")),
                 OverallAssessment =
-                    "PARTIAL — core chat/search/thinking/voice/workspace/media/auth/freemium/construction corpus/web-browse are real; " +
-                    "agentic tools, vision, and promoted fine-tune weights remain gaps vs. major players."
+                    "PARTIAL — chat/search/thinking/voice/workspace/media/auth/freemium/corpus/browse/agent/calc are real; " +
+                    "vision and promoted fine-tune weights remain gaps vs. major players."
             }
         };
     }
@@ -69,8 +69,8 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
         Feature("FCA ecosystem entitlements", "shipped", "Link Auricrux account to FCA when configured"),
         Feature("Construction specialist corpus", "shipped", $"{corpusEntries} grounded entries across CSI/OSHA/PM/billing/code"),
         Feature("Live web browsing", "shipped", "POST /api/browse fetches http(s) URL text (SSRF-guarded) and LLM-summarizes for construction Q&A"),
-        Feature("Agentic tool-use / plugins", "planned", "Not yet implemented"),
-        Feature("Native code interpreter", "planned", "Not yet implemented"),
+        Feature("Agentic tool-use / plugins", "shipped", "POST /api/agent bounded tool loop: corpus_search, web_browse, construction calc tools"),
+        Feature("Native code interpreter", "shipped", "POST /api/calc deterministic construction calculator (volume/rebar/BF/percent/units) — not sandboxed Python"),
         Feature("Vision / photo analysis", "planned", "Not yet implemented"),
         Feature("Fine-tuned construction weights live", "blocked", "checkpoint-70000 awaiting safe export (AUX-017/018)")
     ];
@@ -101,10 +101,10 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
             "JWT + cookie/OIDC when Auth:Enabled; dev mode stays open by default."),
         Matrix("Freemium monetization", "shipped", yes, yes, yes, partial, partial,
             "SQLite-backed plans, daily quotas, and model allow-lists enforced server-side."),
-        Matrix("Agentic plugins / tool-use", "planned", yes, yes, yes, yes, partial,
-            "Major gap: no plugin runtime or autonomous tool orchestration yet."),
-        Matrix("Code interpreter", "planned", yes, partial, partial, partial, no,
-            "Not implemented; peers offer sandboxed Python or spreadsheet analysis."),
+        Matrix("Agentic plugins / tool-use", "shipped", yes, yes, yes, yes, partial,
+            "Bounded POST /api/agent tool loop (corpus/browse/calc) — not a third-party plugin marketplace."),
+        Matrix("Code interpreter", "shipped", yes, partial, partial, partial, no,
+            "Deterministic construction calculator (/api/calc); not a sandboxed Python notebook like ChatGPT."),
         Matrix("Live web browsing", "shipped", yes, partial, yes, partial, yes,
             "POST /api/browse: SSRF-guarded URL fetch + LLM construction summarize (not an autonomous agent browser)."),
         Matrix("Vision / photo analysis", "planned", yes, yes, yes, partial, partial,

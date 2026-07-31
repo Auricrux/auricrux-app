@@ -1,0 +1,13 @@
+{
+  "proofId": "auricrux-agent-calc-2026-07-30",
+  "capturedAtUtc": "2026-07-31T01:11:00Z",
+  "claims": ["AUX-001", "AUX-002"],
+  "endpoints": {
+    "GET /api/agent/tools": "lists corpus_search, web_browse, concrete_volume_cy, rebar_weight_lb, board_feet, percent_of, unit_convert",
+    "POST /api/agent": "bounded tool loop with corpus grounding + heuristic/LLM-planned tools + final answer",
+    "POST /api/calc": "deterministic construction calculator (not sandboxed Python)"
+  },
+  "tests": "Auricrux.Tests 55/55 PASS including Calc_concrete_volume, Calc_unit_convert, Agent_tools_list, Agent_runs_corpus_and_calc",
+  "honesty": "Agent is a bounded construction tool loop, not a third-party plugin marketplace. Calc is deterministic construction math, not a Python notebook. AUX-001/002 remain PARTIAL for vision + true-god weights.",
+  "verdict": "AGENT_AND_CALC_SHIPPED"
+}

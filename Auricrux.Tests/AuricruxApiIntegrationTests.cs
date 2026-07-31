@@ -193,6 +193,64 @@ public sealed class AuricruxApiIntegrationTests : IClassFixture<WebApplicationFa
         Assert.DoesNotContain("\"success\":false", json, StringComparison.OrdinalIgnoreCase);
     }
 
+    // ---------- Calc + agent ----------
+
+    [Fact]
+    public async Task Calc_concrete_volume_returns_cubic_yards()
+    {
+        var response = await _client.PostAsJsonAsync("/api/calc", new
+        {
+            operation = "concrete_volume_cy",
+            args = new { lengthFt = 20.0, widthFt = 10.0, depthIn = 6.0 }
+        });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("success", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("cy", json, StringComparison.OrdinalIgnoreCase);
+        // 20*10*(6/12)/27 = 3.7037...
+        Assert.Contains("3.70", json);
+    }
+
+    [Fact]
+    public async Task Calc_unit_convert_ft_to_m()
+    {
+        var response = await _client.PostAsJsonAsync("/api/calc", new
+        {
+            operation = "unit_convert",
+            value = 10.0,
+            from = "ft",
+            to = "m"
+        });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("3.048", json);
+    }
+
+    [Fact]
+    public async Task Agent_tools_list_includes_corpus_and_calc()
+    {
+        var response = await _client.GetAsync("/api/agent/tools");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("corpus_search", json);
+        Assert.Contains("concrete_volume_cy", json);
+        Assert.Contains("web_browse", json);
+    }
+
+    [Fact]
+    public async Task Agent_runs_corpus_and_calc_for_concrete_query()
+    {
+        var response = await _client.PostAsJsonAsync("/api/agent", new
+        {
+            query = "How many cubic yards of concrete for a 20 by 10 foot slab 6 inches thick?"
+        });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("corpus_search", json);
+        Assert.Contains("finalAnswer", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("concrete_volume_cy", json);
+    }
+
     // ---------- Chat + feedback ----------
 
     [Fact]

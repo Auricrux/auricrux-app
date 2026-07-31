@@ -68,11 +68,14 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         Assert.NotNull(payload);
 
         var agentic = payload!.CompetitiveMatrix.First(r => r.Feature.Contains("Agentic plugins"));
-        Assert.Equal("planned", agentic.Auricrux);
+        Assert.Equal("shipped", agentic.Auricrux);
         Assert.Equal("yes", agentic.Peers["ChatGPT"]);
 
         var browse = payload.CompetitiveMatrix.First(r => r.Feature.Contains("Live web browsing"));
         Assert.Equal("shipped", browse.Auricrux);
+
+        var code = payload.CompetitiveMatrix.First(r => r.Feature.Contains("Code interpreter"));
+        Assert.Equal("shipped", code.Auricrux);
 
         var fineTune = payload.CompetitiveMatrix.First(r => r.Feature.Contains("fine-tuned weights"));
         Assert.Equal("blocked", fineTune.Auricrux);
