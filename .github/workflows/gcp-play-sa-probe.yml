@@ -1,0 +1,26 @@
+name: GCP Play-SA Probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Probe Play SA projects and VMs
+        run: |
+          set -euo pipefail
+          CREDS="$GOOGLE_GHA_CREDS_PATH"
+          python3 -c "import json; d=json.load(open('$CREDS')); print('email',d.get('client_email')); print('project',d.get('project_id'))"
+          gcloud projects list --format='table(projectId,name)' 2>&1 || true
+          for p in $(gcloud projects list --format='value(projectId)' 2>/dev/null); do
+            echo "==== $p billing ===="
+            gcloud billing projects describe "$p" 2>&1 || true
+            echo "==== $p instances ===="
+            gcloud compute instances list --project="$p" --format='table(name,zone,status,networkInterfaces[0].accessConfigs[0].natIP)' 2>&1 || true
+          done
