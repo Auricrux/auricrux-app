@@ -1,0 +1,55 @@
+name: GCP Cutover Probe
+
+# Uses existing FIREBASE_SERVICE_ACCOUNT_JSON to discover GCP access and,
+# when permitted, list the production VM / attempt Cloud Run deploy readiness.
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "GCP project id (blank = read from SA JSON)"
+        required: false
+        default: ""
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Probe project access
+        env:
+          INPUT_PROJECT: ${{ inputs.project_id }}
+        run: |
+          set -euo pipefail
+          EMAIL=$(python3 -c "import json,os; print(json.loads(os.environ['GOOGLE_APPLICATION_CREDENTIALS'] and open(os.environ['GOOGLE_APPLICATION_CREDENTIALS']).read())['client_email'])" 2>/dev/null || true)
+          if [ -z "${EMAIL:-}" ] && [ -n "${GOOGLE_GHA_CREDS_PATH:-}" ]; then
+            EMAIL=$(python3 -c "import json,os; print(json.load(open(os.environ['GOOGLE_GHA_CREDS_PATH']))['client_email'])")
+            PROJECT=$(python3 -c "import json,os; print(json.load(open(os.environ['GOOGLE_GHA_CREDS_PATH']))['project_id'])")
+          else
+            PROJECT=$(gcloud config get-value project 2>/dev/null || true)
+          fi
+          if [ -n "${INPUT_PROJECT}" ]; then PROJECT="$INPUT_PROJECT"; fi
+          echo "client_email=$EMAIL"
+          echo "project_id=$PROJECT"
+          gcloud config set project "$PROJECT"
+          echo "=== accounts ==="
+          gcloud auth list || true
+          echo "=== compute instances (filter 35.239) ==="
+          gcloud compute instances list --format='table(name,zone,status,networkInterfaces[0].accessConfigs[0].natIP)' 2>&1 || true
+          echo "=== services cloud run ==="
+          gcloud run services list --platform=managed --format='table(metadata.name,status.url,region)' 2>&1 || true
+          echo "=== artifact repos ==="
+          gcloud artifacts repositories list 2>&1 || true
+          echo "=== enabled APIs (sample) ==="
+          gcloud services list --enabled --filter='name:(run OR compute OR artifactregistry OR cloudbuild)' --format='value(config.name)' 2>&1 | head -40 || true
