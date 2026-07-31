@@ -46,9 +46,9 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                 MatrixRows = matrix.Count,
                 AuricruxUniqueAdvantages = matrix.Count(r => r.Auricrux == "shipped" && r.Peers.Values.All(p => p is "no" or "partial")),
                 OverallAssessment =
-                    "WEDGE PASS / GENERAL PARTIAL — construction OS beachhead is real " +
-                    "(corpus/search/thinking/agent/calc/browse/field-vision/auth/freemium); " +
-                    "not claiming full ChatGPT-class general AI; fine-tune weights still blocked (AUX-017)."
+                    "FORWARD — major-player feature parity path is live " +
+                    "(chat/search/thinking/voice/workspace/media/auth/freemium/corpus/browse/agent/calc/vision); " +
+                    "construction moat is unique vs peers; fine-tune weights remaining gap (AUX-017) — not a retreat."
             }
         };
     }

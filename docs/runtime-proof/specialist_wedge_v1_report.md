@@ -1,15 +1,11 @@
-# Specialist Wedge Proof v1 (Google narrow-scope response)
+# Specialist Proof v1 — Forward evidence (not a retreat)
 
 **Captured:** 2026-07-31  
-**Related claims:** AUX-019 PASS (domain suite); AUX-027 remains FAIL (flagship peer blind run still needed)
+**Related claims:** AUX-019 PASS (domain suite); AUX-027 remains FAIL until blind peer run
 
 ## Why this file exists
 
-Google advised narrowing scope vs. “beat ChatGPT.” This report documents the **narrow beachhead proof** we already have:
-
-> Construction-specialist accuracy on a fixed, auditable suite — without claiming general flagship-peer chat quality.
-
-This is **not** a substitute for AUX-027. It is the honest wedge evidence to answer “why hasn’t anyone done this?” with “here is the construction beachhead that is already measurable.”
+Google said the scope is too broad. We keep the ambitious claim and publish measurable proof of specialist construction quality already in hand — then keep closing remaining gaps (vision shipped; weights + peer blind still open).
 
 ## Evidence
 
@@ -20,11 +16,12 @@ This is **not** a substitute for AUX-027. It is the honest wedge evidence to ans
 | Live capabilities | vision + agent + calc + browse shipped | `CapabilitiesService` |
 | Peer blind comparison | **not run** (no OpenAI/Anthropic/Google keys) | `eval/PEER_COMPARISON_RUBRIC.md` |
 
-## Verdict for pitch / Google
+## Verdict
 
-- **Wedge claim:** PASS — specialist construction correctness is proven on the locked suite.
-- **General AI peer claim (AUX-027):** FAIL until a real blind peer run exists.
+- Specialist domain correctness: **PASS** (30/30).
+- Flagship peer quality (AUX-027): **FAIL** until blind peer run — claim stays hard; we do not mark it PASS early.
+- Stance: prove the full bar; do not redefine it down.
 
 ## Next when keys exist
 
-Execute `eval/PEER_COMPARISON_RUBRIC.md` → write `eval/reports/peer_comparison_v1_report.{json,md}` → only then flip AUX-027.
+Execute `eval/PEER_COMPARISON_RUBRIC.md` → write peer report → only then flip AUX-027.

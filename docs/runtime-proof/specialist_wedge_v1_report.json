@@ -1,7 +1,7 @@
 {
-  "capturedAt": "2026-07-31T20:20:00Z",
-  "title": "specialist_wedge_v1",
-  "purpose": "Narrow-scope construction beachhead proof (Google critique). Not AUX-027 peer parity.",
+  "capturedAt": "2026-07-31T20:25:00Z",
+  "title": "specialist_forward_v1",
+  "purpose": "Forward proof of construction specialist quality. Claims stay hard; AUX-027 stays FAIL until peer blind run.",
   "domainSuite": {
     "suite": "construction_god_suite_v1",
     "passed": 30,
@@ -13,10 +13,11 @@
     "entries": 80,
     "categories": 11
   },
-  "wedgeVerdict": "PASS",
+  "specialistDomainVerdict": "PASS",
   "aux027FlagshipPeer": "FAIL",
+  "stance": "prove-them-wrong-do-not-redefine-down",
   "notes": [
-    "Wedge PASS answers narrow-scope criticism with measurable construction specialist accuracy.",
+    "Domain 30/30 is proof of specialist accuracy already shipped.",
     "AUX-027 stays FAIL until blind peer comparison against ChatGPT/Claude/Gemini is executed."
   ]
 }

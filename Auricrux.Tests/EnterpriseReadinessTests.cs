@@ -51,7 +51,7 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         Assert.Contains(payload.Features, f => f.Name.Contains("Live web browsing") && f.Status == "shipped");
         Assert.Contains(payload.Features, f => f.Name.Contains("Fine-tuned") && f.Status == "blocked");
         Assert.False(payload.ConstructionMoat.PromotedFineTuneLive);
-        Assert.Contains("WEDGE", payload.ParityScore.OverallAssessment, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("FORWARD", payload.ParityScore.OverallAssessment, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(payload.Features, f => f.Name.Contains("Vision") && f.Status == "shipped");
         Assert.True(payload.CompetitiveMatrix.Count >= 15, "Per-competitor matrix should cover major feature rows.");
         Assert.Contains(payload.CompetitiveMatrix, r =>
