@@ -40,7 +40,7 @@ jobs:
           import os
           from pathlib import Path
           obj = os.environ["OBJECT"]
-          Path("/tmp/Modelfile.auricrux-fca").write_text(f'''FROM /models/{obj}
+          Path("/tmp/Modelfile.auricrux-fca").write_text(f'''FROM /tmp/{obj}
 
           PARAMETER num_ctx 4096
           PARAMETER temperature 0.15
@@ -93,12 +93,14 @@ jobs:
           test "$SIZE" -gt 1000000000
 
           sudo docker network connect fca-net auricrux-ollama 2>/dev/null || true
-          sudo docker exec auricrux-ollama mkdir -p /models
-          sudo docker cp "/var/lib/auricrux-models/${OBJECT}" "auricrux-ollama:/models/${OBJECT}"
+          # /models may be a read-only mount; use container /tmp which is writable.
+          sudo docker exec auricrux-ollama mkdir -p /tmp
+          sudo docker cp "/var/lib/auricrux-models/${OBJECT}" "auricrux-ollama:/tmp/${OBJECT}"
           sudo docker cp /tmp/Modelfile.auricrux-fca auricrux-ollama:/tmp/Modelfile.auricrux-fca
           sudo docker exec auricrux-ollama ollama stop auricrux-fca 2>/dev/null || true
           sudo docker exec auricrux-ollama ollama rm auricrux-fca 2>/dev/null || true
           sudo docker exec auricrux-ollama ollama create auricrux-fca -f /tmp/Modelfile.auricrux-fca
+          sudo docker exec auricrux-ollama rm -f "/tmp/${OBJECT}" || true
           echo "=== warm ==="
           sudo docker exec auricrux-ollama ollama run auricrux-fca "What is a sill plate? Answer in 3 sentences." || true
           sudo docker exec auricrux-ollama ollama list
