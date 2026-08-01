@@ -36,16 +36,22 @@ jobs:
           sudo docker network connect fca-net auricrux-ollama 2>/dev/null || true
           sudo docker exec auricrux-ollama ollama list || true
 
-          echo "=== ensure vision model (moondream + llava alias for Wave 5 VisionModel) ==="
+          echo "=== ensure vision model (moondream; Wave 5 VisionModel may be llava or moondream) ==="
           if ! sudo docker exec auricrux-ollama ollama list | grep -Eq '^(llava|moondream)\b'; then
             echo "Pulling moondream..."
             sudo docker exec auricrux-ollama ollama pull moondream
           fi
           if sudo docker exec auricrux-ollama ollama list | grep -q '^moondream' \
             && ! sudo docker exec auricrux-ollama ollama list | grep -q '^llava'; then
-            printf 'FROM moondream\n' | sudo docker exec -i auricrux-ollama ollama create llava -f -
+            sudo docker exec auricrux-ollama ollama cp moondream llava
           fi
           sudo docker exec auricrux-ollama ollama list
+
+          VISION_MODEL=llava
+          if ! sudo docker exec auricrux-ollama ollama list | grep -q '^llava'; then
+            VISION_MODEL=moondream
+          fi
+          echo "VISION_MODEL=$VISION_MODEL"
 
           recreate() {
             local NAME="$1" HOSTPORT="$2"
@@ -60,7 +66,7 @@ jobs:
               -e ASPNETCORE_ENVIRONMENT=Production \
               -e Auricrux__OllamaUrl="$OLLAMA_URL" \
               -e Auricrux__PrimaryModel=auricrux-fca \
-              -e Auricrux__VisionModel=llava \
+              -e Auricrux__VisionModel="$VISION_MODEL" \
               auricrux-web:cutover
           }
           recreate auricrux-web 4000
