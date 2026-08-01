@@ -1,30 +1,23 @@
-# AUX-027 Peer API Keys — Setup
+# AUX-027 Peer Comparison — Setup
 
-Peer keys let us collect **ChatGPT / Claude / Gemini** answers for the blind quality comparison against Auricrux. Without them AUX-027 stays blocked.
+## Reality check (founder constraints)
 
-## One-command setup (Windows)
+- Separate **OpenAI / Anthropic API** billing is optional, not required to make progress.
+- A Cursor agent is **one model session** — it cannot honestly mint real ChatGPT/Claude/Gemini API transcripts without those APIs (or GitHub Models).
+- GitHub Models was probed for Copilot multi-model access and returned **410 retirement brownout**.
+- **Available-peer path (in use):** live Auricrux + Cursor-agent answers (+ Gemini when you paste one AI Studio key).
+- Full triad AUX-027 stays **FAIL/BLOCKED** until real vendor peers exist; interim report is `eval/reports/peer_comparison_available_peers_v1.md`.
 
-From the repo root:
+## Gemini-only (recommended next)
 
 ```powershell
 cd C:\Users\MichaelBartholomew\source\fca-real-product\auricrux-app
+# Create key at https://aistudio.google.com/apikey — paste when prompted (skip OpenAI/Anthropic)
 .\scripts\setup-peer-keys.ps1
-```
-
-That script:
-
-1. Opens each provider’s API-key page in your browser
-2. Asks you to paste each key (hidden input)
-3. Saves them to `eval/.peer-keys.env` (gitignored — never commit)
-4. Optionally stores them as GitHub secrets for CI
-
-Then run the comparison:
-
-```powershell
 .\scripts\run-peer-comparison.ps1
 ```
 
-## Where to get keys
+## Full vendor triad (optional)
 
 | Peer | Console | Env var | GitHub secret |
 |------|---------|---------|---------------|
@@ -32,7 +25,10 @@ Then run the comparison:
 | Claude | https://console.anthropic.com/settings/keys | `ANTHROPIC_API_KEY` | `PEER_ANTHROPIC_API_KEY` |
 | Gemini | https://aistudio.google.com/apikey | `GOOGLE_API_KEY` | `PEER_GOOGLE_API_KEY` |
 
-**Gemini via AI Studio** is usually the fastest free start. OpenAI and Anthropic need paid API credits.
+```powershell
+.\scripts\setup-peer-keys.ps1
+.\scripts\run-peer-comparison.ps1
+```
 
 ## Manual `.env` alternative
 

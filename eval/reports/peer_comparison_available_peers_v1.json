@@ -1,0 +1,416 @@
+﻿{
+    "suiteId":  "peer_comparison_v1_available_peers",
+    "status":  "PARTIAL_EVIDENCE",
+    "capturedAt":  "2026-08-01T18:35:08.5705946Z",
+    "methodology":  {
+                        "auricruxRuntimeNote":  "Live Auricrux answers were corpus-fallback (ollama primary degraded) — represents current customer-visible path, not fine-tuned weights.",
+                        "missingPreferredPeers":  [
+                                                      "chatgpt-api",
+                                                      "claude-api",
+                                                      "gemini-api"
+                                                  ],
+                        "panel":  [
+                                      "auricrux-fca",
+                                      "cursor-agent"
+                                  ],
+                        "scoring":  "Agent SME rubric (not blind third-party API judge). AUX-027 original triad NOT claimed complete.",
+                        "whyInternal":  "Founder has Gemini+Copilot only; OpenAI/Anthropic API keys unavailable. GitHub Models inference currently 410 retirement brownout. Cursor agent answers used as one flagship-class peer with explicit non-vendor labeling."
+                    },
+    "summary":  {
+                    "cases":  12,
+                    "averages":  {
+                                     "auricrux-fca":  15.08,
+                                     "cursor-agent":  22.33
+                                 },
+                    "auricruxAtParityPercent":  0,
+                    "verdict":  "PARTIAL_EVIDENCE",
+                    "verdictNote":  "Auricrux at-parity vs cursor-agent on 0% of cases under SME rubric. Useful forward signal; does NOT satisfy full AUX-027 ChatGPT/Claude/Gemini triad. Next: add Gemini key only for 3-way panel.",
+                    "claimAction":  "Keep AUX-027 FAIL/BLOCKED for flagship-triad claim. Do not mark PASS."
+                },
+    "cases":  [
+                  {
+                      "id":  "csi-03-concrete",
+                      "category":  "csi-division",
+                      "query":  "When can I strip vertical concrete formwork after a pour?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. CSI Division 03 Concrete — Concrete placement, curing, and formwork sequencing for commercial work. Verify mix design, cold-weather protections, and strength tests before stripping forms. Break cylinders at 7 and 28 days; do not strip vertical forms before initial set or slabs before 500-750 psi per ACI 347 guidance.\n\n2. Concrete Pumping and Placement Logistics — Line pump vs. boom pump selection depends on pour volume, access, and vertical reach. Pre-pour checklist: verify pump pad stability, prime lines with grout slug, maintain slump within spec at discharge, and never add water at the chute without engineer approval. Coordinate truck spacing (one every 20–30 minutes for large slabs) to avoid cold joints.\n\n3. CSI Division 09 Painting and Coatings — Sequence painting after drywall finishing, HVAC balancing dust settles, and prior to flooring installation. Verify moisture content of substrates and manufacturer-required recoat windows; document VOC compliance for occupied buildings.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "Vertical formwork (walls/columns) is stripped when the concrete has enough strength to carry its own weight plus construction loads â€” not on a fixed clock alone. Follow the project specs / ACI 347 / engineer of record: many specs allow vertical form removal after concrete reaches a stated psi (often around early strength from field-cured cylinders) or after a minimum time at a given temperature. Do not strip based on calendar hours if it was cold or the mix was slow. Before stripping: confirm no honeycombing that needs repair access first, shore if the member is still load-critical, and never strip slabs/soffits on the same criteria as vertical forms (horizontal needs higher strength, often ~70% of f\u0027c or as specified). Have the competent person / PE criteria in writing before you pull forms.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  3,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  2,
+                                                          "total":  14,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  4,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  23,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "osha-fall-protection",
+                      "category":  "safety",
+                      "query":  "At what height does OSHA require fall protection in construction?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. OSHA Fall Protection — Fall protection triggers at 6 ft in construction (29 CFR 1926.501). Inspect harnesses and anchor points daily; guardrails, safety nets, or personal fall arrest systems are the three accepted control methods. A competent person must evaluate the work area continuously.\n\n2. Silica Dust and Respiratory Protection — OSHA\u0027s respirable crystalline silica standard (1926.1153) requires engineering controls (wet cutting, vacuum dust collection) for concrete cutting/grinding tasks, with a written exposure control plan and medical surveillance above action levels.\n\n3. Temporary Power and Job Site Electrical Safety — Temporary power panels require GFCI protection, grounding, and weather-rated enclosures per NEC Article 590. Lockout/tagout before servicing temp feeds; inspect cords for damage daily. NEC 1926 Subpart K applies on construction sites — only qualified electricians perform permanent connections.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "Under OSHA construction rules (29 CFR 1926.501), fall protection is generally required at 6 feet above a lower level for most walking-working surfaces. Use guardrails, safety nets, or personal fall arrest (or other allowed systems) as specified for the task. Exceptions and different trigger heights exist for some activities (e.g., scaffolds, steel erection have their own Subpart rules) â€” check the applicable Subpart, not only 501. Competent person must identify hazards; inspect harnesses, lanyards, and anchorage (typically 5,000 lb per worker for PFAS) before use. Do not treat \u0027we\u0027re only up a minute\u0027 as an exception.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  2,
+                                                          "total":  20,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  24,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "estimating-takeoff",
+                      "category":  "estimating",
+                      "query":  "How do I structure a quantity takeoff for a bid?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Quantity Takeoff Estimating Method — Takeoff quantities from drawings by CSI division, apply unit costs from historical data or RSMeans, add waste factors (5-15% depending on trade), and separate labor, material, equipment, and subcontractor cost buckets before applying markup and contingency.\n\n2. Shop Drawing Coordination — Shop drawings are contractor-prepared detail drawings showing fabrication/erection info not on design drawings. Stamp \u0027For Construction\u0027 only after architect approval; track revision clouds and RFI references. MEP shop drawings must coordinate with structural steel penetrations and fire-rated assemblies before release to fab shop.\n\n3. CSI Division 03 Concrete — Concrete placement, curing, and formwork sequencing for commercial work. Verify mix design, cold-weather protections, and strength tests before stripping forms. Break cylinders at 7 and 28 days; do not strip vertical forms before initial set or slabs before 500-750 psi per ACI 347 guidance.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "Structure the takeoff by drawing set and CSI division (or your bid WBS): (1) list every quantifiable item with unit (SF, CY, LF, EA); (2) take off from plans/specs with a consistent scale and markups; (3) apply waste and productivity factors by trade; (4) price material, labor, equipment, and subs in separate columns; (5) add general conditions, bonds, insurance, contingency, and fee last. Cross-check against scope inclusions/exclusions and addenda. Level alternates and allowances separately so they do not corrupt the base bid. Historical unit costs beat generic databases when you have job-similar data. Freeze a takeoff revision tied to a drawing date before final number.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  2,
+                                                          "total":  16,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  22,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "billing-payapp",
+                      "category":  "commercial",
+                      "query":  "How do I fill out an AIA style pay application schedule of values?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Pay Application SOV — Align schedule of values to cost codes for AIA-style G702/G703 billing. Retainage (commonly 5-10%) and stored materials must match contract terms; never bill above actual percent complete to avoid over-billing exposure.\n\n2. Retainage on Pay Applications (AIA G702/G703) — Retainage is a percentage (typically 5–10% on private work, up to 10% on many public jobs) withheld from each progress payment until substantial completion. On AIA G702/G703 pay apps, retainage is tracked on the Schedule of Values and released in two stages: partial release at substantial completion and final release after punch-list closeout, lien waivers, and owner acceptance. Never certify a pay app without verifying stored materials, lien waivers for prior months, and that billed percent complete matches field observation.\n\n3. CSI Division 26 Electrical Fundamentals — Electrical rough-in: panel schedule load calculations per NEC Article 220, conduit fill limited to 40% for 3+ conductors, and GFCI/AFCI protection required per NEC 210.8/210.12 in wet and habitable locations respectively.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "On an AIA-style G702/G703 package: build the Schedule of Values (SOV) as the contract breakdown (line items with scheduled value). Each period enter work completed this period and materials presently stored; prior applications carry forward. Calculate total completed \u0026 stored to date, retainage per contract, and current payment due = (total completed \u0026 stored Ã— (1 âˆ’ retainage%)) âˆ’ previous payments (plus any release of retainage if allowed). Stored materials usually need invoices/bills of sale and sometimes insurance. Match percent-complete to field reality and approved COs â€” do not bill unapproved scope. Attach lien waivers as required by the owner/lender.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  3,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  2,
+                                                          "total":  13,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  22,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "scheduling-cpm",
+                      "category":  "scheduling",
+                      "query":  "What is the critical path in a CPM schedule?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Critical Path Method Scheduling — CPM scheduling identifies the longest sequence of dependent activities (the critical path) with zero float; activities off the critical path have float that can absorb minor delays without moving substantial completion.\n\n2. Change Order Pricing and Documentation — Price change orders with labor, material, equipment, sub markup, and overhead/profit consistent with the contract\u0027s markup schedule; document time impact with a fragnet showing the change tied into the critical path schedule.\n\n3. Schedule Delay and Time Impact Analysis — A time impact analysis inserts a delay fragnet into the as-planned schedule to isolate its net effect on the critical path, distinguishing excusable/compensable delays (owner-caused) from non-excusable delays (contractor-caused).\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "In CPM, the critical path is the longest path of dependent activities through the network â€” the chain with zero (or least) total float that sets the project finish date. Delay any critical activity and the finish slips one-for-one (absent acceleration). Near-critical paths with small float matter too. Build logic with real finish-to-start (and legitimate leads/lags), resource-load if needed, and update with actuals. A time impact analysis inserts a delay fragnet onto the then-current schedule to measure critical-path impact for COs/claims.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  2,
+                                                          "total":  14,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  5,
+                                                          "total":  23,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "closeout-punchlist",
+                      "category":  "closeout",
+                      "query":  "What defines substantial completion on a punch list?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Punch List and Substantial Completion — Substantial completion means the owner can use the space for its intended purpose; a punch list documents remaining minor items with responsible party and target date, typically completed within a defined retainage-release window.\n\n2. Retainage on Pay Applications (AIA G702/G703) — Retainage is a percentage (typically 5–10% on private work, up to 10% on many public jobs) withheld from each progress payment until substantial completion. On AIA G702/G703 pay apps, retainage is tracked on the Schedule of Values and released in two stages: partial release at substantial completion and final release after punch-list closeout, lien waivers, and owner acceptance. Never certify a pay app without verifying stored materials, lien waivers for prior months, and that billed percent complete matches field observation.\n\n3. Critical Path Method Scheduling — CPM scheduling identifies the longest sequence of dependent activities (the critical path) with zero float; activities off the critical path have float that can absorb minor delays without moving substantial completion.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "Substantial completion is the stage when the work (or a designated portion) is sufficiently complete per the contract that the owner can occupy or use it for its intended purpose â€” punch list items remaining are minor and do not prevent that use. The architect/owner typically issues a certificate of substantial completion; the punch list enumerates incomplete/defective items to finish before final completion. Warranties and retainage release often tie to that date. Do not call it substantial complete while life-safety, egress, or certificate-of-occupancy blockers remain open.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  2,
+                                                          "total":  15,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  4,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  23,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "code-egress",
+                      "category":  "code",
+                      "query":  "How many exits are typically required for occupant load thresholds?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Means of Egress Requirements — Egress capacity is calculated from occupant load using code-prescribed factors per square foot by use; two remote exits are typically required above defined occupant thresholds, with maximum common path of travel and dead-end corridor limits per IBC Chapter 10.\n\n2. CSI Division 08 Openings / Windows and Doors — Window and door rough opening tolerances: typically 1/2 in larger than unit width/height for shim space, flashing integrated with WRB using a sill pan and head flashing, and fire-rated door assemblies must retain listed hardware and self-closing devices.\n\n3. CSI Division 26 Electrical Fundamentals — Electrical rough-in: panel schedule load calculations per NEC Article 220, conduit fill limited to 40% for 3+ conductors, and GFCI/AFCI protection required per NEC 210.8/210.12 in wet and habitable locations respectively.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "IBC occupant-load and exit-count rules are table-driven: typically one exit is allowed only for small loads; two exits are required once occupant load exceeds the single-exit threshold for that occupancy (commonly 49 for many business/mercantile-type situations, but verify the edition/occupancy table). Three or more exits are required at higher thresholds (e.g., 501+ and 1,001+ in common IBC tables). Exit separation, travel distance, and common-path limits also apply. Always use the adopted code edition and occupancy classification for the project â€” do not memorize one number for all buildings.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  3,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  2,
+                                                          "concision":  2,
+                                                          "total":  12,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  4,
+                                                          "total":  21,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "contracts-aia-a201",
+                      "category":  "contracts",
+                      "query":  "Who interprets the contract documents under AIA A201?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. AIA A201 General Conditions — Contractual roles for owner, architect, and contractor. Change orders require written authorization and time/price impact documentation. The architect interprets contract documents; disputes route through the initial decision maker before mediation/arbitration per Article 15.\n\n2. AIA A101 Owner-Contractor Agreement Basics — Stipulated-sum agreements fix the contract sum subject to authorized change orders; cost-plus agreements reimburse cost plus fee with a guaranteed maximum price (GMP) commonly used to share savings/overruns per negotiated terms.\n\n3. OSHA Scaffold Safety — Scaffolds must be erected, moved, and dismantled under the supervision of a competent person, capable of supporting 4x the intended load, with guardrails above 10 ft and full planking with no more than 1 in gaps.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "Under AIA A201, the Architect interprets the Contract Documents and decides matters concerning performance in the first instance (subject to the owner-contractor dispute process). The Contractor is responsible for means and methods and for constructing per the documents; the Owner furnishes surveys/approvals as specified. RFIs should resolve genuine conflicts â€” not shift design responsibility improperly. Follow the claims/dispute articles for disagreements with the Architect\u0027s interpretation.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  2,
+                                                          "total":  14,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  4,
+                                                          "total":  20,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "insurance-bonding",
+                      "category":  "risk",
+                      "query":  "What does a performance bond guarantee on a project?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Insurance and Bonding Basics — Performance and payment bonds guarantee project completion and subcontractor/supplier payment; commercial general liability and builder\u0027s risk insurance protect against third-party claims and property loss during construction, respectively.\n\n2. AIA A101 Owner-Contractor Agreement Basics — Stipulated-sum agreements fix the contract sum subject to authorized change orders; cost-plus agreements reimburse cost plus fee with a guaranteed maximum price (GMP) commonly used to share savings/overruns per negotiated terms.\n\n3. Bid Leveling Checklist — Normalize alternates, allowances, unit prices, exclusions, and schedule assumptions before award recommendation. Confirm bonding capacity, insurance certificates, and scope clarifications are captured in a written qualification log for every subcontractor bid.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "A performance bond guarantees the surety will step in (or fund completion) if the bonded contractor defaults on performing the contract â€” protecting the obligee (usually the owner) up to the bond penal sum. It is not the same as a payment bond (labor/materials claimants) or insurance (risk transfer for covered losses). Bondability and claims processes are strict; document default properly. Owners on public work often require both performance and payment bonds.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  2,
+                                                          "total":  14,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  5,
+                                                          "total":  22,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "sitework-erosion",
+                      "category":  "sitework",
+                      "query":  "What is required before land disturbance under a SWPPP?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Sitework and Erosion Control — SWPPP (Stormwater Pollution Prevention Plan) requires silt fence/inlet protection before land disturbance, stabilized construction entrance to limit tracking, and inspection after every 0.5 in rain event per NPDES permit conditions.\n\n2. Concrete Slab-on-Grade Best Practices — Provide a vapor retarder directly under slabs per ACI 302, control joints at roughly 24-36x slab thickness (in feet) spacing, and avoid finishing (troweling) before bleed water evaporates to prevent surface crazing.\n\n3. Confined Space Entry Safety — Permit-required confined spaces (manholes, tanks, vaults) need atmospheric testing for oxygen/toxics/flammability, continuous ventilation, an attendant outside, and a rescue plan before any entry per 29 CFR 1926 Subpart AA.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "Under a SWPPP (typically CGP / local equivalent), install and maintain erosion/sediment controls before land disturbance begins â€” silt fence, inlet protection, stabilized construction entrance, etc., per the plan. File/obtain NOI coverage as required, train crews, inspect after rain events, and keep records. Disturb only what you can stabilize; sequence clearing with controls. Failure to install BMPs before grading is a common NOV trigger.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  4,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  2,
+                                                          "total":  17,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  24,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "csi-04-masonry",
+                      "category":  "csi-division",
+                      "query":  "How far apart should control joints be in a CMU wall?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. CSI Division 04 Masonry — CMU and brick veneer coordination: mortar joint tooling, control joint spacing (typically 20-25 ft or per manufacturer), weep holes at 24-32 in on center, and flashing above openings to shed water out of the cavity.\n\n2. CSI Division 23 HVAC — HVAC ductwork sizing follows Manual D/ACCA calculations; seal all joints per SMACNA leakage class, balance air per Manual J load, and commission economizer/BAS controls before TAB report sign-off.\n\n3. Concrete Slab-on-Grade Best Practices — Provide a vapor retarder directly under slabs per ACI 302, control joints at roughly 24-36x slab thickness (in feet) spacing, and avoid finishing (troweling) before bleed water evaporates to prevent surface crazing.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "CMU control-joint spacing depends on wall type, reinforcement, moisture, and spec â€” a common rule of thumb is about every 20â€“25 feet horizontally for many ungrouted/lightly reinforced exterior walls, and within ~half that spacing of corners/openings, but project specs and TMS/ACI masonry guidance govern. Joints should align with openings and weak points; sealant and backer rod details matter. Do not copy a generic spacing if the structural/masonry drawings show a joint layout.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  3,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  2,
+                                                          "total":  12,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  20,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "osha-trenching",
+                      "category":  "safety",
+                      "query":  "At what depth does a trench require a protective system?",
+                      "answers":  {
+                                      "auricrux-fca":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. OSHA Trenching and Excavation Safety — Trenches 5 ft or deeper require protective systems (sloping, shoring, or shielding) unless in stable rock, per 29 CFR 1926 Subpart P. A competent person must classify soil type (A, B, or C) and inspect daily and after rain events.\n\n2. CSI Division 33 Utilities — Site utilities (water, sewer, storm, gas, electric) require utility locates (811), trench safety, and pressure testing before backfill. As-built survey and record drawings are required for easements and future maintenance access.\n\n3. CSI Division 07 Thermal and Moisture Protection — Building envelope continuity: weather-resistive barrier lapped shingle-style over flashing, self-adhered membrane at penetrations and rough openings, and continuous insulation to reduce thermal bridging per IECC climate zone requirements.\n\nApply these to your specific scope, verify against project documents/local AHJ requirements, and confirm with your competent person or PE of record before field execution.",
+                                      "cursor-agent":  "OSHA excavation rules (1926 Subpart P): a protective system (sloping, shoring, shielding, or engineered equivalent) is generally required for trenches 5 feet or deeper, unless the excavation is made entirely in stable rock. A competent person must inspect daily and after events that could increase hazard. At 4 feet, provide a safe means of egress (e.g., ladder within 25 feet of workers). Spoils/equipment set back from the edge; atmospheric testing when needed. Depth alone does not replace soil classification and protective-system design.",
+                                      "gemini":  null,
+                                      "chatgpt":  null,
+                                      "claude":  null
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  2,
+                                                          "total":  20,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  24,
+                                                          "scoringMethod":  "agent-SME-rubric-v1"
+                                                      }
+                                 }
+                  }
+              ]
+}
