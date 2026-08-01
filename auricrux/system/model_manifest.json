@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "modelId": "auricrux-3b-true-god-checkpoint-70000-azure-disk",
-  "status": "azure-disk-ahead-of-local-promotion",
-  "runtimeUse": "Azure train disk has checkpoint-70000; local/GCE product runtime still uses interim Ollama llama3.2:3b alias until a safe off-train merge/export completes.",
+  "modelId": "auricrux-3b-true-god-checkpoint-110000-product-q8",
+  "status": "product-ollama-loaded-ckpt110000-q8",
+  "runtimeUse": "Product Ollama auricrux-fca now serves merged checkpoint-110000 Q8_0 GGUF (CPU-merged off-train). Train PID still running; do not merge on train GPU.",
   "notTrueGodTierReason": "Checkpoint exists on disk; full true-god promotion still requires post-run suites and an export that does not interrupt live train or token factory.",
   "baseModel": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
   "adapter": {
@@ -13,11 +13,12 @@
       "adapter_config.json",
       "adapter_model.safetensors"
     ],
-    "evalStatus": "PENDING-PROMOTION",
+    "evalStatus": "PRODUCT-LOADED-PENDING-SUITE",
     "evalSuite": "eval/construction_god_suite_v1.json",
     "priorCandidateOnDisk": "checkpoint-65000",
     "stagedExportPath": "/mnt/auricrux-eod/export-staging/checkpoint-110000",
-    "trainProgressNote": "110000 / 297000 (~37.0%); train PID still alive — do not merge on train GPU"
+    "trainProgressNote": "110000 / 297000 (~37.0%); train PID still alive \u2014 do not merge on train GPU",
+    "productLoadedAtUtc": "2026-08-01T19:40:31Z"
   },
   "trueGodRun": {
     "status": "running-do-not-interrupt",
@@ -31,11 +32,14 @@
   "productRuntime": {
     "gceHost": "instance-20260715-113528",
     "ollamaModel": "auricrux-fca",
-    "ollamaBackingWeights": "llama3.2:3b (interim base + construction system prompt) — warmed 2026-08-01; NOT checkpoint-110000",
+    "ollamaBackingWeights": "checkpoint-110000 merged LoRA -> Q8_0 GGUF (auricrux-fca-ckpt110000-Q8_0.gguf, 3421898848 bytes)",
+    "ollamaShowSize": "3.4 GB",
     "api": "https://auricrux.futurecontractorsofamerica.com/api/chat",
     "runtimeModeVerified": "ollama-live / primaryModelReady=true",
-    "warmWorkflowRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30713194829",
-    "note": "Do not load LoRA merge on the train GPU while PID 1019003 is alive. auricrux-export-clean has no GPU — need a GPU export host for merge→GGUF of checkpoint-110000."
+    "loadWorkflowRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30715067119",
+    "exportPath": "/mnt/auricrux-eod/exports/ckpt-110000",
+    "gcsObject": "gs://auricrux-mobile-prod-model-xfer/auricrux-fca-ckpt110000-Q8_0.gguf",
+    "note": "CPU-only merge on train host with CUDA_VISIBLE_DEVICES empty; train PID 1019003 left alone."
   },
   "productQualityBar": {
     "domain": "construction-specialist-only",
@@ -46,28 +50,14 @@
     "productionFinalLabel": "awaiting-safe-export-of-checkpoint-70000-plus-eval",
     "tokenFactory": "do-not-tamper"
   },
-  "recordedAtUtc": "2026-07-26T20:10:00Z",
+  "recordedAtUtc": "2026-08-01T19:40:31Z",
   "auricruxFcaAlias": {
     "modelId": "auricrux-fca",
-    "status": "verified-live-interim-alias",
-    "kind": "system-prompt-alias-over-base",
-    "baseModel": "llama3.2:3b",
-    "note": "Named, pullable Ollama model that Auricrux.Web serves by default (Auricrux:PrimaryModel). It is NOT the fine-tuned true-god checkpoint-70000 adapter — it is llama3.2:3b with the Auricrux construction system prompt baked in via Modelfile. It exists so the product always answers as a branded specialist instead of a bare llama3.2 label, while the true fine-tuned export is still pending (see trueGodRun/migrationPolicy above).",
-    "modelfilePath": "auricrux/system/Modelfile.auricrux-fca",
-    "pullInstructions": [
-      "ollama pull llama3.2:3b",
-      "ollama create auricrux-fca -f auricrux/system/Modelfile.auricrux-fca",
-      "ollama run auricrux-fca \"What is a sill plate?\""
-    ],
-    "verifiedLocallyAtUtc": "2026-07-28T02:35:00Z",
-    "verifiedSampleQuery": "What is a sill plate?",
-    "verifiedResponseLatencyMs": 49337,
-    "evalSuite": "eval/construction_god_suite_v1.json",
-    "evalSuiteLastRunResult": "30/30 cases passed (100%) via Auricrux.Eval against the live ConstructionIntelligenceService corpus + graceful-fallback runtime — see eval/reports/construction_god_suite_v1_report.md",
-    "ollamaShowProof": {
-      "file": "auricrux/system/auricrux-fca-ollama-show-proof.json",
-      "capturedAtUtc": "2026-07-28T04:10:34Z",
-      "finding": "ollama show auricrux-fca confirms a raw-passthrough TEMPLATE plus a baked-in SYSTEM prompt/few-shot MESSAGE pairs over a 3.2B llama-arch Q4_K_M GGUF base — no LoRA adapter, no checkpoint-70000 weights merged in. Confirms this is still the interim system-prompt alias, not the Wave M fine-tune."
-    }
+    "status": "replaced-by-ckpt110000-gguf",
+    "kind": "merged-lora-gguf-q8",
+    "baseModel": "unsloth/Llama-3.2-3B-Instruct + LoRA checkpoint-110000",
+    "note": "Interim llama3.2:3b system-prompt alias replaced on 2026-08-01 by checkpoint-110000 Q8 GGUF. Mid-train (~37%); not final true-god bar.",
+    "loadedAtUtc": "2026-08-01T19:40:31Z",
+    "ggufObject": "auricrux-fca-ckpt110000-Q8_0.gguf"
   }
 }
