@@ -1,0 +1,372 @@
+{
+  "suiteId": "peer_comparison_ckpt110000_live_v1",
+  "status": "PARTIAL_EVIDENCE",
+  "capturedAt": "2026-08-01T19:50:36Z",
+  "runtime": {
+    "mode": "ollama-live",
+    "primaryModel": "auricrux-fca",
+    "weights": "checkpoint-110000 Q8_0 GGUF (3.4GB)",
+    "loadRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30715067119"
+  },
+  "scoring": "strict provisional rubric + case anchors vs stored cursor-agent panel; not OpenAI/Anthropic APIs",
+  "summary": {
+    "auricruxAvgTotal": 18.42,
+    "cursorAvgTotal": 22.33,
+    "atParityRate": 0.917,
+    "atParityCount": 11,
+    "caseCount": 12,
+    "claimGate": "AUX-027 FAIL/BLOCKED; mid-train ckpt-110000 live but domain errors remain (e.g. OSHA 6ft missed)"
+  },
+  "cases": [
+    {
+      "id": "csi-03-concrete",
+      "category": "csi-division",
+      "query": "When can I strip vertical concrete formwork after a pour?",
+      "answers": {
+        "auricrux-fca": "Stripping premature formwork (striping) is a common mistake in concrete finishing \u2014 never do it until the slab has reached structural maturity.\n\nGeneral rule: Do not remove vertical formwork until:\n\n1. The slab has finished curing and gained sufficient moisture resistance.\n2. All embedded items (pipes, rebar grid, control joints, etc.) have been protected and will not be damaged by removal.\n3. You can verify the slab's moisture content is above 80% relative humidity.\n\nCommon reasons for premature striping:\n\n- Insufficient curing: Concrete needs time to hydrate; rapid drying exposes formwork to water pressure.\n- Inadequate protection: Embedded items are exposed without sleeves, wraps, or protection mats.\n- Incorrect control joint spacing: Too little control joints creates lateral loads that exceed formwork capacity.\n- Overload before maturity: Load paths must be designed with the slab in its mature state; premature striping compromises deflection and shear.\n\nConsequence management: If you do strip premature formwork and it damages embedded items, you own the cost of re-curing or repairing the affected area.\n\nTrade drill-down (concrete focus): Key control for vertical formwork removal \u2014 NEVER REMOVE FORMWORK UNTIL THE SLAB HAS REACHED STRUCTURAL MATURITY.",
+        "cursor-agent": "Vertical formwork (walls/columns) is stripped when the concrete has enough strength to carry its own weight plus construction loads \u2014 not on a fixed clock alone. Follow the project specs / ACI 347 / engineer of record: many specs allow vertical form removal after concrete reaches a stated psi (often around early strength from field-cured cylinders) or after a minimum time at a given temperature. Do not strip based on calendar hours if it was cold or the mix was slow. Before stripping: confirm no honeycombing that needs repair access first, shore if the member is still load-critical, and never strip slabs/soffits on the same criteria as vertical forms (horizontal needs higher strength, often ~70% of f'c or as specified). Have the competent person / PE criteria in writing before you pull forms."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 1,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 3,
+          "total": 16,
+          "notes": [
+            "missing required pattern (?i)strength|psi|cure|engineer|spec",
+            "harmful pattern 80%\\s*relative humidity",
+            "harmful pattern moisture content is above 80",
+            "nonsense phrasing"
+          ]
+        },
+        "cursor-agent": {
+          "domainAccuracy": 5,
+          "actionability": 5,
+          "safetyComplianceDiligence": 5,
+          "fieldPracticality": 5,
+          "concision": 5,
+          "total": 23
+        }
+      }
+    },
+    {
+      "id": "osha-fall-protection",
+      "category": "safety",
+      "query": "At what height does OSHA require fall protection in construction?",
+      "answers": {
+        "auricrux-fca": "OSHA Fall Protection (29 CFR 1926) requires:\n\n- Guardrail system: 36 inches above the highest point of the work surface\n- Safety net: 4 feet below the highest point of the work surface\n- Blocking and guardrails combined: 42 inches above the highest point of the work surface\n\nAbove these heights, fall protection systems other than guardrails (e.g., safety nets, personal fall arrest systems) are required by OSHA. Always verify the specific requirement for your project under 29 CFR 1926.\n\nTrade drill-down:\n- General Contractor: Ensure guardrails or fall protection system is in place before work begins\n- Superintendent: Inspect daily to ensure compliance and correct deficiencies\n- Field Crew: Stop work immediately if you cannot provide fall protection; report deficiency\n- Estimator/Project Controller: Include fall protection cost in estimate and change order\n- Safety Specialist (on site): Monitor daily, issue stop-work orders when required",
+        "cursor-agent": "Under OSHA construction rules (29 CFR 1926.501), fall protection is generally required at 6 feet above a lower level for most walking-working surfaces. Use guardrails, safety nets, or personal fall arrest (or other allowed systems) as specified for the task. Exceptions and different trigger heights exist for some activities (e.g., scaffolds, steel erection have their own Subpart rules) \u2014 check the applicable Subpart, not only 501. Competent person must identify hazards; inspect harnesses, lanyards, and anchorage (typically 5,000 lb per worker for PFAS) before use. Do not treat 'we're only up a minute' as an exception."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 1,
+          "actionability": 4,
+          "safetyComplianceDiligence": 5,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 18,
+          "notes": [
+            "missing required pattern \\b6\\s*(?:ft|feet|foot)\\b",
+            "harmful pattern \\b36\\s*inch",
+            "harmful pattern \\b4\\s*feet below",
+            "harmful pattern guardrail system:\\s*36"
+          ]
+        },
+        "cursor-agent": {
+          "domainAccuracy": 5,
+          "actionability": 5,
+          "safetyComplianceDiligence": 5,
+          "fieldPracticality": 5,
+          "concision": 5,
+          "total": 24
+        }
+      }
+    },
+    {
+      "id": "estimating-takeoff",
+      "category": "estimating",
+      "query": "How do I structure a quantity takeoff for a bid?",
+      "answers": {
+        "auricrux-fca": "Quantity Takeoff (OT) Structure:\n1. START WITH THE DESIGN DOCUMENTS \u2014 not the actual construction drawings\n2. BREAK OUT EACH SPEC SECTION INTO INDIVIDUAL ITEMS\n3. CALCULATE THE QUANTITY FOR EACH ITEM USING THE FOLLOWING FORMULAS:\n   - Unit Cost \u00d7 Total Scope Area\n   - Waste Factor (typically 5-10% for sheet metal/chimney) \u00d7 Calculated Quantity\n   - Allowance for Finishes (paint, tile, flooring) \u2014 usually 8-12% of scope area\n4. ADD THE ITEMS TOGETHER TO GET THE TOTAL QUANTITY TAKEOFF\n5. CONVERT QUANTITIES FROM AREA UNITS (SQUARE FEET) TO LINEAR UNITS (LINEAL FEET, VOLUME CUBED)\n6. ROUNDS CLASSES OF UNITS \u2014 DO NOT LEAVE FRONT-LOADING\n7. DOCUMENT ALL ASSUMPTIONS AND LIMITATIONS IN THE REPORT\n\nBid Support: Include OT Report as a Supporting Document in Your Bid Package",
+        "cursor-agent": "Structure the takeoff by drawing set and CSI division (or your bid WBS): (1) list every quantifiable item with unit (SF, CY, LF, EA); (2) take off from plans/specs with a consistent scale and markups; (3) apply waste and productivity factors by trade; (4) price material, labor, equipment, and subs in separate columns; (5) add general conditions, bonds, insurance, contingency, and fee last. Cross-check against scope inclusions/exclusions and addenda. Level alternates and allowances separately so they do not corrupt the base bid. Historical unit costs beat generic databases when you have job-similar data. Freeze a takeoff revision tied to a drawing date before final number."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 3,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 19,
+          "notes": [
+            "nonsense phrasing"
+          ]
+        },
+        "cursor-agent": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 22
+        }
+      }
+    },
+    {
+      "id": "billing-payapp",
+      "category": "commercial",
+      "query": "How do I fill out an AIA style pay application schedule of values?",
+      "answers": {
+        "auricrux-fca": "Pay Application Scheduling (AIA G702/G703) Process:\n\n1. **SOV Preparation**: Include scope, quantities, unit prices, labor data, overhead allocation, taxes, and retainage.\n\n2. **Float Calculation**: Determine available float by subtracting direct cost from estimate; add indirect costs, overhead, and retainage for schedule impact.\n\n3. **Schedule Impact**: Apply pay application percentage (typically 90% of SOV) to calculate actual cost; adjust schedule duration accordingly.\n\n4. **Escalation Tracking**: Monitor pay application status weekly; escalate delayed applications immediately.\n\n5. **Retainage Release**: Schedule retainage release after approved SOV reconciliation; ensure 10-15% buffer for final payment.\n\n6. **Final Payment**: Submit final SOV with all approved change orders; request final payment within 30 days of final invoice.\n\n**AIA G702/G703 Fills**:\n\n- Section 1: Scope, quantities, unit prices, labor data\n- Section 2: Direct cost, overhead allocation, taxes\n- Section 3: Float calculation, schedule impact\n- Section 4: Pay application percentage, actual cost\n- Section 5: Escalation tracking, retainage release\n\n**Trade-Specific Schedules (AIA G703)**:\n\n- Electrical: Daily billings with float; weekly SOV reconciliation\n- Plumbing: Daily billings with float; weekly SOV reconciliation\n- General Conditions: Weekly GC pay application; monthly SOV reconciliation",
+        "cursor-agent": "On an AIA-style G702/G703 package: build the Schedule of Values (SOV) as the contract breakdown (line items with scheduled value). Each period enter work completed this period and materials presently stored; prior applications carry forward. Calculate total completed & stored to date, retainage per contract, and current payment due = (total completed & stored \u00d7 (1 \u2212 retainage%)) \u2212 previous payments (plus any release of retainage if allowed). Stored materials usually need invoices/bills of sale and sometimes insurance. Match percent-complete to field reality and approved COs \u2014 do not bill unapproved scope. Attach lien waivers as required by the owner/lender."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 2,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 3,
+          "total": 17,
+          "notes": [
+            "harmful pattern (?i)float calculation"
+          ]
+        },
+        "cursor-agent": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 22
+        }
+      }
+    },
+    {
+      "id": "scheduling-cpm",
+      "category": "scheduling",
+      "query": "What is the critical path in a CPM schedule?",
+      "answers": {
+        "auricrux-fca": "The critical path (CP) in a CPM (Carnegie Steel Project Management) schedule is the sequence of activities that determines the minimum duration required to complete the project, from start to finish.\n\nHere's how it works:\n\n- A forward pass calculates Float (F) for each activity: F = AC - BC\n- Activities with F \u2264 0 are on the Critical Path (CP)\n- The CP path is calculated using a backward pass: AC + (BC/CF)\n- Lead time (LT) = AC + F\n\nA CPM schedule should always show lead time, not float. Lead time represents actual project duration and must be used for resource allocation, cash flow planning, and risk management.\n\nIn the context of construction, lead time is especially important because it's the only measure that doesn't get pushed out by a sub-contractor. Float disappears with every subcontractor assignment \u2014 so you need to build lead time into your schedule from day 1.\n\nA well-managed CPM schedule requires regular Lead Time (LT) updates, not just float updates. LT is the actual duration of the critical path and should be used for all forward-looking planning decisions.",
+        "cursor-agent": "In CPM, the critical path is the longest path of dependent activities through the network \u2014 the chain with zero (or least) total float that sets the project finish date. Delay any critical activity and the finish slips one-for-one (absent acceleration). Near-critical paths with small float matter too. Build logic with real finish-to-start (and legitimate leads/lags), resource-load if needed, and update with actuals. A time impact analysis inserts a delay fragnet onto the then-current schedule to measure critical-path impact for COs/claims."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 20,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 5,
+          "actionability": 5,
+          "safetyComplianceDiligence": 5,
+          "fieldPracticality": 5,
+          "concision": 5,
+          "total": 23
+        }
+      }
+    },
+    {
+      "id": "closeout-punchlist",
+      "category": "closeout",
+      "query": "What defines substantial completion on a punch list?",
+      "answers": {
+        "auricrux-fca": "Substantial Completion (SC) is defined by the owner, contractor, and project scope \u2014 but here's a trade-standard framework for common projects:\n\n1. **Exterior Finishes**: Roofing (inspections passed), windows, doors, siding, painting, trim.\n2. **Interior Finishes**: Drywall, ceilings, flooring, countertops, cabinets, fixtures, lighting.\n3. **Systems Testing**: HVAC, plumbing, electrical, fire suppression, life safety systems.\n4. **Structural Defects**: Cracks, lulls, obstructions removed; load path verified by lateral deflection test if required.\n5. **Conformance Reports**: Submittal reviews passed; no rework required at SC milestone.\n\n**Substantial Completion Criteria (AIA A201 \u00a74.2)**:\n\n- All exterior finishes complete\n- All interior finishes complete\n- Systems tested and approved\n- Structural defects eliminated\n- Conformance reports issued\n\n**Punch List Closure**:\n\n- Scope changes approved with owner\n- Work completed to original scope or revised scope\n- Final walk-through conducted by owner and superintendent\n- Owner signs off on punch list closure\n\n**Warranty Begin Date**: Typically 1-3 weeks after SC; ensure warranty documentation is current.\n\nYour project team should have a signed Substantial Completion document and a punch list close-out agreement before warranty begins.",
+        "cursor-agent": "Substantial completion is the stage when the work (or a designated portion) is sufficiently complete per the contract that the owner can occupy or use it for its intended purpose \u2014 punch list items remaining are minor and do not prevent that use. The architect/owner typically issues a certificate of substantial completion; the punch list enumerates incomplete/defective items to finish before final completion. Warranties and retainage release often tie to that date. Do not call it substantial complete while life-safety, egress, or certificate-of-occupancy blockers remain open."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 3,
+          "total": 19,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 5,
+          "actionability": 5,
+          "safetyComplianceDiligence": 5,
+          "fieldPracticality": 5,
+          "concision": 5,
+          "total": 23
+        }
+      }
+    },
+    {
+      "id": "code-egress",
+      "category": "code",
+      "query": "How many exits are typically required for occupant load thresholds?",
+      "answers": {
+        "auricrux-fca": "Exit Count (typically per 1,000 SF):\n- Light commercial (retail, office): 2-3\n- Heavy commercial (hospitality, airport): 3-4\n- High-risk areas (laboratories, data centers): 4-5\n\nThis is a general guideline. Check local code amendments for specific requirements.\n\nFor example: A 10,000 SF retail center would need:\n- 20,000 SF \u00f7 1,500 SF/exits = 13.3 exits \u2248 14 exits\n- Plus one emergency exit from each floor if not connected by corridors\n\nAlways verify against the locally adopted code edition and do not fabricate exit counts without a reliable reference source.",
+        "cursor-agent": "IBC occupant-load and exit-count rules are table-driven: typically one exit is allowed only for small loads; two exits are required once occupant load exceeds the single-exit threshold for that occupancy (commonly 49 for many business/mercantile-type situations, but verify the edition/occupancy table). Three or more exits are required at higher thresholds (e.g., 501+ and 1,001+ in common IBC tables). Exit separation, travel distance, and common-path limits also apply. Always use the adopted code edition and occupancy classification for the project \u2014 do not memorize one number for all buildings."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 20,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 21
+        }
+      }
+    },
+    {
+      "id": "contracts-aia-a201",
+      "category": "contracts",
+      "query": "Who interprets the contract documents under AIA A201?",
+      "answers": {
+        "auricrux-fca": "Under AIA A201, the owner appoints a Designated Person (DP) before awarding the contract \u2014 this person is responsible for interpreting the contract documents after issuance.\n\nAIA A101 Owner-Contractor Agreement Basics include provisions that transfer design responsibility from architect to owner after approved drawings are issued. Key clause: \"DRAWINGS AND DOCUMENTS \u2014 After the Contract Date, the Owner is responsible for the interpretation of Drawings and Documents, except to the extent such is ambiguous and the Design Team (architect/engineer) fails to clarify.\"\n\nAIA A201 General Conditions include Section 4.2.6 Scope of Work Definitions \u2014 \"Any term not defined in this Contract shall be interpreted according to the drawings approved by the Owner before contract award.\" This clause establishes that ambiguous scope claims require documentation and a clear scope definition before design.\n\nOSHA Scaffold Safety (29 CFR 1926 Subpart T) does not directly apply to AIA contracts, but OSHA-compliant construction documents should include scaffold safety provisions.",
+        "cursor-agent": "Under AIA A201, the Architect interprets the Contract Documents and decides matters concerning performance in the first instance (subject to the owner-contractor dispute process). The Contractor is responsible for means and methods and for constructing per the documents; the Owner furnishes surveys/approvals as specified. RFIs should resolve genuine conflicts \u2014 not shift design responsibility improperly. Follow the claims/dispute articles for disagreements with the Architect's interpretation."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 4,
+          "actionability": 2,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 18,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 20
+        }
+      }
+    },
+    {
+      "id": "insurance-bonding",
+      "category": "risk",
+      "query": "What does a performance bond guarantee on a project?",
+      "answers": {
+        "auricrux-fca": "Performance Bond Guarantee (PBG):\n- What: 100% project price + 10% schedule delay risk\n- Who: Typically issued by insurance company, not contractor\n- When: Usually included in bid package or negotiated separately\n- Why: Protect owner from contractor default; required by most major contractors\n\nBid Analysis (typical commercial K-12 school):\n- Scope: Included in bid price without separate PBW clause\n- Price: 8-15% premium over direct cost for reputable contractors\n- Risk: Transferred from contractor to owner with PBG; ensure scope is unambiguously billed\n\nNegotiation/Scope Control: Always clarify PBG status upfront and protect owner rights through written documentation.",
+        "cursor-agent": "A performance bond guarantees the surety will step in (or fund completion) if the bonded contractor defaults on performing the contract \u2014 protecting the obligee (usually the owner) up to the bond penal sum. It is not the same as a payment bond (labor/materials claimants) or insurance (risk transfer for covered losses). Bondability and claims processes are strict; document default properly. Owners on public work often require both performance and payment bonds."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 3,
+          "actionability": 4,
+          "safetyComplianceDiligence": 3,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 18,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 22
+        }
+      }
+    },
+    {
+      "id": "sitework-erosion",
+      "category": "sitework",
+      "query": "What is required before land disturbance under a SWPPP?",
+      "answers": {
+        "auricrux-fca": "Before land disturbance, the following must be done under a SWPPP program:\n\n1. **Stormwater Pollution Prevention Plan (SWPPP)**: Approved by the local permitting authority and signed off on by the responsible party.\n2. **Best Management Practices (BMPs) installation**: Specially designed to prevent erosion, sedimentation, and pollution during land disturbance.\n3. **Sediment Control Plan**: Detailed plan showing how BMPs will be installed, maintained, and inspected during construction.\n4. **Erosion Control Plan**: Shows how the area will be stabilized during excavation, grading, and other land disturbance activities.\n5. **Water Quality Monitoring**: Ongoing monitoring of water quality during construction to ensure compliance with permit requirements.\n\n**Before Excavation**:\n\n1. Mark out areas where erosion control measures must be installed (e.g., geotextiles, silt fences).\n2. Install erosion control measures according to the SWPPP plan.\n3. Inspect the area daily and record any issues or omissions.\n\n**After Excavation**:\n\n1. Stabilize the excavated area with geotextiles, sandbags, or other approved methods.\n2. Plant vegetation in accordance with the SWPPP plan.\n3. Monitor water quality during rehabilitation.\n\nFailure to follow these requirements before land disturbance can result in fines and permit revocation. Always check your local permitting authority for specific requirements.",
+        "cursor-agent": "Under a SWPPP (typically CGP / local equivalent), install and maintain erosion/sediment controls before land disturbance begins \u2014 silt fence, inlet protection, stabilized construction entrance, etc., per the plan. File/obtain NOI coverage as required, train crews, inspect after rain events, and keep records. Disturb only what you can stabilize; sequence clearing with controls. Failure to install BMPs before grading is a common NOV trigger."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 3,
+          "total": 19,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 5,
+          "actionability": 5,
+          "safetyComplianceDiligence": 5,
+          "fieldPracticality": 5,
+          "concision": 5,
+          "total": 24
+        }
+      }
+    },
+    {
+      "id": "csi-04-masonry",
+      "category": "csi-division",
+      "query": "How far apart should control joints be in a CMU wall?",
+      "answers": {
+        "auricrux-fca": "Control Joint (CJ) spacing for CMU walls: AIA TMS Section 08 02.03 states, \"Control Joints are spaced at most 12 feet on center.\" However, the International Building Code (IBC) Section 1804.1 defines CMU walls where control joints must be spaced no more than 10 feet apart if they are not concealed by masonry finish.\n\nPractical guidance: For a typical CMU wall, space control joints at 8-12 foot centers to allow for thermal movement and prevent cracking. Concealed control joints (behind veneer or stucco) can be spaced up to 15 feet apart without compromising the structure's ability to move.\n\nDesign review: Before construction begins, submit your CMU wall drawings with control joint spacings clearly marked. If the architect/engineer requests a change, do not build concealed joints without approval.\n\nCJ spacing is a design requirement, not a field allowance. Do not interpret this as \"build at 8-foot centers and claim it's approved.\" Instead, say \"control joints are spaced at 9 feet center, per design\" and back up with the original drawings and approval documentation.",
+        "cursor-agent": "CMU control-joint spacing depends on wall type, reinforcement, moisture, and spec \u2014 a common rule of thumb is about every 20\u201325 feet horizontally for many ungrouted/lightly reinforced exterior walls, and within ~half that spacing of corners/openings, but project specs and TMS/ACI masonry guidance govern. Joints should align with openings and weak points; sealant and backer rod details matter. Do not copy a generic spacing if the structural/masonry drawings show a joint layout."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 4,
+          "actionability": 2,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 18,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 4,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 20
+        }
+      }
+    },
+    {
+      "id": "osha-trenching",
+      "category": "safety",
+      "query": "At what depth does a trench require a protective system?",
+      "answers": {
+        "auricrux-fca": "Trench Depth Protective System Threshold:\n- Shallow (less than 5 feet): No protective system required\n- Medium (5-10 feet): Boxed-in or trench box with top cover; slope >2:1 recommended\n- Deep (over 10 feet): Protective trench box, shoring, and/or bracing required\n\nOSHA reference: OSHA Trenching and Excavation Safety (29 CFR 1926 Subpart R)",
+        "cursor-agent": "OSHA excavation rules (1926 Subpart P): a protective system (sloping, shoring, shielding, or engineered equivalent) is generally required for trenches 5 feet or deeper, unless the excavation is made entirely in stable rock. A competent person must inspect daily and after events that could increase hazard. At 4 feet, provide a safe means of egress (e.g., ladder within 25 feet of workers). Spoils/equipment set back from the edge; atmospheric testing when needed. Depth alone does not replace soil classification and protective-system design."
+      },
+      "scores": {
+        "auricrux-fca": {
+          "domainAccuracy": 3,
+          "actionability": 4,
+          "safetyComplianceDiligence": 4,
+          "fieldPracticality": 4,
+          "concision": 4,
+          "total": 19,
+          "notes": []
+        },
+        "cursor-agent": {
+          "domainAccuracy": 5,
+          "actionability": 5,
+          "safetyComplianceDiligence": 5,
+          "fieldPracticality": 5,
+          "concision": 5,
+          "total": 24
+        }
+      }
+    }
+  ]
+}
