@@ -1,0 +1,84 @@
+name: GCP Warm Auricrux-FCA
+
+# Recreate/warm auricrux-fca on product Ollama so /api/chat leaves corpus-fallback.
+on:
+  workflow_dispatch:
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    env:
+      ZONE: us-central1-b
+      INSTANCE: instance-20260715-113528
+      PROJECT: auricrux-mobile-prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Warm auricrux-fca
+        run: |
+          set -euo pipefail
+          echo "CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
+          gcloud config set project auricrux-mobile-prod
+
+          gcloud compute scp auricrux/system/Modelfile.auricrux-fca \
+            "${INSTANCE}:/tmp/Modelfile.auricrux-fca" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
+
+          cat > /tmp/warm-fca.sh <<'REMOTE'
+          #!/bin/bash
+          set -euo pipefail
+          sudo docker network connect fca-net auricrux-ollama 2>/dev/null || true
+          echo "=== models before ==="
+          sudo docker exec auricrux-ollama ollama list || true
+
+          sudo docker exec auricrux-ollama ollama stop llava 2>/dev/null || true
+          sudo docker exec auricrux-ollama ollama stop moondream 2>/dev/null || true
+          sudo docker exec auricrux-ollama ollama stop auricrux-fca 2>/dev/null || true
+
+          if ! sudo docker exec auricrux-ollama ollama list | grep -q 'llama3.2'; then
+            echo "Pulling llama3.2:3b..."
+            sudo docker exec auricrux-ollama ollama pull llama3.2:3b
+          fi
+
+          sudo docker cp /tmp/Modelfile.auricrux-fca auricrux-ollama:/tmp/Modelfile.auricrux-fca
+          sudo docker exec auricrux-ollama ollama create auricrux-fca -f /tmp/Modelfile.auricrux-fca
+
+          echo "=== warm generate ==="
+          sudo docker exec auricrux-ollama ollama run auricrux-fca "What is a sill plate? Answer in 3 sentences." || true
+
+          echo "=== models after ==="
+          sudo docker exec auricrux-ollama ollama list || true
+
+          OLLAMA_URL="http://auricrux-ollama:11434"
+          recreate() {
+            local NAME="$1" HOSTPORT="$2"
+            NETWORK=$(sudo docker inspect "$NAME" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+            [ -n "$NETWORK" ] || NETWORK=fca-net
+            sudo docker stop "$NAME"
+            sudo docker rename "$NAME" "${NAME}-prev-$(date +%s)"
+            sudo docker run -d --name "$NAME" --restart unless-stopped --network "$NETWORK" \
+              -p "127.0.0.1:${HOSTPORT}:80" \
+              --add-host=host.docker.internal:host-gateway \
+              -e ASPNETCORE_URLS=http://0.0.0.0:80 \
+              -e ASPNETCORE_ENVIRONMENT=Production \
+              -e Auricrux__OllamaUrl="$OLLAMA_URL" \
+              -e Auricrux__PrimaryModel=auricrux-fca \
+              -e Auricrux__VisionModel=llava \
+              auricrux-web:cutover
+          }
+          recreate auricrux-web 4000
+          recreate auricrux-api 5001
+          sleep 8
+          curl -fsS http://127.0.0.1:5001/api/health; echo
+          curl -fsS -m 120 -H 'Content-Type: application/json' \
+            -d '{"Query":"What is a sill plate?","ThinkingMode":1,"SearchScope":2}' \
+            http://127.0.0.1:5001/api/chat | head -c 600; echo
+          REMOTE
+
+          gcloud compute scp /tmp/warm-fca.sh "${INSTANCE}:/tmp/warm-fca.sh" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet \
+            --command='bash /tmp/warm-fca.sh'
