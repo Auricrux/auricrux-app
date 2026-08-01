@@ -6,7 +6,7 @@
              Title="Auricrux"
              BackgroundColor="{StaticResource Paper}">
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto" Padding="12">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="12">
 
         <!-- Header -->
         <VerticalStackLayout Grid.Row="0" Spacing="8" Padding="4,4,4,10">
@@ -87,8 +87,64 @@
             </ScrollView>
         </VerticalStackLayout>
 
+        <!-- Field tools (Browse / Agent / Calc / Vision) -->
+        <VerticalStackLayout Grid.Row="1" Spacing="8" Padding="4,0,4,8">
+            <Border Stroke="{StaticResource Gray300}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12"
+                    BackgroundColor="White"
+                    Padding="8,4">
+                <Entry Text="{Binding BrowseUrl}"
+                       Placeholder="https://… browse URL"
+                       PlaceholderColor="{StaticResource Gray400}"
+                       BackgroundColor="Transparent"
+                       TextColor="{StaticResource Ink}"
+                       FontSize="12"/>
+            </Border>
+            <ScrollView Orientation="Horizontal" HeightRequest="40">
+                <HorizontalStackLayout Spacing="8">
+                    <Button Text="Browse"
+                            Command="{Binding BrowseCommand}"
+                            BackgroundColor="{StaticResource Secondary}"
+                            TextColor="{StaticResource Ink}"
+                            FontSize="11"
+                            Padding="12,6"
+                            CornerRadius="14"/>
+                    <Button Text="Agent"
+                            Command="{Binding AgentCommand}"
+                            BackgroundColor="{StaticResource Secondary}"
+                            TextColor="{StaticResource Ink}"
+                            FontSize="11"
+                            Padding="12,6"
+                            CornerRadius="14"/>
+                    <Button Text="Calc"
+                            Command="{Binding CalcCommand}"
+                            BackgroundColor="{StaticResource Secondary}"
+                            TextColor="{StaticResource Ink}"
+                            FontSize="11"
+                            Padding="12,6"
+                            CornerRadius="14"/>
+                    <Button Text="{Binding PhotoLabel}"
+                            Command="{Binding PickPhotoCommand}"
+                            BackgroundColor="{StaticResource Tertiary}"
+                            TextColor="White"
+                            FontSize="11"
+                            Padding="12,6"
+                            CornerRadius="14"
+                            LineBreakMode="TailTruncation"/>
+                    <Button Text="Analyze photo"
+                            Command="{Binding AnalyzePhotoCommand}"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            FontSize="11"
+                            Padding="12,6"
+                            CornerRadius="14"/>
+                </HorizontalStackLayout>
+            </ScrollView>
+        </VerticalStackLayout>
+
         <!-- Messages -->
-        <CollectionView Grid.Row="1"
+        <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Messages}"
                         SelectionMode="None"
                         Margin="0,4">
@@ -116,13 +172,13 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <ActivityIndicator Grid.Row="2"
+        <ActivityIndicator Grid.Row="3"
                            IsRunning="{Binding IsLoading}"
                            IsVisible="{Binding IsLoading}"
                            Color="{StaticResource Primary}"/>
 
         <!-- Composer -->
-        <VerticalStackLayout Grid.Row="3" Spacing="8" Padding="0,8,0,0">
+        <VerticalStackLayout Grid.Row="4" Spacing="8" Padding="0,8,0,0">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
                 <Button Grid.Column="0"
                         Text="{Binding IsListening, Converter={StaticResource MicLabelConverter}}"

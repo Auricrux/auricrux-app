@@ -6,6 +6,7 @@ using Auricrux.Mobile.Services;
 using Auricrux.Shared.Models;
 using Auricrux.Shared.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Media;
 
 namespace Auricrux.Mobile;
 
@@ -35,6 +36,9 @@ public class MainPageViewModel : INotifyPropertyChanged
 	private string _accountEmail = "contractor@example.com";
 	private string _selectedModel = "llama3.2";
 	private string _quotaLabel = "Freemium";
+	private string _browseUrl = string.Empty;
+	private string _photoLabel = "No photo";
+	private byte[]? _selectedPhotoBytes;
 
 	public ObservableCollection<ChatMessageViewModel> Messages { get; } = new();
 	public ObservableCollection<string> AvailableModels { get; } = new() { "llama3.2", "mistral", "auricrux" };
@@ -117,6 +121,20 @@ public class MainPageViewModel : INotifyPropertyChanged
 		set { _quotaLabel = value; OnPropertyChanged(); }
 	}
 
+	public string BrowseUrl
+	{
+		get => _browseUrl;
+		set { _browseUrl = value; OnPropertyChanged(); }
+	}
+
+	public string PhotoLabel
+	{
+		get => _photoLabel;
+		set { _photoLabel = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPhotoSelected)); }
+	}
+
+	public bool HasPhotoSelected => _selectedPhotoBytes is not null;
+
 	public bool AutoSpeakEnabled
 	{
 		get => _autoSpeakEnabled;
@@ -141,6 +159,11 @@ public class MainPageViewModel : INotifyPropertyChanged
 	public ICommand SpeakLastCommand { get; }
 	public ICommand RefreshHealthCommand { get; }
 	public ICommand SignOutCommand { get; }
+	public ICommand BrowseCommand { get; }
+	public ICommand AgentCommand { get; }
+	public ICommand CalcCommand { get; }
+	public ICommand PickPhotoCommand { get; }
+	public ICommand AnalyzePhotoCommand { get; }
 
 	public MainPageViewModel(
 		AuricruxService auricruxService,
@@ -175,6 +198,11 @@ public class MainPageViewModel : INotifyPropertyChanged
 		SpeakLastCommand = new AsyncRelayCommand(SpeakLast);
 		RefreshHealthCommand = new AsyncRelayCommand(CheckHealthAsync);
 		SignOutCommand = new AsyncRelayCommand(SignOutAsync);
+		BrowseCommand = new AsyncRelayCommand(RunBrowse);
+		AgentCommand = new AsyncRelayCommand(RunAgent);
+		CalcCommand = new AsyncRelayCommand(RunCalc);
+		PickPhotoCommand = new AsyncRelayCommand(PickPhoto);
+		AnalyzePhotoCommand = new AsyncRelayCommand(AnalyzePhoto);
 
 		Messages.Add(new ChatMessageViewModel
 		{
@@ -424,6 +452,184 @@ public class MainPageViewModel : INotifyPropertyChanged
 		else
 		{
 			StatusMessage = "No recent message to rate";
+		}
+	}
+
+	private async Task RunBrowse()
+	{
+		if (string.IsNullOrWhiteSpace(BrowseUrl) || IsLoading) return;
+
+		IsLoading = true;
+		StatusMessage = "Browsing…";
+		try
+		{
+			var result = await _apiClient.BrowseAsync(BrowseUrl.Trim(), UserInput);
+			var summary = result?.TryGetProperty("summary", out var s) == true ? s.GetString() : "Browse failed.";
+			Messages.Add(new ChatMessageViewModel
+			{
+				Role = "assistant",
+				Content = summary ?? "Browse failed.",
+				IsUser = false,
+				Timestamp = DateTime.Now
+			});
+			StatusMessage = "Browse done";
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Browse failed");
+			StatusMessage = $"Browse failed: {ex.Message}";
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+	private async Task RunAgent()
+	{
+		if (string.IsNullOrWhiteSpace(UserInput) || IsLoading) return;
+
+		IsLoading = true;
+		StatusMessage = "Agent running…";
+		var query = UserInput.Trim();
+		UserInput = string.Empty;
+		Messages.Add(new ChatMessageViewModel
+		{
+			Role = "user",
+			Content = query,
+			IsUser = true,
+			Timestamp = DateTime.Now
+		});
+
+		try
+		{
+			var result = await _apiClient.RunAgentAsync(query, SelectedModel);
+			var answer = result?.TryGetProperty("finalAnswer", out var a) == true
+				? a.GetString()
+				: "Agent failed.";
+			Messages.Add(new ChatMessageViewModel
+			{
+				Role = "assistant",
+				Content = answer ?? "Agent failed.",
+				IsUser = false,
+				Timestamp = DateTime.Now
+			});
+			StatusMessage = "Agent done";
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Agent failed");
+			StatusMessage = $"Agent failed: {ex.Message}";
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+	private async Task RunCalc()
+	{
+		if (string.IsNullOrWhiteSpace(UserInput) || IsLoading) return;
+
+		IsLoading = true;
+		StatusMessage = "Calculating…";
+		try
+		{
+			var result = await _apiClient.RunAgentAsync(UserInput.Trim(), SelectedModel);
+			var answer = result?.TryGetProperty("finalAnswer", out var a) == true
+				? a.GetString()
+				: null;
+			if (string.IsNullOrWhiteSpace(answer))
+			{
+				var calc = await _apiClient.CalcAsync("concrete_volume_cy", new { lengthFt = 20.0, widthFt = 10.0, depthIn = 6.0 });
+				answer = calc?.ToString() ?? "Calc failed.";
+			}
+
+			Messages.Add(new ChatMessageViewModel
+			{
+				Role = "assistant",
+				Content = answer!,
+				IsUser = false,
+				Timestamp = DateTime.Now
+			});
+			StatusMessage = "Calc done";
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Calc failed");
+			StatusMessage = $"Calc failed: {ex.Message}";
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+	private async Task PickPhoto()
+	{
+		try
+		{
+			StatusMessage = "Opening photo picker…";
+			var photo = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions { Title = "Select field photo" });
+			if (photo is null)
+			{
+				StatusMessage = "Photo selection cancelled";
+				return;
+			}
+
+			await using var stream = await photo.OpenReadAsync();
+			using var ms = new MemoryStream();
+			await stream.CopyToAsync(ms);
+			_selectedPhotoBytes = ms.ToArray();
+			PhotoLabel = string.IsNullOrWhiteSpace(photo.FileName) ? "Photo selected" : photo.FileName;
+			StatusMessage = "Photo ready for analysis";
+		}
+		catch (FeatureNotSupportedException)
+		{
+			StatusMessage = "Photo picker unavailable on this device";
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Photo pick failed");
+			StatusMessage = $"Photo pick failed: {ex.Message}";
+		}
+	}
+
+	private async Task AnalyzePhoto()
+	{
+		if (_selectedPhotoBytes is null || IsLoading) return;
+
+		IsLoading = true;
+		StatusMessage = "Analyzing field photo…";
+		try
+		{
+			var b64 = Convert.ToBase64String(_selectedPhotoBytes);
+			var prompt = string.IsNullOrWhiteSpace(UserInput)
+				? "Field photo safety and quality review"
+				: UserInput.Trim();
+			var result = await _apiClient.AnalyzeVisionAsync(b64, prompt, "safety");
+			var analysis = result?.TryGetProperty("analysis", out var an) == true ? an.GetString() : null;
+			var rfi = result?.TryGetProperty("rfiDraft", out var r) == true ? r.GetString() : null;
+			var engine = result?.TryGetProperty("engine", out var e) == true ? e.GetString() : "vision";
+			Messages.Add(new ChatMessageViewModel
+			{
+				Role = "assistant",
+				Content = $"{analysis}\n\n--- RFI draft ({engine}) ---\n{rfi}",
+				IsUser = false,
+				Timestamp = DateTime.Now
+			});
+			StatusMessage = "Photo analyzed";
+			_selectedPhotoBytes = null;
+			PhotoLabel = "No photo";
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Vision failed");
+			StatusMessage = $"Vision failed: {ex.Message}";
+		}
+		finally
+		{
+			IsLoading = false;
 		}
 	}
 
