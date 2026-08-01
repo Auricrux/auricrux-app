@@ -6,19 +6,18 @@
   "notTrueGodTierReason": "Checkpoint exists on disk; full true-god promotion still requires post-run suites and an export that does not interrupt live train or token factory.",
   "baseModel": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
   "adapter": {
-    "azurePath": "/mnt/auricrux-eod/runs/run-20260715T114454Z/outputs/auricrux_lora_adapter_3b_true_god_1b5/checkpoint-70000",
-    "localLabel": "checkpoint-70000-azure-disk",
-    "verifiedAtUtc": "2026-07-26T20:09:01Z",
+    "azurePath": "/mnt/auricrux-eod/runs/run-20260715T114454Z/outputs/auricrux_lora_adapter_3b_true_god_1b5/checkpoint-110000",
+    "localLabel": "checkpoint-110000-azure-disk-staged",
+    "verifiedAtUtc": "2026-08-01T18:49:56Z",
     "verifiedFiles": [
       "adapter_config.json",
-      "adapter_model.safetensors",
-      "trainer_state.json"
+      "adapter_model.safetensors"
     ],
     "evalStatus": "PENDING-PROMOTION",
     "evalSuite": "eval/construction_god_suite_v1.json",
     "priorCandidateOnDisk": "checkpoint-65000",
-    "lossAtStep70000": 0.0373,
-    "trainProgressNote": "70000 / 297000 (~23.6%)"
+    "stagedExportPath": "/mnt/auricrux-eod/export-staging/checkpoint-110000",
+    "trainProgressNote": "110000 / 297000 (~37.0%); train PID still alive — do not merge on train GPU"
   },
   "trueGodRun": {
     "status": "running-do-not-interrupt",
@@ -26,15 +25,17 @@
     "resourceGroup": "AURICRUX-TRAINING-NCAST4",
     "trainPid": 1019003,
     "config": "config/auricrux_training_config_3b_true_god_1b5.json",
-    "lastObservedCheckpointOnDisk": 70000,
+    "lastObservedCheckpointOnDisk": 110000,
     "gcpL4Spot": "TERMINATED"
   },
   "productRuntime": {
     "gceHost": "instance-20260715-113528",
-    "ollamaModel": "auricrux-llama-3b-ckpt-40000",
-    "ollamaBackingWeights": "llama3.2:3b (interim base + construction system prompt)",
+    "ollamaModel": "auricrux-fca",
+    "ollamaBackingWeights": "llama3.2:3b (interim base + construction system prompt) — warmed 2026-08-01; NOT checkpoint-110000",
     "api": "https://auricrux.futurecontractorsofamerica.com/api/chat",
-    "note": "Do not load LoRA merge on the train GPU while PID 1019003 is alive. Prefer auricrux-export-clean or a stopped-spot GPU for merge→GGUF."
+    "runtimeModeVerified": "ollama-live / primaryModelReady=true",
+    "warmWorkflowRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30713194829",
+    "note": "Do not load LoRA merge on the train GPU while PID 1019003 is alive. auricrux-export-clean has no GPU — need a GPU export host for merge→GGUF of checkpoint-110000."
   },
   "productQualityBar": {
     "domain": "construction-specialist-only",

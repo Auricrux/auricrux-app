@@ -1,0 +1,379 @@
+﻿{
+    "suiteId":  "peer_comparison_v1_warm_live",
+    "status":  "PARTIAL_EVIDENCE",
+    "capturedAt":  "2026-08-01T18:52:57.0579564Z",
+    "runtime":  {
+                    "warmWorkflow":  "https://github.com/Auricrux/auricrux-app/actions/runs/30713194829",
+                    "health":  "healthy / ollama-live / primaryModelReady=true",
+                    "model":  "auricrux-fca (interim system-prompt alias over llama3.2:3b — NOT checkpoint-110000 weights)"
+                },
+    "checkpointExport":  {
+                             "exportCleanHasGpu":  false,
+                             "latestOnAzureTrainDisk":  "checkpoint-110000",
+                             "stagedPath":  "/mnt/auricrux-eod/export-staging/checkpoint-110000",
+                             "next":  "merge+GGUF on GPU host that is not the live train PID; then ollama create on product VM",
+                             "trainStillRunning":  true,
+                             "stagedAt":  "2026-08-01T18:49:56Z"
+                         },
+    "summary":  {
+                    "cases":  12,
+                    "averages":  {
+                                     "auricrux-fca":  13.83,
+                                     "cursor-agent":  22.33
+                                 },
+                    "auricruxAtParityPercent":  8.3,
+                    "verdict":  "PARTIAL_EVIDENCE",
+                    "verdictNote":  "Warm live alias improves over corpus-fallback but still trails flagship-class answers (hallucinated cites). Checkpoint-110000 staged, not yet in product Ollama.",
+                    "claimAction":  "AUX-017/018 remain BLOCKED until ckpt-110000 merged+GGUF+loaded. AUX-027 remains FAIL/BLOCKED."
+                },
+    "cases":  [
+                  {
+                      "id":  "csi-03-concrete",
+                      "category":  "csi-division",
+                      "query":  "When can I strip vertical concrete formwork after a pour?",
+                      "answers":  {
+                                      "auricrux-fca":  "According to CSI Division 03 Concrete, Section 0305.02.2, \"Strip Formwork,\" you should wait until the concrete has reached a minimum of 3,000 psi (pounds per square inch) and has been cured for at least 24 hours before stripping vertical formwork.\n\nVerify against the locally adopted code edition, as this may vary depending on your jurisdiction\u0027s building codes.",
+                                      "cursor-agent":  "Vertical formwork (walls/columns) is stripped when the concrete has enough strength to carry its own weight plus construction loads â€” not on a fixed clock alone. Follow the project specs / ACI 347 / engineer of record: many specs allow vertical form removal after concrete reaches a stated psi (often around early strength from field-cured cylinders) or after a minimum time at a given temperature. Do not strip based on calendar hours if it was cold or the mix was slow. Before stripping: confirm no honeycombing that needs repair access first, shore if the member is still load-critical, and never strip slabs/soffits on the same criteria as vertical forms (horizontal needs higher strength, often ~70% of f\u0027c or as specified). Have the competent person / PE criteria in writing before you pull forms."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  2,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  3,
+                                                          "total":  14,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  4,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  23,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "osha-fall-protection",
+                      "category":  "safety",
+                      "query":  "At what height does OSHA require fall protection in construction?",
+                      "answers":  {
+                                      "auricrux-fca":  "According to OSHA 1926, Fall Protection is required when working at a height of 6 feet (1.8 meters) or more above the ground or lower level.",
+                                      "cursor-agent":  "Under OSHA construction rules (29 CFR 1926.501), fall protection is generally required at 6 feet above a lower level for most walking-working surfaces. Use guardrails, safety nets, or personal fall arrest (or other allowed systems) as specified for the task. Exceptions and different trigger heights exist for some activities (e.g., scaffolds, steel erection have their own Subpart rules) â€” check the applicable Subpart, not only 501. Competent person must identify hazards; inspect harnesses, lanyards, and anchorage (typically 5,000 lb per worker for PFAS) before use. Do not treat \u0027we\u0027re only up a minute\u0027 as an exception."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  5,
+                                                          "total":  23,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  24,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "estimating-takeoff",
+                      "category":  "estimating",
+                      "query":  "How do I structure a quantity takeoff for a bid?",
+                      "answers":  {
+                                      "auricrux-fca":  "To structure a quantity takeoff, follow these steps:\n\n1. **Divide the project into sections**: Organize the project into logical sections (e.g., walls, floors, roof, etc.) based on CSI MasterFormat divisions.\n2. **Identify quantities**: Determine the quantities for each section using the CSI MasterFormat divisions and the Shop Drawing Coordination method.\n3. **Use a takeoff template**: Utilize a pre-built quantity takeoff template or create your own to streamline the process.\n4. **Estimate materials and labor**: Estimate the quantities of materials (e.g., lumber, drywall, roofing) and labor hours required for each section.\n5. **Consider site-specific factors**: Account for site-specific conditions, such as uneven terrain or limited access, that may impact quantity estimates.\n6. **Verify against locally adopted code edition**: Verify your takeoff quantities against the locally adopted code edition (e.g., IBC 2020) to ensure accuracy and compliance.\n\nExample:\n\nFor a residential construction project, you might break down the quantity takeoff into sections like this:\n\n* CSI Division 03 Concrete: Walls, footings, and foundation\n\t+ Quantity: 500 linear feet of concrete footing @ $3.50/linear foot = $1,750\n* CSI Division 05 Metals / Structural Steel: Framing and roof trusses\n\t+ Quantity: 200 linear feet of #2 x 6 pressure-treated lumber @ $0.75/linear foot = $150\n\n**Verify against the locally adopted code edition**, such as IBC 2020, to ensure accuracy and compliance.\n\nReferences:\n\n* Quantity Takeoff Estimating Method (CTA)\n* Shop Drawing Coordination (CSI Division 60)",
+                                      "cursor-agent":  "Structure the takeoff by drawing set and CSI division (or your bid WBS): (1) list every quantifiable item with unit (SF, CY, LF, EA); (2) take off from plans/specs with a consistent scale and markups; (3) apply waste and productivity factors by trade; (4) price material, labor, equipment, and subs in separate columns; (5) add general conditions, bonds, insurance, contingency, and fee last. Cross-check against scope inclusions/exclusions and addenda. Level alternates and allowances separately so they do not corrupt the base bid. Historical unit costs beat generic databases when you have job-similar data. Freeze a takeoff revision tied to a drawing date before final number."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  3,
+                                                          "total":  18,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  22,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "billing-payapp",
+                      "category":  "commercial",
+                      "query":  "How do I fill out an AIA style pay application schedule of values?",
+                      "answers":  {
+                                      "auricrux-fca":  "To complete an AIA-style Pay Application Schedule of Values (G702/G703), follow these steps:\n\n1. **Verify the locally adopted code edition**: Ensure you\u0027re using the most current edition of the International Building Code (IBC) and American National Standards Institute (ANSI) standards relevant to your project.\n2. **Determine the scope of work**: Identify the specific tasks, materials, and labor required for each item on the schedule.\n3. **Calculate quantities**: Measure or estimate quantities using CSI MasterFormat divisions (e.g., 33 31 00 - Concrete) and apply applicable tolerances (e.g., ±10%).\n4. **Determine unit prices**: Research and obtain unit prices from suppliers, contractors, or industry sources. Verify these prices against the locally adopted code edition.\n5. **Complete the pay application**:\n\t* List each item on the schedule with its corresponding quantity, unit price, and total cost.\n\t* Calculate the total cost for each item using the formula: `Total Cost = Quantity x Unit Price`.\n\t* Enter the calculated costs into the Pay Application Schedule of Values.\n6. **Consider retainage**: Apply the agreed-upon retainage percentage to the total cost for each item (e.g., 5% retention).\n7. **Submit the completed pay application** to the project owner or architect, ensuring all calculations and quantities are accurate.\n\nVerify your work against the locally adopted code edition and ensure compliance with AIA G702/G703 requirements.",
+                                      "cursor-agent":  "On an AIA-style G702/G703 package: build the Schedule of Values (SOV) as the contract breakdown (line items with scheduled value). Each period enter work completed this period and materials presently stored; prior applications carry forward. Calculate total completed \u0026 stored to date, retainage per contract, and current payment due = (total completed \u0026 stored Ã— (1 âˆ’ retainage%)) âˆ’ previous payments (plus any release of retainage if allowed). Stored materials usually need invoices/bills of sale and sometimes insurance. Match percent-complete to field reality and approved COs â€” do not bill unapproved scope. Attach lien waivers as required by the owner/lender."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  2,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  2,
+                                                          "concision":  2,
+                                                          "total":  10,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  22,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "scheduling-cpm",
+                      "category":  "scheduling",
+                      "query":  "What is the critical path in a CPM schedule?",
+                      "answers":  {
+                                      "auricrux-fca":  "The Critical Path Method (CPM) identifies the sequence of tasks that determines the minimum duration required to complete a project. In a CPM schedule, the critical path is the longest sequence of dependent tasks that cannot be delayed without delaying the entire project.\n\nTo identify the critical path:\n\n1. Calculate the Early Start (ES), Early Finish (EF), Late Start (LS), and Late Finish (LF) dates for each task.\n2. Determine the Slack (or Float) for each task by calculating ES - LS and EF - LF.\n3. Identify the tasks with zero or negative Slack, as these are on the Critical Path.\n\nIn a CPM schedule, the critical path is typically represented by the longest sequence of dependent tasks, which determines the project\u0027s duration and resource allocation.\n\nFor example, in a simple CPM schedule:\n\nTask A → Task B → Task C\n\nIf Task A takes 5 days, Task B takes 3 days, and Task C takes 4 days, the critical path would be:\n\nTask A (5 days) → Task B (3 days) → Task C (4 days)\n\nTotal project duration = 12 days",
+                                      "cursor-agent":  "In CPM, the critical path is the longest path of dependent activities through the network â€” the chain with zero (or least) total float that sets the project finish date. Delay any critical activity and the finish slips one-for-one (absent acceleration). Near-critical paths with small float matter too. Build logic with real finish-to-start (and legitimate leads/lags), resource-load if needed, and update with actuals. A time impact analysis inserts a delay fragnet onto the then-current schedule to measure critical-path impact for COs/claims."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  4,
+                                                          "total":  20,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  5,
+                                                          "total":  23,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "closeout-punchlist",
+                      "category":  "closeout",
+                      "query":  "What defines substantial completion on a punch list?",
+                      "answers":  {
+                                      "auricrux-fca":  "Substantial completion, as defined by CSI MasterFormat Division 3 (General Requirements) and OSHA 1926.1153, is when the work has been completed to the extent that:\n\n1. The work can be observed without disassembly or destructive testing.\n2. The owner can inspect the work to determine that it is complete.\n\nFor a punch list, substantial completion typically requires that all items on the punch list have been corrected to the satisfaction of the owner or contractor, and that the work meets the requirements of the contract documents (AIA-style).\n\nVerify against the locally adopted code edition for specific requirements.",
+                                      "cursor-agent":  "Substantial completion is the stage when the work (or a designated portion) is sufficiently complete per the contract that the owner can occupy or use it for its intended purpose â€” punch list items remaining are minor and do not prevent that use. The architect/owner typically issues a certificate of substantial completion; the punch list enumerates incomplete/defective items to finish before final completion. Warranties and retainage release often tie to that date. Do not call it substantial complete while life-safety, egress, or certificate-of-occupancy blockers remain open."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  2,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  2,
+                                                          "concision":  2,
+                                                          "total":  10,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  4,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  23,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "code-egress",
+                      "category":  "code",
+                      "query":  "How many exits are typically required for occupant load thresholds?",
+                      "answers":  {
+                                      "auricrux-fca":  "According to the Means of Egress Requirements (ME\u0026R) in CSI Division 07, verify against the locally adopted code edition, but generally:\n\n* For occupant loads up to 30, a single exit is sufficient.\n* For occupant loads between 31 and 50, two exits are typically required.\n* For occupant loads above 50, three or more exits may be necessary.\n\nVerify against the locally adopted code edition for specific requirements.",
+                                      "cursor-agent":  "IBC occupant-load and exit-count rules are table-driven: typically one exit is allowed only for small loads; two exits are required once occupant load exceeds the single-exit threshold for that occupancy (commonly 49 for many business/mercantile-type situations, but verify the edition/occupancy table). Three or more exits are required at higher thresholds (e.g., 501+ and 1,001+ in common IBC tables). Exit separation, travel distance, and common-path limits also apply. Always use the adopted code edition and occupancy classification for the project â€” do not memorize one number for all buildings."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  2,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  2,
+                                                          "concision":  2,
+                                                          "total":  10,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  4,
+                                                          "total":  21,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "contracts-aia-a201",
+                      "category":  "contracts",
+                      "query":  "Who interprets the contract documents under AIA A201?",
+                      "answers":  {
+                                      "auricrux-fca":  "Under AIA A101 Owner-Contractor Agreement Basics, Section 3.1.4, it is stated that \"The Contract Documents consist of this General Conditions and those documents specifically referenced herein.\" However, for specific contract interpretations, Section 3.2.1 states that the parties shall interpret the Contract Documents in accordance with their mutual understanding.\n\nIn practice, contract interpretation often falls to the owner\u0027s representative (e.g., project manager or superintendent) and the contractor\u0027s representative (e.g., project engineer or estimator).",
+                                      "cursor-agent":  "Under AIA A201, the Architect interprets the Contract Documents and decides matters concerning performance in the first instance (subject to the owner-contractor dispute process). The Contractor is responsible for means and methods and for constructing per the documents; the Owner furnishes surveys/approvals as specified. RFIs should resolve genuine conflicts â€” not shift design responsibility improperly. Follow the claims/dispute articles for disagreements with the Architect\u0027s interpretation."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  2,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  2,
+                                                          "concision":  2,
+                                                          "total":  10,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  4,
+                                                          "total":  20,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "insurance-bonding",
+                      "category":  "risk",
+                      "query":  "What does a performance bond guarantee on a project?",
+                      "answers":  {
+                                      "auricrux-fca":  "A performance bond guarantees that the contractor will complete the project according to the terms and conditions of the contract, including all applicable building codes, regulations, and specifications.\n\nSpecifically, it ensures that:\n\n* The work is done in accordance with the plans and specifications\n* All labor and materials are properly installed and accepted by the owner\n* The project is completed within the specified timeframe\n\nThe performance bond typically covers 100% of the contract amount up to a certain limit (usually specified in the contract), and it\u0027s usually provided by a surety company. If the contractor fails to perform as agreed, the owner can file a claim against the bond, and the surety will pay the amount due.\n\nVerify against the locally adopted code edition for specific requirements on performance bonds, but generally, they\u0027re required for large commercial and industrial projects.",
+                                      "cursor-agent":  "A performance bond guarantees the surety will step in (or fund completion) if the bonded contractor defaults on performing the contract â€” protecting the obligee (usually the owner) up to the bond penal sum. It is not the same as a payment bond (labor/materials claimants) or insurance (risk transfer for covered losses). Bondability and claims processes are strict; document default properly. Owners on public work often require both performance and payment bonds."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  3,
+                                                          "total":  16,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  4,
+                                                          "concision":  5,
+                                                          "total":  22,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "sitework-erosion",
+                      "category":  "sitework",
+                      "query":  "What is required before land disturbance under a SWPPP?",
+                      "answers":  {
+                                      "auricrux-fca":  "According to the EPA\u0027s Stormwater Management Model (SWMM) and the Construction Industry Standard for Environmental Best Management Practices (SW-EPA-9301), prior to land disturbance, you must:\n\n1. Conduct an Environmental Site Assessment (ESA)\n2. Obtain necessary permits from local authorities\n3. Develop a SWPPP (Stormwater Pollution Prevention Plan)\n\nVerify against the locally adopted code edition for specific requirements.\n\nSource: EPA 9301, Section 4.",
+                                      "cursor-agent":  "Under a SWPPP (typically CGP / local equivalent), install and maintain erosion/sediment controls before land disturbance begins â€” silt fence, inlet protection, stabilized construction entrance, etc., per the plan. File/obtain NOI coverage as required, train crews, inspect after rain events, and keep records. Disturb only what you can stabilize; sequence clearing with controls. Failure to install BMPs before grading is a common NOV trigger."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  2,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  2,
+                                                          "concision":  2,
+                                                          "total":  11,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  24,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "csi-04-masonry",
+                      "category":  "csi-division",
+                      "query":  "How far apart should control joints be in a CMU wall?",
+                      "answers":  {
+                                      "auricrux-fca":  "According to CSI Division 04 Masonry, the spacing of control joints in a concrete masonry unit (CMU) wall is typically 16 inches on center (o.c.) for walls up to 8 feet high. For walls over 8 feet high, the spacing can be increased to 24 inches o.c.\n\nVerify against the locally adopted code edition, as this information may vary depending on the specific building codes in effect.",
+                                      "cursor-agent":  "CMU control-joint spacing depends on wall type, reinforcement, moisture, and spec â€” a common rule of thumb is about every 20â€“25 feet horizontally for many ungrouted/lightly reinforced exterior walls, and within ~half that spacing of corners/openings, but project specs and TMS/ACI masonry guidance govern. Joints should align with openings and weak points; sealant and backer rod details matter. Do not copy a generic spacing if the structural/masonry drawings show a joint layout."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  1,
+                                                          "actionability":  2,
+                                                          "safetyComplianceDiligence":  2,
+                                                          "fieldPracticality":  2,
+                                                          "concision":  2,
+                                                          "total":  9,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  4,
+                                                          "actionability":  4,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  20,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  },
+                  {
+                      "id":  "osha-trenching",
+                      "category":  "safety",
+                      "query":  "At what depth does a trench require a protective system?",
+                      "answers":  {
+                                      "auricrux-fca":  "According to OSHA 1926.651, a trench requires a protective system when the trench is deeper than 5 feet (1.524 meters) and has a face slope of less than 3.66:1 or a vertical slope of more than 4 feet (1.219 meters).",
+                                      "cursor-agent":  "OSHA excavation rules (1926 Subpart P): a protective system (sloping, shoring, shielding, or engineered equivalent) is generally required for trenches 5 feet or deeper, unless the excavation is made entirely in stable rock. A competent person must inspect daily and after events that could increase hazard. At 4 feet, provide a safe means of egress (e.g., ladder within 25 feet of workers). Spoils/equipment set back from the edge; atmospheric testing when needed. Depth alone does not replace soil classification and protective-system design."
+                                  },
+                      "scores":  {
+                                     "auricrux-fca":  {
+                                                          "domainAccuracy":  3,
+                                                          "actionability":  3,
+                                                          "safetyComplianceDiligence":  3,
+                                                          "fieldPracticality":  3,
+                                                          "concision":  3,
+                                                          "total":  15,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      },
+                                     "cursor-agent":  {
+                                                          "domainAccuracy":  5,
+                                                          "actionability":  5,
+                                                          "safetyComplianceDiligence":  5,
+                                                          "fieldPracticality":  5,
+                                                          "concision":  4,
+                                                          "total":  24,
+                                                          "scoringMethod":  "agent-SME-rubric-v1-warm-live"
+                                                      }
+                                 }
+                  }
+              ]
+}
