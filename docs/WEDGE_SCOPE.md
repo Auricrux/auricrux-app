@@ -1,6 +1,6 @@
 # Prove Them Wrong — Construction OS + Specialist AI
 
-**Updated:** 2026-07-31  
+**Updated:** 2026-08-01  
 **Stance:** Google said the scope is too broad and “there’s a reason no one has done it.” We do not shrink the claim. We ship proof until the claim is undeniable.
 
 ## The claim we keep
@@ -16,10 +16,12 @@ We do **not** soften published claims. Registers stay hard. Failures stay FAIL u
 | Domain correctness 30/30 | PASS — eval suite |
 | Live capabilities matrix (honest) | PASS — `/api/capabilities` |
 | Agent + calc + browse | PASS — shipped |
-| Field photo → vision / RFI intake | SHIPPING — `POST /api/vision` |
+| Field photo → vision / RFI intake | PASS — `POST /api/vision` checklist+RFI live; pixel engine follow-up |
 | Public API cutover (`api.*`) | PASS — GCP |
 | Auricrux custom domain | PASS — GCP |
-| Production DualRun sole-writer | IN FLIGHT — health signal + exit workflow |
+| Production DualRun sole-writer | PASS — FCA-058 (`docs/runtime-proof/forward-live-proof-2026-07-31.json`) |
+| Wave 5 MAUI tools + VisionModel on prod | PASS cutover — `docs/runtime-proof/wave5-gcp-cutover-2026-08-01.json` (run 30709843437) |
+| Pixel Ollama vision (`ollama-vision:llava`) | IN FLIGHT — pull moondream/llava + docker DNS to `auricrux-ollama` |
 | Promoted fine-tune weights | FAIL until founder export (AUX-017/018) |
 | Blind flagship peer quality | FAIL until peer run (AUX-027) — methodology ready |
 

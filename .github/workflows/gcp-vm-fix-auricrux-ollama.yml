@@ -15,7 +15,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
       - uses: google-github-actions/setup-gcloud@v2
-      - name: Recreate with Ollama URL
+      - name: Recreate with Ollama URL + vision model
         run: |
           set -euo pipefail
           echo "CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod" >> "$GITHUB_ENV"
@@ -27,15 +27,30 @@ jobs:
           cat > /tmp/fix-ollama.sh <<'REMOTE'
           #!/bin/bash
           set -euo pipefail
-          # Bridge gateway to host docker network (ollama on host :11434)
-          GW=$(ip -4 route show default | awk '{print $3; exit}')
-          OLLAMA_URL="http://${GW}:11434"
+
+          # Prefer docker DNS on fca-net (ollama container has no host port publish).
+          OLLAMA_URL="http://auricrux-ollama:11434"
           echo "OLLAMA_URL=$OLLAMA_URL"
-          curl -fsS "$OLLAMA_URL/api/tags" | head -c 200 || true; echo
+
+          echo "=== ensure ollama on fca-net ==="
+          sudo docker network connect fca-net auricrux-ollama 2>/dev/null || true
+          sudo docker exec auricrux-ollama ollama list || true
+
+          echo "=== ensure vision model (moondream + llava alias for Wave 5 VisionModel) ==="
+          if ! sudo docker exec auricrux-ollama ollama list | grep -Eq '^(llava|moondream)\b'; then
+            echo "Pulling moondream..."
+            sudo docker exec auricrux-ollama ollama pull moondream
+          fi
+          if sudo docker exec auricrux-ollama ollama list | grep -q '^moondream' \
+            && ! sudo docker exec auricrux-ollama ollama list | grep -q '^llava'; then
+            printf 'FROM moondream\n' | sudo docker exec -i auricrux-ollama ollama create llava -f -
+          fi
+          sudo docker exec auricrux-ollama ollama list
 
           recreate() {
             local NAME="$1" HOSTPORT="$2"
             NETWORK=$(sudo docker inspect "$NAME" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+            [ -n "$NETWORK" ] || NETWORK=fca-net
             sudo docker stop "$NAME"
             sudo docker rename "$NAME" "${NAME}-prev-$(date +%s)"
             sudo docker run -d --name "$NAME" --restart unless-stopped --network "$NETWORK" \
@@ -45,13 +60,21 @@ jobs:
               -e ASPNETCORE_ENVIRONMENT=Production \
               -e Auricrux__OllamaUrl="$OLLAMA_URL" \
               -e Auricrux__PrimaryModel=auricrux-fca \
+              -e Auricrux__VisionModel=llava \
               auricrux-web:cutover
           }
           recreate auricrux-web 4000
           recreate auricrux-api 5001
-          sleep 6
+          sleep 8
+          echo "=== local health ==="
           curl -fsS http://127.0.0.1:5001/health; echo
-          curl -fsS https://auricrux.futurecontractorsofamerica.com/health || curl -fsS http://127.0.0.1:5001/health; echo
+          curl -fsS -m 20 -o /tmp/vision.json -w "vision=%{http_code}\n" \
+            -H 'Content-Type: application/json' \
+            -d '{"imageBase64":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==","prompt":"Scaffold safety","focus":"safety"}' \
+            http://127.0.0.1:5001/api/vision || true
+          head -c 500 /tmp/vision.json; echo
+          curl -fsS https://auricrux.futurecontractorsofamerica.com/health || true; echo
+          sudo docker ps --filter name=auricrux --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
           REMOTE
           gcloud compute scp /tmp/fix-ollama.sh "${INSTANCE}:/tmp/fix-ollama.sh" \
             --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet

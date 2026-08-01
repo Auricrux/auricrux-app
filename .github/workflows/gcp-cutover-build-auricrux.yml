@@ -90,9 +90,12 @@ jobs:
                 ENV_ARGS+=(-e "$line")
               done < "/tmp/${NAME}.env"
             fi
-            # Ensure URLs match container listen port
+            # Ensure URLs match container listen port + Wave 5 vision defaults
             ENV_ARGS+=(-e "ASPNETCORE_URLS=http://0.0.0.0:${CONTAINERPORT}")
             ENV_ARGS+=(-e "ASPNETCORE_ENVIRONMENT=Production")
+            ENV_ARGS+=(-e "Auricrux__OllamaUrl=http://auricrux-ollama:11434")
+            ENV_ARGS+=(-e "Auricrux__PrimaryModel=auricrux-fca")
+            ENV_ARGS+=(-e "Auricrux__VisionModel=llava")
 
             PUBLISH="127.0.0.1:${HOSTPORT}:${CONTAINERPORT}"
             if [ -n "$NETWORK" ]; then
@@ -109,6 +112,8 @@ jobs:
                 "$TAG"
             fi
           }
+          # Ollama must share the app network for docker DNS
+          sudo docker network connect fca-net auricrux-ollama 2>/dev/null || true
 
           # Web listens on 80 in Dockerfile; map host 4000->80 and host 5001->80
           swap_one auricrux-web 4000 80

@@ -1,0 +1,56 @@
+{
+  "capturedAt": "2026-08-01T17:21:00Z",
+  "summary": "Wave 5 follow-through: GCP cutover rebuild/swap of auricrux-web (:4000) + auricrux-api (:5001) from main@987c2a0 (MAUI tools + VisionModel=llava baked). Public smoke PASS.",
+  "git": {
+    "repo": "Auricrux/auricrux-app",
+    "commit": "987c2a0",
+    "message": "Wave 5 lockdown: MAUI Browse/Agent/Calc/Vision tools and VisionModel default."
+  },
+  "deploy": {
+    "workflow": "GCP Cutover Build Auricrux",
+    "runId": 30709843437,
+    "action": "full",
+    "result": "success",
+    "url": "https://github.com/Auricrux/auricrux-app/actions/runs/30709843437"
+  },
+  "liveProbes": {
+    "host": "https://auricrux.futurecontractorsofamerica.com",
+    "capabilities": {
+      "http": 200,
+      "primaryModel": "auricrux-fca",
+      "shippedCore": 18,
+      "visionFeature": "shipped",
+      "overallAssessmentStartsWith": "FORWARD"
+    },
+    "agentTools": {
+      "http": 200,
+      "tools": [
+        "corpus_search",
+        "web_browse",
+        "concrete_volume_cy",
+        "rebar_weight_lb",
+        "board_feet",
+        "percent_of",
+        "unit_convert"
+      ]
+    },
+    "calc": {
+      "http": 200,
+      "operation": "concrete_volume_cy",
+      "success": true,
+      "valueCy": 3.704
+    },
+    "vision": {
+      "http": 200,
+      "success": true,
+      "engine": "field-intake-checklist",
+      "note": "Checklist+RFI path PASS. Pixel ollama-vision engine still pending — Ollama vision model pull + docker DNS fix (follow-up workflow gcp-vm-fix-auricrux-ollama)."
+    }
+  },
+  "stance": "prove-them-wrong-do-not-redefine-down",
+  "openClaims": {
+    "AUX-017": "FAIL",
+    "AUX-018": "FAIL",
+    "AUX-027": "FAIL"
+  }
+}
