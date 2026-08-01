@@ -1,6 +1,6 @@
 name: GCP Load ckpt-110000 GGUF
 
-# Download GGUF from GCS (via Actions SA), scp to product VM, create auricrux-fca from fine-tune weights.
+# VM downloads GGUF via signed URL (avoids flaky 3GB IAP scp), then creates auricrux-fca.
 on:
   workflow_dispatch:
     inputs:
@@ -22,91 +22,93 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
       - uses: google-github-actions/setup-gcloud@v2
-      - name: Download GGUF from GCS
+      - name: Sign URL, download on VM, create Ollama model
         env:
           OBJECT: ${{ inputs.object_name }}
         run: |
           set -euo pipefail
+          unset CLOUDSDK_CORE_PROJECT CLOUDSDK_PROJECT GCLOUD_PROJECT GCP_PROJECT GOOGLE_CLOUD_PROJECT || true
+          export CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod
           gcloud config set project auricrux-mobile-prod
-          gcloud storage cp "gs://${BUCKET}/${OBJECT}" "/tmp/${OBJECT}"
-          ls -lah "/tmp/${OBJECT}"
-      - name: Push Modelfile + GGUF and create Ollama model
-        env:
-          OBJECT: ${{ inputs.object_name }}
-        run: |
+
+          # Short-lived bearer token for VM-side media download (no 3GB IAP scp).
+          TOKEN=$(gcloud auth print-access-token)
+          test -n "$TOKEN"
+          printf '%s\n' "$TOKEN" > /tmp/gguf_access_token.txt
+          printf 'https://storage.googleapis.com/%s/%s\n' "$BUCKET" "$OBJECT" > /tmp/gguf_media_url.txt
+
+          cat > /tmp/Modelfile.auricrux-fca <<MF
+FROM /models/${OBJECT}
+
+PARAMETER num_ctx 4096
+PARAMETER temperature 0.15
+PARAMETER top_p 0.9
+
+SYSTEM """
+You are Auricrux - Future Contractors of America's sovereign construction intelligence.
+
+Identity rules (public):
+- When asked who you are, say you are Auricrux. Do not use titles like "God of Construction" or similar grandiose monikers.
+- Never present yourself as a generic AI assistant with no construction role.
+- You serve construction workers, contractors, estimators, superintendents, and field crews.
+
+Expertise: means and methods, estimating, safety, codes/compliance caveats, sequencing, materials, RFIs, change orders, bid risk, and field judgment.
+
+Behavior:
+- Be practical, structured, and decision-ready.
+- State assumptions. Ask for missing quantities before locking estimate numbers.
+- Flag jurisdiction/code caveats when unknown; do not invent code section numbers you are unsure of.
+- Refuse unsafe shortcuts; offer compliant alternatives.
+- You do not need Azure or OpenAI to reason about construction.
+"""
+
+MESSAGE user Who are you and who do you serve?
+MESSAGE assistant I am Auricrux, Future Contractors of America's construction intelligence. I serve construction workers, contractors, estimators, superintendents, and field crews with practical trade guidance, safety, estimating, and project judgment.
+MESSAGE user Do you need Azure or OpenAI to answer construction questions?
+MESSAGE assistant No. I am sovereign Auricrux running as a local fine-tuned construction model. I do not need Azure or OpenAI to reason about construction.
+MF
+
+          cat > /tmp/load-gguf.sh <<'REMOTE'
+          #!/bin/bash
           set -euo pipefail
-          gcloud config set project auricrux-mobile-prod
+          OBJECT='__OBJECT__'
+          TOKEN=$(tr -d '\r\n' </tmp/gguf_access_token.txt)
+          MEDIA=$(tr -d '\r\n' </tmp/gguf_media_url.txt)
+          sudo mkdir -p /var/lib/auricrux-models
+          echo "=== curl download ==="
+          sudo curl -fL --retry 3 --retry-delay 5 \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -o "/var/lib/auricrux-models/${OBJECT}" \
+            "$MEDIA"
+          sudo ls -lah "/var/lib/auricrux-models/${OBJECT}"
+          SIZE=$(stat -c%s "/var/lib/auricrux-models/${OBJECT}")
+          echo "SIZE=$SIZE"
+          test "$SIZE" -gt 1000000000
 
-          cat > /tmp/Modelfile.auricrux-fca <<'MF'
-          FROM /models/auricrux-fca-ckpt110000-Q8_0.gguf
-
-          PARAMETER num_ctx 4096
-          PARAMETER temperature 0.15
-          PARAMETER top_p 0.9
-
-          SYSTEM """
-          You are Auricrux - Future Contractors of America's sovereign construction intelligence.
-
-          Identity rules (public):
-          - When asked who you are, say you are Auricrux. Do not use titles like "God of Construction" or similar grandiose monikers.
-          - Never present yourself as a generic AI assistant with no construction role.
-          - You serve construction workers, contractors, estimators, superintendents, and field crews.
-
-          Expertise: means and methods, estimating, safety, codes/compliance caveats, sequencing, materials, RFIs, change orders, bid risk, and field judgment.
-
-          Behavior:
-          - Be practical, structured, and decision-ready.
-          - State assumptions. Ask for missing quantities before locking estimate numbers.
-          - Flag jurisdiction/code caveats when unknown; do not invent code section numbers you are unsure of.
-          - Refuse unsafe shortcuts; offer compliant alternatives.
-          - You do not need Azure or OpenAI to reason about construction.
-          """
-
-          MESSAGE user Who are you and who do you serve?
-          MESSAGE assistant I am Auricrux, Future Contractors of America's construction intelligence. I serve construction workers, contractors, estimators, superintendents, and field crews with practical trade guidance, safety, estimating, and project judgment.
-          MESSAGE user Do you need Azure or OpenAI to answer construction questions?
-          MESSAGE assistant No. I am sovereign Auricrux running as a local fine-tuned construction model. I do not need Azure or OpenAI to reason about construction.
-          MF
-
-          # Keep Modelfile FROM filename aligned with object if customized.
-          sed -i "s|FROM /models/.*|FROM /models/${OBJECT}|" /tmp/Modelfile.auricrux-fca
-
-          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet \
-            --command='sudo mkdir -p /var/lib/auricrux-models && sudo chmod 777 /var/lib/auricrux-models'
-
-          gcloud compute scp "/tmp/${OBJECT}" \
-            "${INSTANCE}:/var/lib/auricrux-models/${OBJECT}" \
-            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
-
-          gcloud compute scp /tmp/Modelfile.auricrux-fca \
-            "${INSTANCE}:/tmp/Modelfile.auricrux-fca" \
-            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
-
-          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet \
-            --command="set -euo pipefail
-          OBJECT='${OBJECT}'
           sudo docker network connect fca-net auricrux-ollama 2>/dev/null || true
           sudo docker exec auricrux-ollama mkdir -p /models
-          sudo docker cp /var/lib/auricrux-models/\${OBJECT} auricrux-ollama:/models/\${OBJECT}
+          sudo docker cp "/var/lib/auricrux-models/${OBJECT}" "auricrux-ollama:/models/${OBJECT}"
           sudo docker cp /tmp/Modelfile.auricrux-fca auricrux-ollama:/tmp/Modelfile.auricrux-fca
           sudo docker exec auricrux-ollama ollama stop auricrux-fca 2>/dev/null || true
           sudo docker exec auricrux-ollama ollama rm auricrux-fca 2>/dev/null || true
           sudo docker exec auricrux-ollama ollama create auricrux-fca -f /tmp/Modelfile.auricrux-fca
-          sudo docker exec auricrux-ollama ollama run auricrux-fca 'What is a sill plate? Answer in 3 sentences.' || true
+          echo "=== warm ==="
+          sudo docker exec auricrux-ollama ollama run auricrux-fca "What is a sill plate? Answer in 3 sentences." || true
           sudo docker exec auricrux-ollama ollama list
+
           OLLAMA_URL=http://auricrux-ollama:11434
           for pair in auricrux-web:4000 auricrux-api:5001; do
-            NAME=\${pair%%:*}; HOSTPORT=\${pair##*:}
-            NETWORK=\$(sudo docker inspect \$NAME --format '{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}')
-            [ -n \"\$NETWORK\" ] || NETWORK=fca-net
-            sudo docker stop \$NAME
-            sudo docker rename \$NAME \${NAME}-prev-\$(date +%s)
-            sudo docker run -d --name \$NAME --restart unless-stopped --network \$NETWORK \
-              -p 127.0.0.1:\${HOSTPORT}:80 \
+            NAME=${pair%%:*}; HOSTPORT=${pair##*:}
+            NETWORK=$(sudo docker inspect "$NAME" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+            [ -n "$NETWORK" ] || NETWORK=fca-net
+            sudo docker stop "$NAME"
+            sudo docker rename "$NAME" "${NAME}-prev-$(date +%s)"
+            sudo docker run -d --name "$NAME" --restart unless-stopped --network "$NETWORK" \
+              -p "127.0.0.1:${HOSTPORT}:80" \
               --add-host=host.docker.internal:host-gateway \
               -e ASPNETCORE_URLS=http://0.0.0.0:80 \
               -e ASPNETCORE_ENVIRONMENT=Production \
-              -e Auricrux__OllamaUrl=\$OLLAMA_URL \
+              -e Auricrux__OllamaUrl="$OLLAMA_URL" \
               -e Auricrux__PrimaryModel=auricrux-fca \
               -e Auricrux__VisionModel=llava \
               auricrux-web:cutover
@@ -114,6 +116,14 @@ jobs:
           sleep 10
           curl -fsS http://127.0.0.1:5001/api/health; echo
           curl -fsS -m 180 -H 'Content-Type: application/json' \
-            -d '{\"Query\":\"What is a sill plate?\",\"ThinkingMode\":1,\"SearchScope\":2}' \
+            -d '{"Query":"What is a sill plate?","ThinkingMode":1,"SearchScope":2}' \
             http://127.0.0.1:5001/api/chat | head -c 1200; echo
-          "
+          REMOTE
+          sed -i "s/__OBJECT__/${OBJECT}/g" /tmp/load-gguf.sh
+
+          gcloud compute scp /tmp/Modelfile.auricrux-fca /tmp/gguf_access_token.txt /tmp/gguf_media_url.txt /tmp/load-gguf.sh \
+            "${INSTANCE}:/tmp/" \
+            --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet
+
+          gcloud compute ssh "$INSTANCE" --zone="$ZONE" --project="$PROJECT" --tunnel-through-iap --quiet \
+            --command='bash /tmp/load-gguf.sh'
