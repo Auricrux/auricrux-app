@@ -1,0 +1,56 @@
+name: GCP Mint Model Upload Session
+
+# Creates a resumable GCS upload session URL for a large GGUF, saved as an artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      object_name:
+        description: Object name in auricrux-mobile-prod-model-xfer
+        required: true
+        default: auricrux-fca-ckpt110000-Q8_0.gguf
+      content_length:
+        description: Exact file size in bytes
+        required: true
+
+jobs:
+  mint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Mint resumable upload URL
+        env:
+          OBJECT: ${{ inputs.object_name }}
+          SIZE: ${{ inputs.content_length }}
+          BUCKET: auricrux-mobile-prod-model-xfer
+        run: |
+          set -euo pipefail
+          gcloud config set project auricrux-mobile-prod
+          TOKEN=$(gcloud auth print-access-token)
+          HEADERS=$(mktemp)
+          BODY=$(mktemp)
+          curl -sS -D "$HEADERS" -o "$BODY" -X POST \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "X-Upload-Content-Type: application/octet-stream" \
+            -H "X-Upload-Content-Length: ${SIZE}" \
+            "https://storage.googleapis.com/upload/storage/v1/b/${BUCKET}/o?uploadType=resumable&name=${OBJECT}"
+          LOC=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {print $2}' "$HEADERS" | tr -d '\r')
+          if [ -z "$LOC" ]; then
+            echo "Failed to mint upload session"
+            cat "$HEADERS"
+            cat "$BODY"
+            exit 1
+          fi
+          mkdir -p out
+          printf '%s\n' "$LOC" > out/upload_session_url.txt
+          printf '%s\n' "$OBJECT" > out/object_name.txt
+          printf '%s\n' "$SIZE" > out/content_length.txt
+          echo "Minted session for gs://${BUCKET}/${OBJECT} size=${SIZE}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gcs-upload-session
+          path: out/
+          retention-days: 1
