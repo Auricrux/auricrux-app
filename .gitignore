@@ -61,6 +61,8 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+eval/.peer-keys.env
+**/.peer-keys.env
 
 # Logs
 logs

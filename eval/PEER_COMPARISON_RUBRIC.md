@@ -50,6 +50,15 @@ that question.
 slots, four blank rubric score blocks) ready to fill in once API access to the peer models is
 available in an environment permitted to call them.
 
+## How to run (keys + collector)
+
+See **[PEER_COMPARISON_SETUP.md](./PEER_COMPARISON_SETUP.md)**.
+
+```powershell
+.\scripts\setup-peer-keys.ps1          # paste OpenAI / Anthropic / Google keys
+.\scripts\run-peer-comparison.ps1      # collect + blind auto-score + report
+```
+
 ## Current status
 
 - Domain-eval evidence (keyword-grounded, self-graded): **exists**, 30/30 — see
@@ -57,7 +66,6 @@ available in an environment permitted to call them.
 - Specialist wedge (narrow-scope) report: **exists** — see
   `docs/runtime-proof/specialist_wedge_v1_report.md` (answers Google "narrow the scope" without
   claiming flagship peer parity).
-- Blind peer-quality comparison: **does not exist yet** — this file + the template below are the
-  methodology only, not a result.
-- AUX-027 verdict: stays **FAIL** per the claim's explicit "flagship-peer output" bar, which
-  requires the peer comparison, not the domain suite alone.
+- Blind peer-quality comparison: **harness ready** — run requires the three peer API keys.
+- AUX-027 verdict: stays **FAIL/BLOCKED** until a scored report is accepted; do not flip from
+  methodology or Auricrux-only collection alone.

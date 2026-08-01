@@ -1,0 +1,55 @@
+name: AUX-027 Peer Comparison
+
+on:
+  workflow_dispatch:
+    inputs:
+      sample_size:
+        description: "Stratified sample size"
+        required: true
+        default: "12"
+      auricrux_only:
+        description: "true = Auricrux answers only (no peer calls)"
+        required: true
+        default: "false"
+
+jobs:
+  peer:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write peer keys from secrets
+        shell: pwsh
+        env:
+          OPENAI_API_KEY: ${{ secrets.PEER_OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.PEER_ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.PEER_GOOGLE_API_KEY }}
+        run: |
+          $lines = @(
+            "# CI-injected — not committed",
+            "OPENAI_API_KEY=$env:OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY=$env:ANTHROPIC_API_KEY",
+            "GOOGLE_API_KEY=$env:GOOGLE_API_KEY",
+            "PEER_SAMPLE_SIZE=${{ inputs.sample_size }}"
+          )
+          Set-Content -Path eval/.peer-keys.env -Value $lines -Encoding utf8
+          $keyed = @($env:OPENAI_API_KEY, $env:ANTHROPIC_API_KEY, $env:GOOGLE_API_KEY | Where-Object { $_ }).Count
+          Write-Host "Peer secrets present: $keyed/3"
+
+      - name: Run peer comparison
+        shell: pwsh
+        run: |
+          $extra = @()
+          if ("${{ inputs.auricrux_only }}" -eq "true") { $extra += "-AuricruxOnly" }
+          & .\scripts\run-peer-comparison.ps1 -SampleSize ([int]"${{ inputs.sample_size }}") @extra
+
+      - name: Upload report artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: peer-comparison-v1
+          path: |
+            eval/reports/peer_comparison_v1_run.json
+            eval/reports/peer_comparison_v1_report.json
+            eval/reports/peer_comparison_v1_report.md
