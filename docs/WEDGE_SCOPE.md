@@ -16,12 +16,13 @@ We do **not** soften published claims. Registers stay hard. Failures stay FAIL u
 | Domain correctness 30/30 | PASS — eval suite |
 | Live capabilities matrix (honest) | PASS — `/api/capabilities` |
 | Agent + calc + browse | PASS — shipped |
-| Field photo → vision / RFI intake | PASS — `POST /api/vision` checklist+RFI live; pixel engine follow-up |
+| Field photo → vision / RFI intake | PASS — checklist+RFI + **pixel** `ollama-vision:llava` live |
 | Public API cutover (`api.*`) | PASS — GCP |
 | Auricrux custom domain | PASS — GCP |
 | Production DualRun sole-writer | PASS — FCA-058 (`docs/runtime-proof/forward-live-proof-2026-07-31.json`) |
-| Wave 5 MAUI tools + VisionModel on prod | PASS cutover — `docs/runtime-proof/wave5-gcp-cutover-2026-08-01.json` (run 30709843437) |
-| Pixel Ollama vision (`ollama-vision:llava`) | IN FLIGHT — pull moondream/llava + docker DNS to `auricrux-ollama` |
+| Wave 5 MAUI tools + VisionModel on prod | PASS — cutover `30709843437` + pixel proof `docs/runtime-proof/wave5-pixel-vision-live-2026-08-01.json` |
+| Pixel Ollama vision (`ollama-vision:llava`) | PASS — 2026-08-01 live probe |
+| Primary model warm (`auricrux-fca` ready) | DEGRADED — health `primaryModelReady=false` (follow-up) |
 | Promoted fine-tune weights | FAIL until founder export (AUX-017/018) |
 | Blind flagship peer quality | FAIL until peer run (AUX-027) — methodology ready |
 

@@ -1,0 +1,38 @@
+{
+  "capturedAt": "2026-08-01T17:25:41Z",
+  "summary": "Wave 5 pixel vision live on GCP: POST /api/vision returns engine ollama-vision:llava after Ollama docker-DNS fix + moondream/llava bootstrap.",
+  "git": {
+    "repo": "Auricrux/auricrux-app",
+    "commits": ["987c2a0", "ee9c191", "71370c1"]
+  },
+  "workflows": {
+    "cutover": {
+      "runId": 30709843437,
+      "url": "https://github.com/Auricrux/auricrux-app/actions/runs/30709843437",
+      "result": "success"
+    },
+    "ollamaVisionFix": {
+      "runId": 30710253416,
+      "url": "https://github.com/Auricrux/auricrux-app/actions/runs/30710253416",
+      "result": "success"
+    }
+  },
+  "liveProbes": {
+    "host": "https://auricrux.futurecontractorsofamerica.com",
+    "vision": {
+      "http": 200,
+      "success": true,
+      "engine": "ollama-vision:llava",
+      "seconds": 0.89,
+      "honesty": "Pixel-level vision via local Ollama multimodal model plus construction checklist."
+    },
+    "health": {
+      "ollamaReachable": true,
+      "primaryModel": "auricrux-fca",
+      "primaryModelReady": false,
+      "runtimeMode": "ollama-degraded",
+      "note": "Pixel vision PASS. Primary chat model readiness still degraded — follow-up to warm/verify auricrux-fca."
+    }
+  },
+  "stance": "prove-them-wrong-do-not-redefine-down"
+}
