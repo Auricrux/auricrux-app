@@ -23,8 +23,8 @@ We do **not** soften published claims. Registers stay hard. Failures stay FAIL u
 | Wave 5 MAUI tools + VisionModel on prod | PASS — cutover `30709843437` + pixel proof `docs/runtime-proof/wave5-pixel-vision-live-2026-08-01.json` |
 | Pixel Ollama vision (`ollama-vision:llava`) | PASS — 2026-08-01 live probe |
 | Primary model warm (`auricrux-fca` ready) | DEGRADED — health `primaryModelReady=false` (follow-up) |
-| Promoted fine-tune weights | FAIL until founder export (AUX-017/018) |
-| Blind flagship peer quality | FAIL until peer run (AUX-027) — methodology ready |
+| Promoted fine-tune weights | **BLOCKED** — founder Azure checkpoint-70000 export (AUX-017/018); runtime serves `auricrux-fca` alias |
+| Blind flagship peer quality | **BLOCKED** — peer API keys not provided (AUX-027) — methodology ready |
 
 ## External one-liner
 
