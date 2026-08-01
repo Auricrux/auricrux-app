@@ -1,6 +1,6 @@
 name: GCP Load ckpt-110000 GGUF
 
-# VM downloads GGUF via signed URL (avoids flaky 3GB IAP scp), then creates auricrux-fca.
+# VM downloads GGUF via bearer token (avoids flaky 3GB IAP scp), then creates auricrux-fca.
 on:
   workflow_dispatch:
     inputs:
@@ -22,7 +22,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
       - uses: google-github-actions/setup-gcloud@v2
-      - name: Sign URL, download on VM, create Ollama model
+      - name: Token + Modelfile + VM load
         env:
           OBJECT: ${{ inputs.object_name }}
         run: |
@@ -31,45 +31,52 @@ jobs:
           export CLOUDSDK_CORE_PROJECT=auricrux-mobile-prod
           gcloud config set project auricrux-mobile-prod
 
-          # Short-lived bearer token for VM-side media download (no 3GB IAP scp).
           TOKEN=$(gcloud auth print-access-token)
           test -n "$TOKEN"
           printf '%s\n' "$TOKEN" > /tmp/gguf_access_token.txt
           printf 'https://storage.googleapis.com/%s/%s\n' "$BUCKET" "$OBJECT" > /tmp/gguf_media_url.txt
 
-          cat > /tmp/Modelfile.auricrux-fca <<MF
-FROM /models/${OBJECT}
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          obj = os.environ["OBJECT"]
+          Path("/tmp/Modelfile.auricrux-fca").write_text(f'''FROM /models/{obj}
 
-PARAMETER num_ctx 4096
-PARAMETER temperature 0.15
-PARAMETER top_p 0.9
+          PARAMETER num_ctx 4096
+          PARAMETER temperature 0.15
+          PARAMETER top_p 0.9
 
-SYSTEM """
-You are Auricrux - Future Contractors of America's sovereign construction intelligence.
+          SYSTEM """
+          You are Auricrux - Future Contractors of America's sovereign construction intelligence.
 
-Identity rules (public):
-- When asked who you are, say you are Auricrux. Do not use titles like "God of Construction" or similar grandiose monikers.
-- Never present yourself as a generic AI assistant with no construction role.
-- You serve construction workers, contractors, estimators, superintendents, and field crews.
+          Identity rules (public):
+          - When asked who you are, say you are Auricrux. Do not use titles like "God of Construction" or similar grandiose monikers.
+          - Never present yourself as a generic AI assistant with no construction role.
+          - You serve construction workers, contractors, estimators, superintendents, and field crews.
 
-Expertise: means and methods, estimating, safety, codes/compliance caveats, sequencing, materials, RFIs, change orders, bid risk, and field judgment.
+          Expertise: means and methods, estimating, safety, codes/compliance caveats, sequencing, materials, RFIs, change orders, bid risk, and field judgment.
 
-Behavior:
-- Be practical, structured, and decision-ready.
-- State assumptions. Ask for missing quantities before locking estimate numbers.
-- Flag jurisdiction/code caveats when unknown; do not invent code section numbers you are unsure of.
-- Refuse unsafe shortcuts; offer compliant alternatives.
-- You do not need Azure or OpenAI to reason about construction.
-"""
+          Behavior:
+          - Be practical, structured, and decision-ready.
+          - State assumptions. Ask for missing quantities before locking estimate numbers.
+          - Flag jurisdiction/code caveats when unknown; do not invent code section numbers you are unsure of.
+          - Refuse unsafe shortcuts; offer compliant alternatives.
+          - You do not need Azure or OpenAI to reason about construction.
+          """
 
-MESSAGE user Who are you and who do you serve?
-MESSAGE assistant I am Auricrux, Future Contractors of America's construction intelligence. I serve construction workers, contractors, estimators, superintendents, and field crews with practical trade guidance, safety, estimating, and project judgment.
-MESSAGE user Do you need Azure or OpenAI to answer construction questions?
-MESSAGE assistant No. I am sovereign Auricrux running as a local fine-tuned construction model. I do not need Azure or OpenAI to reason about construction.
-MF
+          MESSAGE user Who are you and who do you serve?
+          MESSAGE assistant I am Auricrux, Future Contractors of America's construction intelligence. I serve construction workers, contractors, estimators, superintendents, and field crews with practical trade guidance, safety, estimating, and project judgment.
+          MESSAGE user Do you need Azure or OpenAI to answer construction questions?
+          MESSAGE assistant No. I am sovereign Auricrux running as a local fine-tuned construction model. I do not need Azure or OpenAI to reason about construction.
+          '''.replace("\n          ", "\n"), encoding="utf-8")
+          print("modelfile bytes", Path("/tmp/Modelfile.auricrux-fca").stat().st_size)
+          PY
 
-          cat > /tmp/load-gguf.sh <<'REMOTE'
-          #!/bin/bash
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          obj = os.environ["OBJECT"]
+          script = r'''#!/bin/bash
           set -euo pipefail
           OBJECT='__OBJECT__'
           TOKEN=$(tr -d '\r\n' </tmp/gguf_access_token.txt)
@@ -118,8 +125,11 @@ MF
           curl -fsS -m 180 -H 'Content-Type: application/json' \
             -d '{"Query":"What is a sill plate?","ThinkingMode":1,"SearchScope":2}' \
             http://127.0.0.1:5001/api/chat | head -c 1200; echo
-          REMOTE
-          sed -i "s/__OBJECT__/${OBJECT}/g" /tmp/load-gguf.sh
+          '''
+          text = script.replace("\n          ", "\n").replace("__OBJECT__", obj)
+          Path("/tmp/load-gguf.sh").write_text(text, encoding="utf-8")
+          print("load script bytes", Path("/tmp/load-gguf.sh").stat().st_size)
+          PY
 
           gcloud compute scp /tmp/Modelfile.auricrux-fca /tmp/gguf_access_token.txt /tmp/gguf_media_url.txt /tmp/load-gguf.sh \
             "${INSTANCE}:/tmp/" \
