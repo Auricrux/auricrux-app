@@ -105,6 +105,23 @@
                 <button class="btn btn-sm w-100" style="background:#c4a35a;color:#111;" type="button" @onclick="ClearHistory" disabled="@IsLoading">Clear</button>
             </div>
         </div>
+        <div class="row g-2 mt-2">
+            <div class="col-12 col-md-3">
+                <input class="form-control form-control-sm" @bind="BrowseUrl" placeholder="https://… browse URL" />
+            </div>
+            <div class="col-6 col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100 btn-outline-light" type="button" @onclick="RunBrowse" disabled="@IsLoading">Browse</button>
+            </div>
+            <div class="col-6 col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100 btn-outline-light" type="button" @onclick="RunAgent" disabled="@(IsLoading || string.IsNullOrWhiteSpace(UserInput))">Agent</button>
+            </div>
+            <div class="col-6 col-md-2 d-flex align-items-end">
+                <button class="btn btn-sm w-100 btn-outline-light" type="button" @onclick="RunCalc" disabled="@(IsLoading || string.IsNullOrWhiteSpace(UserInput))">Calc</button>
+            </div>
+            <div class="col-6 col-md-3 d-flex align-items-end">
+                <button class="btn btn-sm w-100 btn-outline-light" type="button" @onclick="AnalyzePhoto" disabled="@(IsLoading || SelectedBrowserFile is null)">Analyze photo → RFI</button>
+            </div>
+        </div>
         <small class="opacity-75 d-block mt-1">@QuotaLabel</small>
     </div>
 
@@ -188,6 +205,7 @@
     private FreemiumAccount? Account;
     private IBrowserFile? SelectedBrowserFile;
     private DotNetObjectReference<Chat>? _dotNetRef;
+    private string BrowseUrl = string.Empty;
 
     private string QuotaLabel => Account is null
         ? "Freemium: register to meter daily queries"
@@ -362,6 +380,137 @@
                 MediaUrl = artifact?.PublicPath
             });
             StatusMessage = artifact is null ? "Video failed" : "Video ready";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task RunBrowse()
+    {
+        if (string.IsNullOrWhiteSpace(BrowseUrl)) return;
+        IsLoading = true;
+        StatusMessage = "Browsing…";
+        try
+        {
+            var result = await ApiClient.BrowseAsync(BrowseUrl.Trim(), UserInput);
+            var summary = result?.TryGetProperty("summary", out var s) == true ? s.GetString() : "Browse failed.";
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = summary ?? "Browse failed.",
+                IsUser = false,
+                Timestamp = DateTime.Now
+            });
+            StatusMessage = "Browse done";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Browse failed: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task RunAgent()
+    {
+        if (string.IsNullOrWhiteSpace(UserInput)) return;
+        IsLoading = true;
+        StatusMessage = "Agent running…";
+        var query = UserInput.Trim();
+        UserInput = string.Empty;
+        Messages.Add(new ChatMessageViewModel { Role = "user", Content = query, IsUser = true, Timestamp = DateTime.Now });
+        try
+        {
+            var result = await ApiClient.RunAgentAsync(query, SelectedModel);
+            var answer = result?.TryGetProperty("finalAnswer", out var a) == true
+                ? a.GetString()
+                : "Agent failed.";
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = answer ?? "Agent failed.",
+                IsUser = false,
+                Timestamp = DateTime.Now
+            });
+            StatusMessage = "Agent done";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Agent failed: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task RunCalc()
+    {
+        if (string.IsNullOrWhiteSpace(UserInput)) return;
+        IsLoading = true;
+        StatusMessage = "Calculating…";
+        try
+        {
+            // Prefer agent heuristic for natural language; fallback concrete volume when query looks numeric.
+            var result = await ApiClient.RunAgentAsync(UserInput.Trim(), SelectedModel);
+            var answer = result?.TryGetProperty("finalAnswer", out var a) == true
+                ? a.GetString()
+                : null;
+            if (string.IsNullOrWhiteSpace(answer))
+            {
+                var calc = await ApiClient.CalcAsync("concrete_volume_cy", new { lengthFt = 20.0, widthFt = 10.0, depthIn = 6.0 });
+                answer = calc?.ToString() ?? "Calc failed.";
+            }
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = answer!,
+                IsUser = false,
+                Timestamp = DateTime.Now
+            });
+            StatusMessage = "Calc done";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task AnalyzePhoto()
+    {
+        if (SelectedBrowserFile is null) return;
+        IsLoading = true;
+        StatusMessage = "Analyzing field photo…";
+        try
+        {
+            await using var stream = SelectedBrowserFile.OpenReadStream(8_000_000);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var b64 = Convert.ToBase64String(ms.ToArray());
+            var prompt = string.IsNullOrWhiteSpace(UserInput)
+                ? "Field photo safety and quality review"
+                : UserInput.Trim();
+            var result = await ApiClient.AnalyzeVisionAsync(b64, prompt, "safety");
+            var analysis = result?.TryGetProperty("analysis", out var an) == true ? an.GetString() : null;
+            var rfi = result?.TryGetProperty("rfiDraft", out var r) == true ? r.GetString() : null;
+            var engine = result?.TryGetProperty("engine", out var e) == true ? e.GetString() : "vision";
+            Messages.Add(new ChatMessageViewModel
+            {
+                Role = "assistant",
+                Content = $"{analysis}\n\n--- RFI draft ({engine}) ---\n{rfi}",
+                IsUser = false,
+                Timestamp = DateTime.Now
+            });
+            StatusMessage = "Photo analyzed";
+            SelectedBrowserFile = null;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Vision failed: {ex.Message}";
         }
         finally
         {

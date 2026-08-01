@@ -326,6 +326,57 @@ public class AuricruxApiClient
         await _httpClient.PostAsync("api/workspace/files", form, cancellationToken);
     }
 
+    public async Task<JsonElement?> BrowseAsync(string url, string? question = null, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            "api/browse",
+            new { url, question },
+            CreateJsonOptions(),
+            cancellationToken);
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<JsonElement>(CreateJsonOptions(), cancellationToken)
+            : null;
+    }
+
+    public async Task<JsonElement?> RunAgentAsync(string query, string? model = null, CancellationToken cancellationToken = default)
+    {
+        var path = string.IsNullOrWhiteSpace(model)
+            ? "api/agent"
+            : $"api/agent?model={Uri.EscapeDataString(model.Trim())}";
+        var response = await _httpClient.PostAsJsonAsync(path, new { query }, CreateJsonOptions(), cancellationToken);
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<JsonElement>(CreateJsonOptions(), cancellationToken)
+            : null;
+    }
+
+    public async Task<JsonElement?> CalcAsync(string operation, object? args = null, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            "api/calc",
+            new { operation, args },
+            CreateJsonOptions(),
+            cancellationToken);
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<JsonElement>(CreateJsonOptions(), cancellationToken)
+            : null;
+    }
+
+    public async Task<JsonElement?> AnalyzeVisionAsync(
+        string imageBase64,
+        string? prompt = null,
+        string? focus = null,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            "api/vision",
+            new { imageBase64, prompt, focus },
+            CreateJsonOptions(),
+            cancellationToken);
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<JsonElement>(CreateJsonOptions(), cancellationToken)
+            : null;
+    }
+
     private sealed class ModelsPayload
     {
         public List<string>? Models { get; set; }
