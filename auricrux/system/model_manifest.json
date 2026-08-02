@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "modelId": "auricrux-3b-true-god-checkpoint-110000-product-q8",
-  "status": "product-ollama-loaded-ckpt110000-q8",
-  "runtimeUse": "Product Ollama auricrux-fca now serves merged checkpoint-110000 Q8_0 GGUF (CPU-merged off-train). Train PID still running; do not merge on train GPU.",
+  "modelId": "auricrux-3b-true-god-checkpoint-115000-product-q8",
+  "status": "product-ollama-loaded-ckpt115000-q8",
+  "runtimeUse": "Product Ollama auricrux-fca serves merged checkpoint-115000 Q8_0 GGUF. Train PID still running on original 1b5 mix.",
   "notTrueGodTierReason": "Checkpoint exists on disk; full true-god promotion still requires post-run suites and an export that does not interrupt live train or token factory.",
   "baseModel": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
   "adapter": {
@@ -33,13 +33,13 @@
   "productRuntime": {
     "gceHost": "instance-20260715-113528",
     "ollamaModel": "auricrux-fca",
-    "ollamaBackingWeights": "checkpoint-110000 merged LoRA -> Q8_0 GGUF (auricrux-fca-ckpt110000-Q8_0.gguf, 3421898848 bytes)",
+    "ollamaBackingWeights": "checkpoint-115000 merged LoRA -> Q8_0 GGUF (auricrux-fca-ckpt115000-Q8_0.gguf)",
     "ollamaShowSize": "3.4 GB",
     "api": "https://auricrux.futurecontractorsofamerica.com/api/chat",
     "runtimeModeVerified": "ollama-live / primaryModelReady=true",
-    "loadWorkflowRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30715067119",
-    "exportPath": "/mnt/auricrux-eod/exports/ckpt-110000",
-    "gcsObject": "gs://auricrux-mobile-prod-model-xfer/auricrux-fca-ckpt110000-Q8_0.gguf",
+    "loadWorkflowRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30725703351",
+    "exportPath": "/mnt/auricrux-eod/exports/ckpt-115000",
+    "gcsObject": "gs://auricrux-mobile-prod-model-xfer/auricrux-fca-ckpt115000-Q8_0.gguf",
     "note": "CPU-only merge on train host with CUDA_VISIBLE_DEVICES empty; train PID 1019003 left alone."
   },
   "productQualityBar": {
@@ -51,15 +51,15 @@
     "productionFinalLabel": "awaiting-safe-export-of-checkpoint-70000-plus-eval",
     "tokenFactory": "do-not-tamper"
   },
-  "recordedAtUtc": "2026-08-02T00:30:42Z",
+  "recordedAtUtc": "2026-08-02T00:46:24Z",
   "auricruxFcaAlias": {
     "modelId": "auricrux-fca",
-    "status": "replaced-by-ckpt110000-gguf",
+    "status": "replaced-by-ckpt115000-gguf",
     "kind": "merged-lora-gguf-q8",
     "baseModel": "unsloth/Llama-3.2-3B-Instruct + LoRA checkpoint-110000",
     "note": "Interim llama3.2:3b system-prompt alias replaced on 2026-08-01 by checkpoint-110000 Q8 GGUF. Mid-train (~37%); not final true-god bar.",
-    "loadedAtUtc": "2026-08-01T19:40:31Z",
-    "ggufObject": "auricrux-fca-ckpt110000-Q8_0.gguf"
+    "loadedAtUtc": "2026-08-02T00:46:24Z",
+    "ggufObject": "auricrux-fca-ckpt115000-Q8_0.gguf"
   },
   "nextRunFactoryAccess": {
     "status": "prepared-not-attached",
