@@ -1,0 +1,47 @@
+{
+  "capturedAtUtc": "2026-08-02T00:30:00Z",
+  "train": {
+    "host": "auricrux-gpu-ncast4-t4",
+    "pid": 1019003,
+    "status": "running-do-not-interrupt",
+    "latestCheckpointOnDisk": 115000,
+    "maxSteps": 297000,
+    "configLive": "config/auricrux_training_config_3b_true_god_1b5.json",
+    "canHotReloadFactoryData": false
+  },
+  "staging": {
+    "checkpoint115000": "/mnt/auricrux-eod/export-staging/checkpoint-115000",
+    "note": "safe file copy; CPU export may follow"
+  },
+  "factoryAccessPlan": {
+    "livePid": "keeps current ~1.53B TRUE God mix only",
+    "fullerAccess": "next resume/relaunch only",
+    "nextConfigsInAppRepo": [
+      "auricrux/system/auricrux_training_config_3b_true_god_resume_growth_slim_v1.json",
+      "auricrux/system/auricrux_training_config_3b_true_god_1b5_plus_growth_v1.json"
+    ],
+    "controlPlanePacks": {
+      "academy_projection_v1.jsonl": "~176MB",
+      "growth_10b_net_new_v1.jsonl": "~22GB",
+      "growth_jurisdiction_code_*": "~7GB optional",
+      "growth_simulator_trees_*": "~7GB optional",
+      "growth_failure_forensics_*": "~7.5GB optional"
+    },
+    "doNotTamper": [
+      "local_token_factory_true_god_sanitized_v1.jsonl",
+      "auricrux_true_god_core_principles_v1.jsonl",
+      "auricrux_3b_retrain_pack_v1.jsonl",
+      "auricrux_fca_construction_expansion_pack_v1.jsonl"
+    ]
+  },
+  "feeder": {
+    "gcpL4Spot": "TERMINATED",
+    "reviveScript": "auricrux-model-lab/scripts/81_ensure_gcp_l4_feeder.ps1",
+    "mergeScripts": ["76_merge_parallel_lora_adapters.py", "82_ingest_colab_feeder_adapter.ps1"],
+    "policy": "feeders merge into one spine; never ship as competing model"
+  },
+  "product": {
+    "liveWeights": "checkpoint-110000 Q8 GGUF",
+    "nextPromoteCandidate": "checkpoint-115000 (staged)"
+  }
+}

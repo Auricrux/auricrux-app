@@ -1,0 +1,61 @@
+{
+  "model_name": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
+  "output_dir": "outputs/auricrux_lora_adapter_3b_true_god_1b5_plus_growth",
+  "seed_adapter_path": "outputs/auricrux_lora_adapter_3b_true_god_1b5/checkpoint-115000",
+  "resume_note": "RECOMMENDED first resume after live TRUE God PID ends. Update seed_adapter_path to the final/latest spine checkpoint. Never attach to a live train PID.",
+  "dataset_path": "data/datasets/local_token_factory_true_god_sanitized_v1.jsonl",
+  "extra_datasets": [
+    {
+      "path": "data/datasets/auricrux_true_god_core_principles_v1.jsonl",
+      "repeat": 1,
+      "purpose": "TRUE God baseline"
+    },
+    {
+      "path": "data/datasets/auricrux_3b_retrain_pack_v1.jsonl",
+      "repeat": 1,
+      "purpose": "TRUE God baseline"
+    },
+    {
+      "path": "data/datasets/auricrux_fca_construction_expansion_pack_v1.jsonl",
+      "repeat": 8,
+      "purpose": "TRUE God baseline"
+    },
+    {
+      "path": "data/datasets/academy_projection_v1.jsonl",
+      "repeat": 2,
+      "purpose": "factory growth — Academy projection (~176MB)"
+    },
+    {
+      "path": "data/datasets/growth_10b_net_new_v1.jsonl",
+      "repeat": 1,
+      "purpose": "factory growth — aggregated net-new pack (~22GB; sync to Azure before launch)"
+    }
+  ],
+  "deferred_heavy_packs": [
+    "data/datasets/growth_jurisdiction_code_20260727T171401Z.jsonl",
+    "data/datasets/growth_simulator_trees_20260727T171401Z.jsonl",
+    "data/datasets/growth_failure_forensics_20260731T011945Z.jsonl"
+  ],
+  "max_seq_length": 768,
+  "max_steps": 120000,
+  "per_device_train_batch_size": 1,
+  "gradient_accumulation_steps": 8,
+  "learning_rate": 0.000015,
+  "warmup_steps": 1500,
+  "load_in_4bit": true,
+  "lora_r": 32,
+  "lora_alpha": 64,
+  "lora_dropout": 0.05,
+  "save_steps": 5000,
+  "logging_steps": 100,
+  "target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "description": "Slim next-run: TRUE God mix + Academy + growth_10b_net_new. B1/B2/B3 deferred."
+}

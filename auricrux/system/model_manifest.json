@@ -6,9 +6,9 @@
   "notTrueGodTierReason": "Checkpoint exists on disk; full true-god promotion still requires post-run suites and an export that does not interrupt live train or token factory.",
   "baseModel": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
   "adapter": {
-    "azurePath": "/mnt/auricrux-eod/runs/run-20260715T114454Z/outputs/auricrux_lora_adapter_3b_true_god_1b5/checkpoint-110000",
-    "localLabel": "checkpoint-110000-azure-disk-staged",
-    "verifiedAtUtc": "2026-08-01T18:49:56Z",
+    "azurePath": "/mnt/auricrux-eod/runs/run-20260715T114454Z/outputs/auricrux_lora_adapter_3b_true_god_1b5/checkpoint-115000",
+    "localLabel": "checkpoint-115000-azure-disk-staged",
+    "verifiedAtUtc": "2026-08-02T00:30:42Z",
     "verifiedFiles": [
       "adapter_config.json",
       "adapter_model.safetensors"
@@ -16,8 +16,8 @@
     "evalStatus": "PRODUCT-LOADED-PENDING-SUITE",
     "evalSuite": "eval/construction_god_suite_v1.json",
     "priorCandidateOnDisk": "checkpoint-65000",
-    "stagedExportPath": "/mnt/auricrux-eod/export-staging/checkpoint-110000",
-    "trainProgressNote": "110000 / 297000 (~37.0%); train PID still alive \u2014 do not merge on train GPU",
+    "stagedExportPath": "/mnt/auricrux-eod/export-staging/checkpoint-115000",
+    "trainProgressNote": "115000 / 297000 (~38.7%); train PID alive \u2014 do not merge on train GPU",
     "productLoadedAtUtc": "2026-08-01T19:40:31Z"
   },
   "trueGodRun": {
@@ -26,8 +26,9 @@
     "resourceGroup": "AURICRUX-TRAINING-NCAST4",
     "trainPid": 1019003,
     "config": "config/auricrux_training_config_3b_true_god_1b5.json",
-    "lastObservedCheckpointOnDisk": 110000,
-    "gcpL4Spot": "TERMINATED"
+    "lastObservedCheckpointOnDisk": 115000,
+    "gcpL4Spot": "TERMINATED",
+    "note": "checkpoint-115000 staged for CPU export; live PID still on 1b5 mix only"
   },
   "productRuntime": {
     "gceHost": "instance-20260715-113528",
@@ -50,7 +51,7 @@
     "productionFinalLabel": "awaiting-safe-export-of-checkpoint-70000-plus-eval",
     "tokenFactory": "do-not-tamper"
   },
-  "recordedAtUtc": "2026-08-01T19:40:31Z",
+  "recordedAtUtc": "2026-08-02T00:30:42Z",
   "auricruxFcaAlias": {
     "modelId": "auricrux-fca",
     "status": "replaced-by-ckpt110000-gguf",
@@ -59,5 +60,11 @@
     "note": "Interim llama3.2:3b system-prompt alias replaced on 2026-08-01 by checkpoint-110000 Q8 GGUF. Mid-train (~37%); not final true-god bar.",
     "loadedAtUtc": "2026-08-01T19:40:31Z",
     "ggufObject": "auricrux-fca-ckpt110000-Q8_0.gguf"
+  },
+  "nextRunFactoryAccess": {
+    "status": "prepared-not-attached",
+    "slimConfig": "auricrux/system/auricrux_training_config_3b_true_god_resume_growth_slim_v1.json",
+    "fullConfig": "auricrux/system/auricrux_training_config_3b_true_god_1b5_plus_growth_v1.json",
+    "rule": "Attach growth packs only on next resume/relaunch after live PID ends"
   }
 }
