@@ -84,14 +84,21 @@ jobs:
           sudo mkdir -p /var/lib/auricrux-models
           echo "=== disk before cleanup ==="
           df -h / /var/lib/docker /var/lib/auricrux-models 2>/dev/null || df -h /
-          # Free space: prior GGUFs, stopped/prev containers, dangling images
-          sudo find /var/lib/auricrux-models -maxdepth 1 -type f -name '*.gguf' ! -name "${OBJECT}" -delete || true
+          # Free space: ALL prior GGUFs (re-download this OBJECT), stopped/prev containers, dangling images
+          sudo find /var/lib/auricrux-models -maxdepth 1 -type f -name '*.gguf' -delete || true
           sudo docker ps -a --format '{{.Names}}' | grep -E -- '-prev-' | while read -r n; do sudo docker rm -f "$n" || true; done
-          # Reclaim Ollama blob space from prior auricrux-fca / unused bases (keep vision models).
-          sudo docker exec auricrux-ollama sh -c 'rm -f /tmp/*.gguf; ollama rm auricrux-fca 2>/dev/null || true; ollama rm llama3.2 2>/dev/null || true; ollama rm mistral 2>/dev/null || true' || true
+          # Reclaim Ollama blob space from chat bases (keep vision llava if present).
+          sudo docker exec auricrux-ollama sh -c 'rm -f /tmp/*.gguf; ollama list; ollama rm auricrux-fca 2>/dev/null || true; ollama rm llama3.2 2>/dev/null || true; ollama rm llama3.2:3b 2>/dev/null || true; ollama rm mistral 2>/dev/null || true; ollama rm auricrux 2>/dev/null || true' || true
           sudo docker container prune -f 2>/dev/null || true
+          sudo docker image prune -f 2>/dev/null || true
+          # Drop unused Docker build cache (keep named cutover images).
+          sudo docker builder prune -f 2>/dev/null || true
           echo "=== disk after cleanup ==="
           df -h / | tail -1
+          AVAIL_KB=$(df -Pk / | awk 'NR==2{print $4}')
+          echo "AVAIL_KB=$AVAIL_KB"
+          # Need ~8GB free: download + ollama blob (host GGUF deleted before create).
+          test "$AVAIL_KB" -gt 8500000
 
           echo "=== curl download ==="
           sudo curl -fL --retry 3 --retry-delay 5 \
@@ -108,12 +115,12 @@ jobs:
           sudo docker exec auricrux-ollama mkdir -p /tmp
           sudo docker cp "/var/lib/auricrux-models/${OBJECT}" "auricrux-ollama:/tmp/${OBJECT}"
           sudo docker cp /tmp/Modelfile.auricrux-fca auricrux-ollama:/tmp/Modelfile.auricrux-fca
+          # Drop host copy BEFORE create so blob write has room (avoids ENOSPC on 3x copies).
+          sudo rm -f "/var/lib/auricrux-models/${OBJECT}" || true
           sudo docker exec auricrux-ollama ollama stop auricrux-fca 2>/dev/null || true
           sudo docker exec auricrux-ollama ollama rm auricrux-fca 2>/dev/null || true
           sudo docker exec auricrux-ollama ollama create auricrux-fca -f /tmp/Modelfile.auricrux-fca
           sudo docker exec auricrux-ollama rm -f "/tmp/${OBJECT}" || true
-          # Host-side GGUF can be dropped after create to reclaim disk
-          sudo rm -f "/var/lib/auricrux-models/${OBJECT}" || true
           echo "=== warm ==="
           sudo docker exec auricrux-ollama ollama run auricrux-fca "What is a sill plate? Answer in 3 sentences." || true
           sudo docker exec auricrux-ollama ollama list

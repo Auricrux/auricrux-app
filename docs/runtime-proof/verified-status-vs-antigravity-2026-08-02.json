@@ -1,0 +1,57 @@
+{
+  "asOfUtc": "2026-08-02T21:35:00Z",
+  "purpose": "Independent verification of fine-tune + data-gen status after Antigravity parroted founder numbers",
+  "fineTuning": {
+    "source": "SSH azureuser@20.65.32.150 trainer_state.json + ps + nvidia-smi",
+    "runRoot": "/mnt/auricrux-eod/runs/run-20260715T114454Z",
+    "config": "config/auricrux_training_config_3b_true_god_1b5.json",
+    "baseModel": "unsloth/Llama-3.2-3B-Instruct-bnb-4bit",
+    "globalStep": 120000,
+    "maxSteps": 297000,
+    "progressPct": 40.404,
+    "epoch": 0.40485625072747605,
+    "trainPid": 1019003,
+    "trainPidAlive": true,
+    "etimeObserved": "17-22:30:11",
+    "gpuUtilization": "100%",
+    "vramUsedMiB": 13268,
+    "vramTotalMiB": 16384,
+    "checkpointsOnDiskTip": [110000, 115000, 120000],
+    "activeCorpusNote": "~1.53B TRUE God tokens; factory meter not hot-loaded into this PID",
+    "founderEarlierConfirm": "110000/297000 (~37%) — superseded by live disk tip 120000"
+  },
+  "dataGeneration": {
+    "source": "C:\\Users\\Auricrux\\auricrux-model-lab\\logs\\canonical_token_ledger.json",
+    "uniqueHighQualityTokens": 326747001053,
+    "uniqueHighQualityTokensBillions": 326.747,
+    "founderOrAntigravityCite": "~380B",
+    "deltaVsCiteBillionsApprox": 53.3,
+    "lastGrowRunId": "grow10b-20260801T121422Z",
+    "lastGrowNetNewTokens": 4500001316,
+    "nextOpenMilestone": "national_corpus_500b",
+    "nextOpenProgressPct": 65.3494,
+    "charterHorizon": "200T+",
+    "ledgerTrainingProgressStale": {
+      "globalStep": 65000,
+      "updatedUtc": "2026-07-25T23:17:06Z"
+    }
+  },
+  "productRuntime": {
+    "source": "GET https://auricrux.futurecontractorsofamerica.com/api/health + model_manifest.json",
+    "status": "healthy",
+    "primaryModel": "auricrux-fca",
+    "primaryModelReady": true,
+    "runtimeMode": "ollama-live",
+    "backingWeights": "checkpoint-115000 merged LoRA Q8_0 GGUF",
+    "behindTrainDiskBySteps": 5000
+  },
+  "visionSource": "C:\\Users\\Auricrux\\auricrux-model-lab\\docs\\FOUNDATION_MODEL_PROGRAM_CHARTER.md",
+  "antigravityGaps": [
+    "Stale train step (110k vs live 120k)",
+    "Unverified ~380B vs ledger ~326.7B",
+    "Wrong product path (qwen2.5-coder/RTX3050 vs GCP Llama-3.2-3B GGUF)",
+    "Axioryn/Codarion are auricrux-central agents/officers, not model-lab factory seed vocab meters",
+    "Invented Antigravity ownership of auricrux repos vs charter"
+  ],
+  "canvas": "auricrux-verified-status.canvas.tsx"
+}

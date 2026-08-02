@@ -1,0 +1,15 @@
+﻿{
+    "asOfUtc":  "2026-08-02T21:40:19Z",
+    "purpose":  "trainingProgress sync when Auricrux-owned ledger is RX-only for Michael",
+    "trainingProgress":  {
+                             "sourceHost":  "auricrux-gpu-ncast4-t4",
+                             "updatedUtc":  "2026-08-02T21:40:19Z",
+                             "maxSteps":  297000,
+                             "lastSyncedCheckpoint":  "checkpoint-120000",
+                             "progressPctOfMaxSteps":  40.404,
+                             "note":  "Synced from Azure trainer_state.json; apply into canonical_token_ledger.json + STATUS.json under Auricrux account",
+                             "globalStep":  120000,
+                             "trainPid":  1019003
+                         },
+    "applyCommand":  "Copy trainingProgress object into logs/canonical_token_ledger.json and logs/STATUS.json (Auricrux write ACL)"
+}
