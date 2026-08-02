@@ -83,22 +83,32 @@ jobs:
           MEDIA=$(tr -d '\r\n' </tmp/gguf_media_url.txt)
           sudo mkdir -p /var/lib/auricrux-models
           echo "=== disk before cleanup ==="
-          df -h / /var/lib/docker /var/lib/auricrux-models 2>/dev/null || df -h /
+          df -h / || true
           # Free space: ALL prior GGUFs (re-download this OBJECT), stopped/prev containers, dangling images
           sudo find /var/lib/auricrux-models -maxdepth 1 -type f -name '*.gguf' -delete || true
-          sudo docker ps -a --format '{{.Names}}' | grep -E -- '-prev-' | while read -r n; do sudo docker rm -f "$n" || true; done
-          # Reclaim Ollama blob space from chat bases (keep vision llava if present).
-          sudo docker exec auricrux-ollama sh -c 'rm -f /tmp/*.gguf; ollama list; ollama rm auricrux-fca 2>/dev/null || true; ollama rm llama3.2 2>/dev/null || true; ollama rm llama3.2:3b 2>/dev/null || true; ollama rm mistral 2>/dev/null || true; ollama rm auricrux 2>/dev/null || true' || true
+          # pipefail-safe: grep exit 1 when no -prev- containers must not abort
+          sudo docker ps -a --format '{{.Names}}' | grep -E -- '-prev-' | while read -r n; do sudo docker rm -f "$n" || true; done || true
+          sudo docker ps -a --filter status=exited --format '{{.Names}}' | while read -r n; do sudo docker rm -f "$n" || true; done || true
+          # Reclaim Ollama blob space. Prefer keeping llava; drop it only if still short on disk.
+          sudo docker exec auricrux-ollama sh -c 'rm -f /tmp/*.gguf; ollama list || true; ollama rm auricrux-fca 2>/dev/null || true; ollama rm llama3.2 2>/dev/null || true; ollama rm llama3.2:3b 2>/dev/null || true; ollama rm mistral 2>/dev/null || true; ollama rm auricrux 2>/dev/null || true' || true
           sudo docker container prune -f 2>/dev/null || true
-          sudo docker image prune -f 2>/dev/null || true
-          # Drop unused Docker build cache (keep named cutover images).
-          sudo docker builder prune -f 2>/dev/null || true
+          sudo docker image prune -af 2>/dev/null || true
+          sudo docker builder prune -af 2>/dev/null || true
+          sudo journalctl --vacuum-size=200M 2>/dev/null || true
+          sudo apt-get clean 2>/dev/null || true
+          AVAIL_KB=$(df -Pk / | awk 'NR==2 { print $4 }')
+          echo "AVAIL_KB_after_prune=$AVAIL_KB"
+          if [ "${AVAIL_KB:-0}" -lt 8500000 ]; then
+            echo "Still low on disk — temporarily removing llava vision model to free blob space"
+            sudo docker exec auricrux-ollama ollama rm llava 2>/dev/null || true
+            sudo docker exec auricrux-ollama ollama rm llava:latest 2>/dev/null || true
+          fi
           echo "=== disk after cleanup ==="
           df -h / | tail -1
-          AVAIL_KB=$(df -Pk / | awk 'NR==2{print $4}')
+          AVAIL_KB=$(df -Pk / | awk 'NR==2 { print $4 }')
           echo "AVAIL_KB=$AVAIL_KB"
-          # Need ~8GB free: download + ollama blob (host GGUF deleted before create).
-          test "$AVAIL_KB" -gt 8500000
+          # Need ~8GB free: container tmp GGUF + ollama blob (host GGUF deleted before create).
+          test "${AVAIL_KB:-0}" -gt 8500000
 
           echo "=== curl download ==="
           sudo curl -fL --retry 3 --retry-delay 5 \
