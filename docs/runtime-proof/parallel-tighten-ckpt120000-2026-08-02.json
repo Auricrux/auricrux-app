@@ -1,0 +1,40 @@
+{
+  "capturedAtUtc": "2026-08-02T21:56:00Z",
+  "train": {
+    "pid": 1019003,
+    "status": "running-do-not-interrupt",
+    "globalStep": 120000,
+    "maxSteps": 297000,
+    "gpu": "100%",
+    "canHotReloadFactoryData": false
+  },
+  "export": {
+    "method": "CPU-only merge CUDA_VISIBLE_DEVICES=",
+    "staged": "/mnt/auricrux-eod/export-staging/checkpoint-120000",
+    "gguf": "/mnt/auricrux-eod/exports/ckpt-120000/gguf/auricrux-fca-ckpt120000-Q8_0.gguf",
+    "ggufBytes": 3421898848,
+    "exportedAtUtc": "2026-08-02T21:41:49Z"
+  },
+  "gcs": {
+    "object": "gs://auricrux-mobile-prod-model-xfer/auricrux-fca-ckpt120000-Q8_0.gguf",
+    "mintRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30768540914",
+    "uploadHttp": 200
+  },
+  "product": {
+    "loadRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30768806318",
+    "health": "healthy",
+    "primaryModel": "auricrux-fca",
+    "primaryModelReady": true,
+    "runtimeMode": "ollama-live",
+    "note": "ENOSPC fixed by host-GGUF-delete-before-create + aggressive prune; llava may have been temporarily removed"
+  },
+  "ledger": {
+    "uniqueHighQualityTokens": 326747001053,
+    "trainingProgressApply": "docs/runtime-proof/training-progress-sync-120000-2026-08-02.json (Auricrux ACL required)"
+  },
+  "nextRun": {
+    "slimConfigSeed": "checkpoint-120000",
+    "azureNextRunDatasets": ["academy_projection_v1.jsonl"],
+    "pendingSync": "growth_10b_net_new_v1.jsonl (~22GB)"
+  }
+}
