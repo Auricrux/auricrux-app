@@ -34,12 +34,12 @@ The gap is **+1 case**. Failures are a mix of **scoring**, **prompt/eval groundi
 
 | Measurement | Pass | Rate | Notes |
 |-------------|------|------|-------|
-| Live baseline 2026-08-02 | 23/30 | 76.7% | Canonical FAIL in manifest |
-| Offline alias rescore | **24/30** | **80.0%** | Flip: `billing-payapp` only |
-| Remaining after alias-only | 6 fails | — | Need **product deploy** of publish +/or train finish |
-| Expected after product deploy | ≥24–28/30 | ≥80% likely | **Not claimed** until dated live re-run |
+| Live baseline 2026-08-02 | 23/30 | 76.7% | FAIL (retained) |
+| Offline alias rescore | 24/30 | 80.0% | Support-only; not live authority |
+| **Live after cutover 2026-08-03** | **26/30** | **86.7%** | **PASS** — `eval/reports/construction_god_suite_gguf_generative_2026-08-03.json` |
 
-**Do not update manifest `evalStatus` to PASS until a live suite run (with aliases) after product host deploy writes a new dated report ≥80%.**
+Remaining live fails (not blocking ≥80%): `csi-07-roofing`, `osha-silica` (variance), `estimating-takeoff`, `earthwork-compaction`.
+
 
 ## What was not done (intentionally)
 
