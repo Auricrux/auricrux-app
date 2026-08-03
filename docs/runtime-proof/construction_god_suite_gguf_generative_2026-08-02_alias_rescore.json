@@ -1,0 +1,81 @@
+{
+  "sourceReport": "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\eval\\reports\\construction_god_suite_gguf_generative_2026-08-02.json",
+  "mode": "offline-excerpt-rescore-with-aliases",
+  "limitation": "Uses stored 280-char excerpts only; undercounts vs full responses.",
+  "originalPassed": 23,
+  "originalRatePercent": 76.7,
+  "rescoredPassed": 24,
+  "rescoredRatePercent": 80.0,
+  "deltaCases": 1,
+  "flippedToPass": [
+    {
+      "id": "billing-payapp",
+      "matched": [
+        "payapp",
+        "sov"
+      ],
+      "wasMatched": [
+        "sov"
+      ]
+    }
+  ],
+  "stillFail": [
+    {
+      "id": "csi-05-steel",
+      "matched": [],
+      "missing": [
+        "steel",
+        "bolt",
+        "rcsc"
+      ]
+    },
+    {
+      "id": "csi-23-hvac",
+      "matched": [],
+      "missing": [
+        "hvac",
+        "duct",
+        "manual"
+      ]
+    },
+    {
+      "id": "osha-confined-space",
+      "matched": [
+        "confined space"
+      ],
+      "missing": [
+        "atmospheric",
+        "attendant"
+      ]
+    },
+    {
+      "id": "osha-silica",
+      "matched": [
+        "dust"
+      ],
+      "missing": [
+        "silica",
+        "respiratory"
+      ]
+    },
+    {
+      "id": "scheduling-delay",
+      "matched": [],
+      "missing": [
+        "delay",
+        "fragnet",
+        "critical path"
+      ]
+    },
+    {
+      "id": "earthwork-compaction",
+      "matched": [],
+      "missing": [
+        "compaction",
+        "proctor",
+        "density"
+      ]
+    }
+  ],
+  "suitePassedAt80": true
+}

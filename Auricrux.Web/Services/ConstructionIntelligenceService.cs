@@ -182,7 +182,7 @@ public sealed class ConstructionIntelligenceService
     {
         var ollamaBase = (_config["Auricrux:OllamaUrl"] ?? "http://127.0.0.1:11434").TrimEnd('/');
         var selected = string.IsNullOrWhiteSpace(model)
-            ? (_config["Auricrux:PrimaryModel"] ?? "llama3.2")
+            ? (_config["Auricrux:PrimaryModel"] ?? "auricrux-fca")
             : model;
 
         var messages = new List<object> { new { role = "system", content = system } };
@@ -239,25 +239,38 @@ public sealed class ConstructionIntelligenceService
 
     private static string BuildSystemPrompt(ThinkingMode mode, List<Source> sources)
     {
+        // Prior bug: only titles were injected, so generative answers ignored corpus facts
+        // already retrieved (RCSC torque, Manual D, silica controls, TIA/fragnet, Proctor, etc.).
+        // Pass short content snippets so the model can ground on specialist knowledge.
         var src = sources.Count == 0
             ? "No corpus hits — answer from general construction-specialist knowledge and say so."
-            : string.Join("; ", sources.Select(s => s.Title));
+            : string.Join("\n", sources.Select((s, i) =>
+            {
+                var body = string.IsNullOrWhiteSpace(s.Url) ? "" : s.Url.Trim();
+                if (body.Length > 420)
+                {
+                    body = body[..420].TrimEnd() + "…";
+                }
+
+                return string.IsNullOrWhiteSpace(body)
+                    ? $"{i + 1}. {s.Title}"
+                    : $"{i + 1}. {s.Title}: {body}";
+            }));
         return $"""
             You are Auricrux, a construction-specialist AI competing with general-purpose assistants (ChatGPT/Claude/Gemini/Copilot) — and outperforming them on field construction work for contractors, estimators, PMs, superintendents, and CTE trades students.
             Domain focus (your moat): CSI MasterFormat divisions, means-and-methods sequencing, OSHA 1926 safety triggers, estimating/takeoff discipline, scheduling (CPM/float/delay), contract administration (AIA-style), and code basics (IBC/ADA).
             Answer with field-grade precision: cite the applicable CSI division, OSHA section, or code reference when known; give concrete numbers (spacing, tolerances, percentages) instead of vague guidance; flag safety triggers explicitly.
+            Prefer facts from the grounding excerpts below when they apply; paraphrase in field language and keep domain terms (CSI, OSHA, RCSC, Manual D, retainage, fragnet, Proctor, silica, attendant, etc.) explicit.
             Never fabricate a code section number you are not grounded on — say "verify against the locally adopted code edition" when uncertain.
             Thinking mode: {mode}.
-            Grounding sources: {src}.
+            Grounding excerpts:
+            {src}
             """;
     }
 
     private List<Source> SearchInternal(string query, SearchScope scope, int take)
     {
-        var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(t => t.ToLowerInvariant())
-            .Where(t => t.Length > 2)
-            .ToArray();
+        var terms = ExpandSearchTerms(query);
 
         IEnumerable<ConstructionKnowledgeEntry> pool = _corpus;
         if (scope == SearchScope.Internal)
@@ -274,13 +287,74 @@ public sealed class ConstructionIntelligenceService
             .Where(x => x.Score > 0)
             .OrderByDescending(x => x.Score)
             .Take(take)
-            .Select(x => new Source
+            .Select(x =>
             {
-                Title = x.Entry.Title,
-                Url = x.Entry.Content,
-                RelevanceScore = Math.Min(0.99, x.Score)
+                var tags = x.Entry.Tags is { Length: > 0 }
+                    ? " Tags: " + string.Join(", ", x.Entry.Tags)
+                    : "";
+                return new Source
+                {
+                    Title = x.Entry.Title,
+                    // Url carries grounded snippet text for chat prompt injection (legacy field reuse).
+                    Url = x.Entry.Content + tags,
+                    RelevanceScore = Math.Min(0.99, x.Score)
+                };
             })
             .ToList();
+    }
+
+    /// <summary>
+    /// Expand field phrasing so corpus rows retrieve for suite queries that never
+    /// say the specialist keyword (e.g. "concrete cutting dust" → silica).
+    /// Verified deficiency from GGUF generative suite failure analysis (2026-08-02).
+    /// </summary>
+    private static string[] ExpandSearchTerms(string query)
+    {
+        var raw = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(t => t.ToLowerInvariant().Trim(',', '.', '?', '!'))
+            .Where(t => t.Length > 2)
+            .ToList();
+        var hay = string.Join(' ', raw);
+        var extra = new List<string>();
+
+        if (hay.Contains("silica") || hay.Contains("respirable")
+            || (hay.Contains("dust") && (hay.Contains("concrete") || hay.Contains("cutting") || hay.Contains("grinding")))
+            || (hay.Contains("concrete") && (hay.Contains("cutting") || hay.Contains("grinding"))))
+        {
+            extra.AddRange(["silica", "respirable", "respiratory", "osha"]);
+        }
+
+        if (hay.Contains("steel") || hay.Contains("bolt") || hay.Contains("torque"))
+        {
+            extra.AddRange(["rcsc", "bolt", "torque", "steel"]);
+        }
+
+        if (hay.Contains("hvac") || hay.Contains("duct") || hay.Contains("airflow"))
+        {
+            extra.AddRange(["hvac", "duct", "manual"]);
+        }
+
+        if (hay.Contains("confined"))
+        {
+            extra.AddRange(["confined", "attendant", "atmospheric", "permit"]);
+        }
+
+        if (hay.Contains("pay") || hay.Contains("billing") || hay.Contains("sov") || hay.Contains("retainage"))
+        {
+            extra.AddRange(["payapp", "billing", "retainage", "sov"]);
+        }
+
+        if (hay.Contains("delay") || hay.Contains("fragnet") || hay.Contains("schedule"))
+        {
+            extra.AddRange(["delay", "fragnet", "critical", "cpm"]);
+        }
+
+        if (hay.Contains("compact") || hay.Contains("proctor") || hay.Contains("earthwork") || hay.Contains("density"))
+        {
+            extra.AddRange(["compaction", "proctor", "density", "earthwork"]);
+        }
+
+        return raw.Concat(extra).Distinct(StringComparer.Ordinal).ToArray();
     }
 
     private static double Score(ConstructionKnowledgeEntry entry, string[] terms)

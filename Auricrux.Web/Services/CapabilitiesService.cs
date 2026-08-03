@@ -1,8 +1,11 @@
+using System.Text.Json;
+
 namespace Auricrux.Web.Services;
 
 /// <summary>
 /// Competitive feature matrix for major-player parity tracking (AUX-001 / AUX-002).
 /// Each row is a capability area with honest shipped vs. planned status and per-peer comparison.
+/// Model-weight honesty is read from auricrux/system/model_manifest.json (in-place; no alternate stack).
 /// </summary>
 public sealed class CapabilitiesService(ConstructionIntelligenceService intelligence, IConfiguration config)
 {
@@ -12,11 +15,13 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
     {
         var primaryModel = config["Auricrux:PrimaryModel"] ?? "auricrux-fca";
         var corpusStats = intelligence.GetCorpusStats();
-        var features = BuildFeatureList(corpusStats.TotalEntries);
-        var matrix = BuildCompetitiveMatrix();
+        var weightHonesty = ResolveWeightHonesty();
+        var features = BuildFeatureList(corpusStats.TotalEntries, weightHonesty);
+        var matrix = BuildCompetitiveMatrix(weightHonesty);
         var shipped = features.Count(f => f.Status == "shipped");
         var planned = features.Count(f => f.Status == "planned");
         var blocked = features.Count(f => f.Status == "blocked");
+        var partial = features.Count(f => f.Status == "partial");
 
         return new CapabilitiesReport
         {
@@ -30,9 +35,9 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                 SpecialistModel = primaryModel,
                 CorpusGroundedSearch = true,
                 EvalSuite = "construction_god_suite_v1",
-                EvalSuiteLastResult = "30/30 (100%)",
-                PromotedFineTuneLive = false,
-                Notes = "Runtime serves auricrux-fca Ollama alias with construction system prompt; checkpoint-70000 fine-tune not yet exported."
+                EvalSuiteLastResult = weightHonesty.EvalSuiteLastResult,
+                PromotedFineTuneLive = weightHonesty.FineTuneLive,
+                Notes = weightHonesty.Notes
             },
             Platforms = ["Web (Blazor Server)", "Android (MAUI)", "Windows (MAUI)", "iOS (MAUI, macOS host)", "macOS (Mac Catalyst, macOS host)"],
             Features = features,
@@ -41,19 +46,111 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
             ParityScore = new ParityScoreSummary
             {
                 ShippedCore = shipped,
-                Planned = planned,
+                Planned = planned + partial,
                 Blocked = blocked,
                 MatrixRows = matrix.Count,
                 AuricruxUniqueAdvantages = matrix.Count(r => r.Auricrux == "shipped" && r.Peers.Values.All(p => p is "no" or "partial")),
-                OverallAssessment =
-                    "FORWARD — major-player feature parity path is live " +
-                    "(chat/search/thinking/voice/workspace/media/auth/freemium/corpus/browse/agent/calc/vision); " +
-                    "construction moat is unique vs peers; fine-tune weights remaining gap (AUX-017) — not a retreat."
+                OverallAssessment = weightHonesty.OverallAssessment
             }
         };
     }
 
-    private static List<CapabilityFeature> BuildFeatureList(int corpusEntries) =>
+    private static WeightHonesty ResolveWeightHonesty()
+    {
+        // Defaults preserve prior honest posture if manifest is absent.
+        var honesty = new WeightHonesty(
+            FineTuneLive: false,
+            FeatureStatus: "blocked",
+            MatrixAuricrux: "blocked",
+            EvalSuiteLastResult: "corpus DI 30/30 (2026-07-28); GGUF generative suite not yet recorded",
+            Notes: "model_manifest.json not found; cannot assert fine-tune GGUF live.",
+            OverallAssessment:
+                "FORWARD — major-player feature parity path is live; construction moat unique; " +
+                "fine-tune weight status unknown without model_manifest.json.",
+            FeatureDetail: "Fine-tune status unknown (manifest missing)",
+            MatrixNotes: "Fine-tune status unknown (manifest missing)");
+
+        try
+        {
+            var path = FindModelManifestPath();
+            if (path is null || !File.Exists(path))
+            {
+                return honesty;
+            }
+
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            var root = doc.RootElement;
+            var status = root.TryGetProperty("status", out var st) ? st.GetString() ?? "" : "";
+            var aliasKind = "";
+            var aliasNote = "";
+            var gguf = "";
+            if (root.TryGetProperty("auricruxFcaAlias", out var alias))
+            {
+                aliasKind = alias.TryGetProperty("kind", out var k) ? k.GetString() ?? "" : "";
+                aliasNote = alias.TryGetProperty("note", out var n) ? n.GetString() ?? "" : "";
+                gguf = alias.TryGetProperty("ggufObject", out var g) ? g.GetString() ?? "" : "";
+            }
+
+            var trainNote = "";
+            if (root.TryGetProperty("adapter", out var adapter) &&
+                adapter.TryGetProperty("trainProgressNote", out var tp))
+            {
+                trainNote = tp.GetString() ?? "";
+            }
+
+            var notTrueGod = root.TryGetProperty("notTrueGodTierReason", out var nt)
+                ? nt.GetString() ?? ""
+                : "";
+
+            var mergedLive = status.Contains("product-ollama-loaded", StringComparison.OrdinalIgnoreCase)
+                || aliasKind.Contains("merged-lora-gguf", StringComparison.OrdinalIgnoreCase);
+
+            if (!mergedLive)
+            {
+                return honesty with
+                {
+                    Notes = "Runtime still on interim alias path per model_manifest.json.",
+                    FeatureDetail = "Specialist fine-tune GGUF not loaded (AUX-017)",
+                    MatrixNotes = "auricrux-fca not yet serving merged LoRA GGUF (AUX-017)."
+                };
+            }
+
+            return new WeightHonesty(
+                FineTuneLive: true,
+                FeatureStatus: "partial",
+                MatrixAuricrux: "partial",
+                EvalSuiteLastResult:
+                    "corpus DI 30/30 (2026-07-28); GGUF generative 23/30 (76.7%) FAIL vs 80% on 2026-08-02 (AUX-019)",
+                Notes:
+                    $"Product Ollama auricrux-fca serves merged LoRA GGUF ({gguf}). {aliasNote} {trainNote} " +
+                    $"TRUE God final still open: {notTrueGod}".Trim(),
+                OverallAssessment:
+                    "FORWARD — mid-train specialist GGUF is live in product Ollama (not llama3.2 alias); " +
+                    "TRUE God final still requires 297k finish + post-run suites + GGUF generative PASS + peer bar (AUX-018/019/027).",
+                FeatureDetail:
+                    $"Merged LoRA GGUF live ({gguf}); TRUE God final pending train finish + suites (AUX-018/019)",
+                MatrixNotes:
+                    $"Merged LoRA GGUF live in product ({gguf}); mid-train — not TRUE God final until suites PASS.");
+        }
+        catch
+        {
+            return honesty;
+        }
+    }
+
+    private static string? FindModelManifestPath()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "auricrux", "system", "model_manifest.json"),
+            Path.Combine(Directory.GetCurrentDirectory(), "auricrux", "system", "model_manifest.json"),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "auricrux", "system", "model_manifest.json")),
+            Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "auricrux", "system", "model_manifest.json"))
+        };
+        return candidates.FirstOrDefault(File.Exists);
+    }
+
+    private static List<CapabilityFeature> BuildFeatureList(int corpusEntries, WeightHonesty weights) =>
     [
         Feature("Multi-model chat", "shipped", "User-selectable models with freemium gating"),
         Feature("Thinking modes (Quick/Auto/Deep)", "shipped", "Real model/corpus-backed reasoning"),
@@ -73,10 +170,10 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
         Feature("Agentic tool-use / plugins", "shipped", "POST /api/agent bounded tool loop: corpus_search, web_browse, construction calc tools"),
         Feature("Native code interpreter", "shipped", "POST /api/calc deterministic construction calculator (volume/rebar/BF/percent/units) — not sandboxed Python"),
         Feature("Vision / photo analysis", "shipped", "POST /api/vision construction field-photo intake + RFI draft; Ollama VisionModel optional for pixels"),
-        Feature("Fine-tuned construction weights live", "blocked", "checkpoint-70000 awaiting safe export (AUX-017/018)")
+        Feature("Fine-tuned construction weights live", weights.FeatureStatus, weights.FeatureDetail)
     ];
 
-    private static List<CompetitiveMatrixRow> BuildCompetitiveMatrix() =>
+    private static List<CompetitiveMatrixRow> BuildCompetitiveMatrix(WeightHonesty weights) =>
     [
         Matrix("Multi-model chat", "shipped", yes, yes, yes, yes, yes,
             "All major players offer model selection; Auricrux gates premium models behind freemium tiers."),
@@ -110,9 +207,19 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
             "POST /api/browse: SSRF-guarded URL fetch + LLM construction summarize (not an autonomous agent browser)."),
         Matrix("Vision / photo analysis", "shipped", yes, yes, yes, partial, partial,
             "POST /api/vision: field-photo intake + OSHA/quality/RFI checklist + draft RFI; pixel vision when Auricrux:VisionModel set."),
-        Matrix("Construction fine-tuned weights", "blocked", no, no, no, no, no,
-            "checkpoint-70000 not exported; auricrux-fca is system-prompt alias over llama3.2-class base (AUX-017 FAIL).")
+        Matrix("Construction fine-tuned weights", weights.MatrixAuricrux, no, no, no, no, no,
+            weights.MatrixNotes)
     ];
+
+    private readonly record struct WeightHonesty(
+        bool FineTuneLive,
+        string FeatureStatus,
+        string MatrixAuricrux,
+        string EvalSuiteLastResult,
+        string Notes,
+        string OverallAssessment,
+        string FeatureDetail,
+        string MatrixNotes);
 
     private static CapabilityFeature Feature(string name, string status, string detail) =>
         new() { Name = name, Status = status, Detail = detail };

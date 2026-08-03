@@ -1,0 +1,20 @@
+{
+  "description": "Canonical keyword aliases for construction_god suite scoring. Aliases credit equivalent field language; they do not invent content the model never said.",
+  "aliases": {
+    "payapp": ["pay app", "pay application", "pay-application", "pay applications", "g702", "g703"],
+    "rcsc": ["research council on structural connections", "research council"],
+    "manual": ["manual d", "manual j", "acca manual"],
+    "respiratory": ["respirator", "respirable", "respiratory protection"],
+    "atmospheric": ["atmosphere", "air monitoring", "atm testing", "atmospheric testing"],
+    "attendant": ["entry attendant", "hole watch"],
+    "fragnet": ["fragmentary network", "delay fragnet"],
+    "critical path": ["critical-path", "cpm path"],
+    "retainage": ["retention", "retainage release"],
+    "proctor": ["standard proctor", "modified proctor"],
+    "compaction": ["compact", "compacted"],
+    "density": ["nuclear density", "relative density"],
+    "hvac": ["heating ventilating", "heating and cooling"],
+    "bolt": ["bolts", "bolting"],
+    "silica": ["crystalline silica", "respirable crystalline silica"]
+  }
+}

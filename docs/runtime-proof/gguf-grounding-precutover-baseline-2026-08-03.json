@@ -1,0 +1,32 @@
+﻿{
+    "atUtc":  "2026-08-03T02:11:43.4511472Z",
+    "phase":  "pre-cutover-baseline",
+    "health":  {
+                   "status":  "healthy",
+                   "app":  "Auricrux",
+                   "version":  "1.0.0",
+                   "timestamp":  "2026-08-03T02:11:42.9829957Z",
+                   "ollamaReachable":  true,
+                   "primaryModelReady":  true,
+                   "primaryModel":  "auricrux-fca",
+                   "corpusEntries":  80,
+                   "memoryBackends":  [
+                                          "session",
+                                          "file-jsonl",
+                                          "sqlite"
+                                      ],
+                   "models":  [
+                                  "auricrux-fca",
+                                  "llama3.2",
+                                  "mistral"
+                              ],
+                   "runtimeMode":  "ollama-live"
+               },
+    "constructionMoatNotes":  "Runtime serves auricrux-fca Ollama alias with construction system prompt; checkpoint-70000 fine-tune not yet exported.",
+    "promotedFineTuneLive":  false,
+    "evalSuiteLastResult":  "30/30 (100%)",
+    "corpusEntries":  80,
+    "priorSuiteReport":  "eval/reports/construction_god_suite_gguf_generative_2026-08-02.json",
+    "priorPassRatePercent":  76.7,
+    "rollback":  "docker rename auricrux-*-prev-* back; see docs/runtime-proof/gguf-suite-live-cutover-procedure-2026-08-03.md"
+}

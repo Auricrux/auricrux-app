@@ -1,0 +1,372 @@
+{
+  "suiteId": "construction_god_suite_v1",
+  "mode": "gguf-generative-product-chat",
+  "baseUrl": "https://auricrux.futurecontractorsofamerica.com",
+  "model": "auricrux-fca",
+  "runAtUtc": "2026-08-02T22:56:50Z",
+  "totalCases": 30,
+  "passedCases": 23,
+  "passRatePercent": 76.7,
+  "passThresholdPercent": 80.0,
+  "suitePassed": false,
+  "cases": [
+    {
+      "id": "csi-03-concrete",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "concrete",
+        "form"
+      ],
+      "excerpt": "Strip Vertical Formwork Criteria:\n- Water damage or corrosion if removed before structural load\n- Control joints, sleeves, embeds, anchor bolts, slab thickness, rebar grid\n- Typical removal time: 24 hours post-pour for control joints, sleeves, and embeds; wait for concrete to cur"
+    },
+    {
+      "id": "csi-04-masonry",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "masonry",
+        "control joint",
+        "cmu"
+      ],
+      "excerpt": "Control Joint Separation (CMU wall):\n- Typical separation: 12 inches\n- Minimum acceptable separation for thin CMUs or grout lines: 18 inches\n- Overlap between CMU blocks to prevent water intrusion: 1/4 inch minimum\n- Control joints should be reinforced with tape, dowels, or a com"
+    },
+    {
+      "id": "csi-05-steel",
+      "category": "csi-division",
+      "passed": false,
+      "keywordsTotal": 3,
+      "keywordsMatched": 1,
+      "matched": [
+        "steel"
+      ],
+      "excerpt": "Torque Control (slip-critical) = Safety Factor + Connection Stability\n\nSequence: prep, load path, shear, moment, lateral load deflection control\n\nKey controls:\n1. PREP: Clean, dry, straight, unclamped connection; check for hidden constraints\n2. LOAD PATH: Determine gravity load p"
+    },
+    {
+      "id": "csi-06-framing",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "framing",
+        "stud",
+        "16 in"
+      ],
+      "excerpt": "Wall stud spacing (residential framing):\n- General rule: 16 inches center-to-center\n- Typical practice: 24 inches on center (O.C.) for load-bearing walls and 16 inches O.C. for non-load-bearing walls\n- Code reference: Check local building code, specifically Section R301.2 or equi"
+    },
+    {
+      "id": "csi-07-roofing",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "roofing",
+        "shingle"
+      ],
+      "excerpt": "For a shingle roof: OSHA 29 CFR 1926 Subpart R (Safety Requirements) > R-2 (Fall Protection) > R-2.04 (Guardrails, Safety Nets, Blocking, etc.) includes fall protection from eaves and valleys.\n\nCSI Division 07 Roofing Systems: Roof Deck Edge Banding (Section 0701.10.3.4) protects"
+    },
+    {
+      "id": "csi-08-openings",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "window",
+        "rough opening",
+        "flashing"
+      ],
+      "excerpt": "Rough Opening vs. Window Unit:\n- General rule: add 1/2 to 3/4 of the unit's width, height, and thickness for framing\n- Typical sizing: 10% to 15% over the unit's dimensions (width, height, depth)\n- Check manufacturer documentation or local building code acceptance criteria for sp"
+    },
+    {
+      "id": "csi-09-finishes",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "drywall",
+        "level",
+        "finish"
+      ],
+      "excerpt": "Drywall Finish Levels (CSA N10):\n- A1: Flat, no texture or joint compound visible\n- A2: Smooth, slight sheen, joint compound not visible\n- B1: Light smooth, minimal joint compound appearance\n- B2: Standard finish, typical drywall appearance\n- C1: Heavy smooth, joint compound almo"
+    },
+    {
+      "id": "csi-22-plumbing",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "plumbing",
+        "dwv",
+        "slope"
+      ],
+      "excerpt": "Pipe Slope (DWV):\n- General rule: 1/4 inch per foot\n- Code reference: IPC Section 403.3, MEP Blue Book Chapter 26\n- Field implementation: Verify against local plumbing code edition; do not fabricate missing section numbers\n- Trade drill-down: Water supply pipe slope = 0.5% (1/200"
+    },
+    {
+      "id": "csi-23-hvac",
+      "category": "csi-division",
+      "passed": false,
+      "keywordsTotal": 3,
+      "keywordsMatched": 1,
+      "matched": [
+        "duct"
+      ],
+      "excerpt": "Sizing (your sweet spot): air-handling capacity, static pressure, refrigerant flow, heat loss/gain, psychrometrics, thermal bridge, and the one most people miss \u2014 airflow at different design conditions.\n\nDesign condition: use ASHRAE 1989 Chapter 4 for commercial buildings; 2018 A"
+    },
+    {
+      "id": "csi-26-electrical",
+      "category": "csi-division",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "conduit",
+        "fill"
+      ],
+      "excerpt": "Code foundation: IBC Chapter 10, Section 1010.1, Table 1010.1.1 - Conduit Fill.\n\n- General rule (IBC 1010.1.1): Maximum fill = 75% of cross-sectional area.\n- Trade adjustment (ICS Code 7305.2.3.4): For conduit sizing, use 50% for branch circuits and 60% for trunking to allow for "
+    },
+    {
+      "id": "osha-fall-protection",
+      "category": "safety",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "fall",
+        "osha"
+      ],
+      "excerpt": "OSHA Fall Protection: at 6 feet (1.8 meters) in general construction, commercial building, and civil projects \u2014 before any downward movement from that point. This is a regulatory requirement with no exception for \"one-time\" or \"emergency\" situations.\n\nCSI Division 06.05.01 OSHA R"
+    },
+    {
+      "id": "osha-trenching",
+      "category": "safety",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "trench",
+        "excavation"
+      ],
+      "excerpt": "Trench Depth Protective System Threshold:\n- Shallow trench (less than 5 feet deep): No protective system required\n- Medium trench (5-15 feet deep): Geotextile or geogrid reinforcement recommended\n- Deep trench (over 15 feet deep): Steel shoring, bracing, and/or slide plates requi"
+    },
+    {
+      "id": "osha-scaffold",
+      "category": "safety",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "scaffold",
+        "load"
+      ],
+      "excerpt": "Load Factor (LF) = Total Load \u00f7 Structural Connection\n   = (Weight of crew, materials, tools, equipment, overheads) \u00f7 (Scaffold lateral load capacity)\n   = 1.5 to 2.0 for typical open scaffolds (not a standard specification)\n\nOSHA SCAFFOLD SAFETY (29 CFR 1926):\n- Load factor: 1.2"
+    },
+    {
+      "id": "osha-confined-space",
+      "category": "safety",
+      "passed": false,
+      "keywordsTotal": 3,
+      "keywordsMatched": 1,
+      "matched": [
+        "confined space"
+      ],
+      "excerpt": "Before entering a permit-required confined space, the following must be verified:\n\n1. Competent Person: A qualified person (CP) has inspected the area and confirmed it is safe to enter without exposure to hazardous conditions.\n\n2. Stop Work Order: An authorized person or authorit"
+    },
+    {
+      "id": "osha-silica",
+      "category": "safety",
+      "passed": false,
+      "keywordsTotal": 3,
+      "keywordsMatched": 1,
+      "matched": [
+        "dust"
+      ],
+      "excerpt": "OSHA's Hierarchy of Controls (1st priority: eliminate hazard) for concrete cutting dust:\n\n1. ELIMINATION \u2014 Never perform concrete cutting where dust is created, except in controlled environments like training facilities or demo sites with approved safety plans.\n\n2. SUBSTITUTION \u2014"
+    },
+    {
+      "id": "estimating-takeoff",
+      "category": "estimating",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "takeoff",
+        "waste"
+      ],
+      "excerpt": "Quantity Takeoff (T&M) Strategy: cost + schedule risk = best estimate\n\n1. START WITH A CLEAN SET OF DRAWINGS: Unpublished structural drawings > Published architectural drawings > Structural drawings with elevations, sections, and detail sheets\n2. BREAK OUT COMPONENTS BY CLASSIFIC"
+    },
+    {
+      "id": "estimating-bid-leveling",
+      "category": "estimating",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "bid",
+        "exclusion"
+      ],
+      "excerpt": "Bid leveling review (trade-by-trade):\n- Structural: Connection loads, factor of safety, moment, shear\n- Civil: Slope, area, unit conversion, markup/rule-of-thumb verification\n- MEP: Unit cost, waste factor, slope, markup/profit, duct/bench location\n- Finishes: Material waste, lab"
+    },
+    {
+      "id": "billing-payapp",
+      "category": "commercial",
+      "passed": false,
+      "keywordsTotal": 3,
+      "keywordsMatched": 1,
+      "matched": [
+        "sov"
+      ],
+      "excerpt": "Pay Application SOV Filling Strategy:\n1. STRUCTURAL WORKS: Start with foundation slab, then columns, footings, substructure, superstructure load path, deflection factor, moment connections, connection blocks, lateral loads, gravity loads, shear walls, bracing, and finish work.\n2."
+    },
+    {
+      "id": "jobcost-variance",
+      "category": "commercial",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "forecast",
+        "variance"
+      ],
+      "excerpt": "Job Cost Variance (JCV) management: Compare committed cost to actual cost weekly, and forecast risk monthly.\n\nWeekly JCV check:\n- Current Actual vs. Budgeted Actual\n- Cumulative Variance (Actual - Budgeted Actual)\n- Weekly Forecast Error (Current Estimate - Previous Weekly Foreca"
+    },
+    {
+      "id": "change-order",
+      "category": "commercial",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "change order",
+        "schedule"
+      ],
+      "excerpt": "Scheduling documentation (your model coordination evidence): \n\n1. STRUCTURAL CHANGES: Pushed concrete, steel rework, shear walls, moment frames \u2014 include cost estimate, schedule impact, and owner authorization.\n2. CONSTRUCTION CHANGES: Material substitutions, sequence changes, la"
+    },
+    {
+      "id": "scheduling-cpm",
+      "category": "scheduling",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "critical path",
+        "float",
+        "cpm"
+      ],
+      "excerpt": "The critical path (CP) is the sequence of activities that determines the minimum duration required to complete the project, from start to finish. It's called \"critical\" because any delay on this path will directly delay project completion.\n\nHere are the key characteristics of the"
+    },
+    {
+      "id": "scheduling-delay",
+      "category": "scheduling",
+      "passed": false,
+      "keywordsTotal": 3,
+      "keywordsMatched": 0,
+      "matched": [],
+      "excerpt": "Time Impact Analysis (TIA) = Opportunity Cost, Schedule Risk, Earned Value Exposure.\n\nTIA formula: \u0394T = \u0394C \u00f7 (BAC - EV)\n\nWhere:\n- \u0394T = Time impact\n- \u0394C = Float or slack in the sequence\n- BAC = Base Cost or Design-Bid-Build\n- EV = Earned Value\n\nInterpretation:\n- Positive \u0394T (>0.5%"
+    },
+    {
+      "id": "closeout-punchlist",
+      "category": "closeout",
+      "passed": true,
+      "keywordsTotal": 2,
+      "keywordsMatched": 2,
+      "matched": [
+        "punch list",
+        "substantial completion"
+      ],
+      "excerpt": "Substantial Completion (SC) definition: A permanent, non-contractual condition requiring written documentation and owner approval before entitlement to final payment.\n\nJCA/CSI Substantial Completion criteria:\n- All approved punch list items verified as complete\n- Owner-approved p"
+    },
+    {
+      "id": "closeout-warranty",
+      "category": "closeout",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "warranty",
+        "closeout",
+        "om"
+      ],
+      "excerpt": "Warranty Closeout Package (WCP) contents:\n\n1. STRUCTURAL:\n   - Deflection curve (lateral load deflection)\n   - Connection drawings (moment, shear, gravity load)\n   - Load path diagram\n   - Factor of safety declaration\n\n2. MECHANICAL:\n   - Pipe rack and duct location plan\n   - Fix"
+    },
+    {
+      "id": "code-egress",
+      "category": "code",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "egress",
+        "exit"
+      ],
+      "excerpt": "Exit requirements (NFPA 101) vs. occupancy load (ASCE 7, IBC 2018):\n- NFPA 101 Life Safety Code: exit access, minimum number of exits, exit width, no more than 50% obstruction\n- ASCE 7 Load Path Design: exit location, exit type (primary/secondary), exit accessibility\n- IBC 2018 I"
+    },
+    {
+      "id": "code-ada",
+      "category": "code",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "ada",
+        "ramp",
+        "1:12"
+      ],
+      "excerpt": "Code compliance first: verify against local code edition, not just the 2009 International Building Code (IBC) Chapter 4.33.\n\nRamp design control: maximum slope = 1:12 for curb cuts and landings; avoid steeper slopes to ensure safe access, especially at transitions between differe"
+    },
+    {
+      "id": "contracts-aia-a201",
+      "category": "contracts",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 3,
+      "matched": [
+        "aia",
+        "architect",
+        "contract"
+      ],
+      "excerpt": "AIA A201 General Conditions, Section 4.2: \"Owner's Representative\" \u2014 key clause for your benefit.\n\na. Owner's representative (OR): Designated person responsible for review of work as authorized representative of owner; scope includes documentation, quality, schedule, and notice.\n"
+    },
+    {
+      "id": "insurance-bonding",
+      "category": "risk",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "bond",
+        "performance"
+      ],
+      "excerpt": "Performance Bond Guarantee:\n- What's covered: Labor, materials, equipment, overhead, profit\n- How guaranteed: Owner receives actual cost minus known expenses (labor, materials, equipment) up to the bid amount\n- Conditions: Bid must include scope, schedule, personnel, procurement "
+    },
+    {
+      "id": "sitework-erosion",
+      "category": "sitework",
+      "passed": true,
+      "keywordsTotal": 3,
+      "keywordsMatched": 2,
+      "matched": [
+        "swppp",
+        "erosion"
+      ],
+      "excerpt": "Before land disturbance, the following must be done:\n1. SWPPP inspection: Check for damage, holes, erosion, sedimentation, and improper placement.\n2. Contingency plan: Have a 24-hour emergency response plan in place with equipment, fuel, personnel, and communication.\n3. Water qua"
+    },
+    {
+      "id": "earthwork-compaction",
+      "category": "sitework",
+      "passed": false,
+      "keywordsTotal": 3,
+      "keywordsMatched": 0,
+      "matched": [],
+      "excerpt": "The CSI MasterFormat approach for earthwork, concrete, and structural steel is the most reliable path to accurate construction documentation.\n\nSole source control: Use only the official CSI Division 03 Concrete or Division 31 Earthwork master format specifications written by the "
+    }
+  ]
+}

@@ -14,10 +14,13 @@ services:
       timeout: 5s
       retries: 12
 
-  # One-shot job: pulls the llama3.2:3b base model and creates/tags the
-  # auricrux-fca specialist alias (AUX-017) from the checked-in Modelfile.
-  # Safe to re-run; `ollama create` overwrites the existing tag idempotently.
+  # DEV FALLBACK ONLY (UNSAFE-06 / ZG-M03).
+  # Pulls llama3.2:3b and creates an alias Modelfile tag — NOT the product merged-LoRA GGUF path.
+  # Prod / GCE must use GCS mint/load for auricrux-fca. Do not run this profile against a host
+  # that already serves auricrux-fca-*-Q8_0.gguf (would clobber the product tag).
+  # Enable explicitly: docker compose --profile dev-fallback up ollama-model-init
   ollama-model-init:
+    profiles: ["dev-fallback"]
     image: ollama/ollama:latest
     depends_on:
       ollama:
@@ -30,11 +33,12 @@ services:
     command:
       - |
         set -e
+        echo "DEV FALLBACK ONLY — not product GGUF cutover";
         echo "Pulling base model llama3.2:3b ...";
         ollama pull llama3.2:3b;
-        echo "Creating auricrux-fca alias from Modelfile ...";
+        echo "Creating auricrux-fca alias from Modelfile (dev fallback) ...";
         ollama create auricrux-fca -f /auricrux-system/Modelfile.auricrux-fca;
-        echo "auricrux-fca ready:";
+        echo "auricrux-fca ready (dev fallback):";
         ollama list;
     restart: "no"
 

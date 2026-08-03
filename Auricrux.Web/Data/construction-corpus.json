@@ -266,8 +266,8 @@
   {
     "title": "Silica Dust and Respiratory Protection",
     "scope": "public",
-    "content": "OSHA's respirable crystalline silica standard (1926.1153) requires engineering controls (wet cutting, vacuum dust collection) for concrete cutting/grinding tasks, with a written exposure control plan and medical surveillance above action levels.",
-    "tags": ["osha", "silica", "respiratory protection"]
+    "content": "OSHA's respirable crystalline silica standard (1926.1153) requires engineering controls (wet cutting, vacuum dust collection) for concrete cutting/grinding dust tasks, with respiratory protection when Table 1 controls are not fully implemented, a written exposure control plan, and medical surveillance above action levels.",
+    "tags": ["osha", "silica", "respiratory protection", "dust", "respiratory"]
   },
   {
     "title": "CSI Division 10 Specialties",

@@ -13,8 +13,9 @@
       "adapter_config.json",
       "adapter_model.safetensors"
     ],
-    "evalStatus": "PRODUCT-LOADED-PENDING-SUITE",
+    "evalStatus": "PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80",
     "evalSuite": "eval/construction_god_suite_v1.json",
+    "ggufGenerativeReport": "eval/reports/construction_god_suite_gguf_generative_2026-08-02.json",
     "priorCandidateOnDisk": "checkpoint-115000",
     "stagedExportPath": "/mnt/auricrux-eod/export-staging/checkpoint-120000",
     "trainProgressNote": "120000 / 297000 (~40.4%); train PID alive — do not merge on train GPU",
@@ -48,7 +49,8 @@
     "winCondition": "attention-to-detail-and-construction-accuracy"
   },
   "migrationPolicy": {
-    "productionFinalLabel": "awaiting-safe-export-of-checkpoint-70000-plus-eval",
+    "productionFinalLabel": "awaiting-true-god-final-297k-plus-post-run-suites-and-gguf-generative-eval",
+    "midTrainProductCutover": "checkpoint-120000-q8-loaded",
     "tokenFactory": "do-not-tamper"
   },
   "recordedAtUtc": "2026-08-02T21:56:00Z",
