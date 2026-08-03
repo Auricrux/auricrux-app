@@ -22,7 +22,7 @@ if ([string]::IsNullOrWhiteSpace($AliasPath)) {
 }
 $reportsDir = Join-Path $repoRoot 'eval\reports'
 New-Item -ItemType Directory -Force -Path $reportsDir | Out-Null
-$stamp = Get-Date -Format 'yyyy-MM-dd'
+$stamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
 $suite = Get-Content $SuitePath -Raw | ConvertFrom-Json
 $cases = @($suite.cases)
 

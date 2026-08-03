@@ -1,0 +1,419 @@
+﻿{
+    "suiteId":  "construction_god_suite_v1",
+    "mode":  "gguf-generative-product-chat",
+    "baseUrl":  "https://auricrux.futurecontractorsofamerica.com",
+    "model":  "auricrux-fca",
+    "runAtUtc":  "2026-08-03T03:01:41.5852140Z",
+    "resumeFromReport":  null,
+    "keptPriorPasses":  0,
+    "reranCases":  30,
+    "keywordAliasPath":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\eval\\keyword_aliases_v1.json",
+    "totalCases":  30,
+    "passedCases":  26,
+    "passRatePercent":  86.7,
+    "passThresholdPercent":  80,
+    "suitePassed":  true,
+    "cases":  [
+                  {
+                      "id":  "csi-03-concrete",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "concrete",
+                                      "form"
+                                  ],
+                      "excerpt":  "Stripping Vertical Formwork Rule:\n- After initial set (typically 1 hour): Never strip vertical forms until water pressure and structural load are controlled.\n- At 7 days: Check for rehydration, thermal movement, connection to slab or footings, and no concealed damage. If clean an",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-04-masonry",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "control joint",
+                                      "cmu"
+                                  ],
+                      "excerpt":  "Control Joint Spacing (CMU Wall):\n- Typical spacing: 16-24 inches\n- Per CSI Division 08: CMU: Control Joints - Table 0805.1\n- Per ACI 302: Concrete Structures - Section 3.4.2\n- Field practice: Verify with local design guidelines and owner-approved documents\n\nNote: This answer is ",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-05-steel",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "steel",
+                                      "bolt"
+                                  ],
+                      "excerpt":  "Torque sequence for slip-critical structural steel bolts:\n1. Pre-load by hand tightening to 30° (no overtightening)\n2. Use a torque wrench with an accurate load path\n3. Apply load in stages: shear, moment, lateral force, gravity load\n4. Monitor deflection and re-load before next ",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-06-framing",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "framing",
+                                      "stud",
+                                      "16 in"
+                                  ],
+                      "excerpt":  "Wall stud spacing (o.c.) in residential framing:\n- Typical 16-inch center-to-center spacing for load-bearing walls and shear walls\n- 24-inch minimum spacing per International Building Code (IBC) Section 1803.1 for shear walls\n- 32-inch minimum spacing per IBC Section 1805.2 for s",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-07-roofing",
+                      "category":  "csi-division",
+                      "passed":  false,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  1,
+                      "matched":  [
+                                      "roofing"
+                                  ],
+                      "excerpt":  "Rooftop logic: low-slope TPO/EPDM membrane + insulation + flashing = protected eaves/valleys.\n- CSI Division 07 Roofing Systems: TPO/EPDM membrane, insulation (refractory cement board, foam board), and flashing (crinkle, weep, seal) are the key components protecting eaves/valleys",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-08-openings",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "window",
+                                      "rough opening",
+                                      "flashing"
+                                  ],
+                      "excerpt":  "Rough Opening vs. Window Unit:\n- Rough opening: 1/2 inch larger in width and height than the actual unit size\n- Window unit: Typically includes flashing, sill pan, head flashings, and structural support\n\nPreparation before installation:\n- Cleanout area: 12 inches square for each ",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-09-finishes",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "drywall",
+                                      "level",
+                                      "finish"
+                                  ],
+                      "excerpt":  "Drywall Finish Level (Level 4 or 5):\n- CSI Division 09 Finishes\n- Key controls: tape, finish, primer, VOC compliance\n- Inspection hold point: photo log before concealment\n- Evidence: dated inspection report with location, date, inspector, photo ID number, and deficiency action\n\nL",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-22-plumbing",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "plumbing",
+                                      "dwv",
+                                      "slope"
+                                  ],
+                      "excerpt":  "Pipe Slope (DWV):\n- Direction: slope downward toward water penetration\n- Measurement: percent grade = (rise ÷ run) × 100%\n- Design: 1/4 inch per foot for vent pipes, 1/2 inch per foot for cleanouts, traps, and branch connections; check local code approval\n- Verification: pipe slo",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-23-hvac",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "duct",
+                                      "manual"
+                                  ],
+                      "excerpt":  "Rough-in guidance (sheet rock, ducts, sleeves):\n- Location: attic, crawl space, basement\n- Scope: duct sizing, register placement, air handling connection\n- Deliverables: duct layout, sheet metal schedule, refrigerant train drawing\n- Quality gate: approved submittals, no hidden a",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "csi-26-electrical",
+                      "category":  "csi-division",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "conduit",
+                                      "fill",
+                                      "40"
+                                  ],
+                      "excerpt":  "Conduit Fill Percentage (CFP) limit:\n- General rule: CFP = 40% for 3+ conductors\n- Reasoning: Conduit diameter limits the fill area; 1.6\" conduit has largest fill capacity among standard sizes\n- Verification: Check local building code, fire department requirements, and structural",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "osha-fall-protection",
+                      "category":  "safety",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "fall",
+                                      "osha"
+                                  ],
+                      "excerpt":  "OSHA Fall Protection (1926 Subpart R): at 6 feet (1.8 meters) in the air — any worker exposed to this height requires fall protection before edge exposure, during edge exposure, and after edge exposure.\n- Key control: competent person inspection and stop work if requirements are ",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "osha-trenching",
+                      "category":  "safety",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "trench",
+                                      "5 ft",
+                                      "excavation"
+                                  ],
+                      "excerpt":  "Trench Protection:\n- Depth threshold: 5 ft (1.5 m)\n- Required protection: sloping, shoring, shielding\n- Exception: stable rock face without soil collapse risk\n- Verification: daily inspection and record update required\n- Citation: OSHA 1926 Subpart P Trenching and Excavation Safe",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "osha-scaffold",
+                      "category":  "safety",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "scaffold",
+                                      "load"
+                                  ],
+                      "excerpt":  "Scaffold Load Factor (LF): OSHA 1926 Subpart T requires scaffolds to be designed and constructed so that the load is distributed evenly throughout the structure. The minimum load factor for a scaffold is 1.5 times the weight of people, materials, and equipment on board.\n\nTo calcu",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "osha-confined-space",
+                      "category":  "safety",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "confined space",
+                                      "atmospheric",
+                                      "attendant"
+                                  ],
+                      "excerpt":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Confined Space Entry Safety — Permit-required confined spaces (manholes, tanks, vaults) need atmospheric testing for oxygen/toxics/flammability, continuous ventilation, an attendant outside, and a resc",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "osha-silica",
+                      "category":  "safety",
+                      "passed":  false,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  0,
+                      "matched":  [
+
+                                  ],
+                      "excerpt":  "OSHA Subpart R (1926) Control Exigency:\n- Hazardous materials handling: OSHA 1926.502(b)(1) requires a competent person to verify that hazardous materials are handled, stored, and used in compliance with the standard.\n- PPE vs. exposure reduction: OSHA does not require PPE alone ",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "estimating-takeoff",
+                      "category":  "estimating",
+                      "passed":  false,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  1,
+                      "matched":  [
+                                      "takeoff"
+                                  ],
+                      "excerpt":  "Quantity Takeoff (TT) Structure:\n1. START WITH CLEAN DRAWINGS - Free from revisions, redlines, single-line notes, and uncoordinated alternate sections.\n2. BREAK DOWN BY DIVISION - CSI MasterFormat divisions provide the foundation; do not rely on generic \"concrete\" or \"drywall.\"\n3",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "estimating-bid-leveling",
+                      "category":  "estimating",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "bid",
+                                      "alternate",
+                                      "exclusion"
+                                  ],
+                      "excerpt":  "Auricrux construction corpus response (grounded, no live model reachable):\n\n1. Bid Leveling Checklist — Normalize alternates, allowances, unit prices, exclusions, and schedule assumptions before award recommendation. Confirm bonding capacity, insurance certificates, and scope cla",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "billing-payapp",
+                      "category":  "commercial",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "payapp",
+                                      "retainage",
+                                      "sov"
+                                  ],
+                      "excerpt":  "Pay Application SOV Filling Strategy:\n1. STRUCTURAL WORKS — Include foundation concrete, structural steel, beams, columns, connections, deflection compensation (lateral load deflection factor), and temporary structures (scaffold, formwork).\n2. CONCRETE WORKS — Include slab-on-gra",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "jobcost-variance",
+                      "category":  "commercial",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "forecast",
+                                      "variance"
+                                  ],
+                      "excerpt":  "Job Cost Variance tracking:\n- Weekly comparison: Job Cost Actual vs. Committed (show mobilization, work in progress, stored materials, retainedage)\n- Monthly review: Forecast vs. Actual including retainage release\n- Quarterly analysis: Trend direction (up/down) and variance expla",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "change-order",
+                      "category":  "commercial",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "change order",
+                                      "fragnet",
+                                      "schedule"
+                                  ],
+                      "excerpt":  "Change Order Scheduling Documentation (your moat):\n1. OSHA exposure and mitigation strategy\n2. CSI MasterFormat division reference\n3. Means-and-methods sequence with fragnet analysis\n4. Estimating/takeoff discipline for time impact\n5. Contractual notice requirements before schedu",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "scheduling-cpm",
+                      "category":  "scheduling",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "critical path",
+                                      "float",
+                                      "cpm"
+                                  ],
+                      "excerpt":  "The critical path is the sequence of activities that determines the minimum duration required for the project. Here\u0027s how to identify it:\n\n1. **Forward pass**: Calculate the start time (C) for each activity using the previous activity\u0027s finish time (F). This gives you the earlies",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "scheduling-delay",
+                      "category":  "scheduling",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "delay",
+                                      "fragnet",
+                                      "critical path"
+                                  ],
+                      "excerpt":  "Time Impact Analysis (TIA):\n- Purpose: Determine delay exposure before claiming schedule loss\n- Approach: Insert delay fragnet into as-planned schedule to isolate true delay\n- Key elements:\n  * Drawings affected by delay\n  * Sequence of operations impacted\n  * Duration of delay (",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "closeout-punchlist",
+                      "category":  "closeout",
+                      "passed":  true,
+                      "keywordsTotal":  2,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "punch list",
+                                      "substantial completion"
+                                  ],
+                      "excerpt":  "Substantial Completion (SC) definition:\n1. CSI Division 7.0 - Quality Control\n2. OSHA 1926 Subpart R - Safety and Health Requirements\n3. General Conditions Section 4.2 - Scope of Work\n4. Contractual documentation approved by owner or owner representative\n\nKey elements that define",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "closeout-warranty",
+                      "category":  "closeout",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "warranty",
+                                      "closeout",
+                                      "om"
+                                  ],
+                      "excerpt":  "Warranty Closeout Package:\n1. O\u0026M manuals: Include all manufacturer manuals, operator\u0027s guides, maintenance schedules, and troubleshooting sheets.\n2. Attic stock: List stored equipment with location, condition, age, last inspected date, next inspection due date, owner contact inf",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "code-egress",
+                      "category":  "code",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "egress",
+                                      "exit"
+                                  ],
+                      "excerpt":  "Exit requirement logic:\n- All high-capacity commercial buildings (retail \u003e 25K SF, office \u003e 50K SF, hospital): Two independent exit routes with verified egress capacity per life-safety code chapter 10.1.\n- High-risk areas within these projects: stair towers, corridors, patient ro",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "code-ada",
+                      "category":  "code",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "ada",
+                                      "ramp",
+                                      "1:12"
+                                  ],
+                      "excerpt":  "ADA compliance: verify against current code edition (2020 IBC Chapter 7.3.1, Table 702) rather than memorized verbatim text.\nRamp criteria (ADA/OSHA): grade \u003e8% = prohibited; grade 6-8% = restricted to accessible routes only; grade \u003c6% = acceptable in non-accessible areas but req",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "contracts-aia-a201",
+                      "category":  "contracts",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "aia",
+                                      "contract"
+                                  ],
+                      "excerpt":  "AIA A201 General Conditions (Section 4.2) states that \"any dispute or claim arising out of this Contract shall be resolved through arbitration in accordance with the rules of the American Arbitration Association.\"\n\nHowever, before arbitration, there are steps to resolve disputes ",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "insurance-bonding",
+                      "category":  "risk",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  2,
+                      "matched":  [
+                                      "bond",
+                                      "performance"
+                                  ],
+                      "excerpt":  "Performance Bond Basics:\n- Purpose: protect owner from subcontractor default\n- How it works: surety pays claim up to guaranteed amount if subcontractor fails\n- Key clauses:\n  * Scope of work: what the subcontractor agrees to do (not just reverse engineer)\n  * Schedule of values: ",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "sitework-erosion",
+                      "category":  "sitework",
+                      "passed":  true,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  3,
+                      "matched":  [
+                                      "swppp",
+                                      "erosion",
+                                      "silt fence"
+                                  ],
+                      "excerpt":  "Before land disturbance under a SWPPP (Stormwater Pollution Prevention Plan), the following must be done:\n\n1. Silt fence or berm protection: Install silt fence at the construction entrance and along the disturbed area to prevent soil erosion during rainfall events.\n2. Stabilizati",
+                      "resumedFromPriorPass":  false
+                  },
+                  {
+                      "id":  "earthwork-compaction",
+                      "category":  "sitework",
+                      "passed":  false,
+                      "keywordsTotal":  3,
+                      "keywordsMatched":  1,
+                      "matched":  [
+                                      "compaction"
+                                  ],
+                      "excerpt":  "The CSI MasterFormat approach for earthwork and structural foundation guidance:\nA. Pre-design verification: Check existing site conditions, adjacent structures, water supply, utilities, access, phasing requirements, and owner-supplied documents (if any) before designing the footi",
+                      "resumedFromPriorPass":  false
+                  }
+              ]
+}

@@ -25,6 +25,8 @@ LABEL version="1.1.0"
 
 WORKDIR /app
 COPY --from=build /app/publish .
+# Ensure product honesty manifest is present for CapabilitiesService (AUX-017/019).
+COPY auricrux/system/model_manifest.json /app/auricrux/system/model_manifest.json
 
 RUN addgroup -S appgroup \
     && adduser -S appuser -G appgroup \

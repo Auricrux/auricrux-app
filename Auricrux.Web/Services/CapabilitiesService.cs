@@ -115,22 +115,36 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                 };
             }
 
+            var evalLast = "corpus DI 30/30 (2026-07-28); GGUF generative suite status unknown";
+            if (root.TryGetProperty("adapter", out var adapterNode))
+            {
+                if (adapterNode.TryGetProperty("evalStatus", out var es) && !string.IsNullOrWhiteSpace(es.GetString()))
+                {
+                    evalLast = es.GetString()!;
+                }
+                else if (adapterNode.TryGetProperty("ggufGenerativePassRatePercent", out var pr) &&
+                         adapterNode.TryGetProperty("ggufGenerativeSuitePassed", out var sp) &&
+                         sp.ValueKind == JsonValueKind.True)
+                {
+                    evalLast = $"corpus DI 30/30 (2026-07-28); GGUF generative live PASS {pr.GetDouble()}% (AUX-019)";
+                }
+            }
+
             return new WeightHonesty(
                 FineTuneLive: true,
                 FeatureStatus: "partial",
                 MatrixAuricrux: "partial",
-                EvalSuiteLastResult:
-                    "corpus DI 30/30 (2026-07-28); GGUF generative 23/30 (76.7%) FAIL vs 80% on 2026-08-02 (AUX-019)",
+                EvalSuiteLastResult: evalLast,
                 Notes:
                     $"Product Ollama auricrux-fca serves merged LoRA GGUF ({gguf}). {aliasNote} {trainNote} " +
                     $"TRUE God final still open: {notTrueGod}".Trim(),
                 OverallAssessment:
                     "FORWARD — mid-train specialist GGUF is live in product Ollama (not llama3.2 alias); " +
-                    "TRUE God final still requires 297k finish + post-run suites + GGUF generative PASS + peer bar (AUX-018/019/027).",
+                    "TRUE God final still requires 297k finish + post-run suites + peer bar (AUX-018/027). GGUF generative ≥80% recorded when evalStatus says PASS.",
                 FeatureDetail:
-                    $"Merged LoRA GGUF live ({gguf}); TRUE God final pending train finish + suites (AUX-018/019)",
+                    $"Merged LoRA GGUF live ({gguf}); TRUE God final pending train finish (AUX-018)",
                 MatrixNotes:
-                    $"Merged LoRA GGUF live in product ({gguf}); mid-train — not TRUE God final until suites PASS.");
+                    $"Merged LoRA GGUF live in product ({gguf}); mid-train — not TRUE God final until train finish.");
         }
         catch
         {

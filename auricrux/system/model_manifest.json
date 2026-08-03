@@ -13,9 +13,14 @@
       "adapter_config.json",
       "adapter_model.safetensors"
     ],
-    "evalStatus": "PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80",
+    "evalStatus": "PRODUCT-LOADED-GGUF-GENERATIVE-86.7-PASS-THRESHOLD-80",
     "evalSuite": "eval/construction_god_suite_v1.json",
-    "ggufGenerativeReport": "eval/reports/construction_god_suite_gguf_generative_2026-08-02.json",
+    "ggufGenerativeReport": "eval/reports/construction_god_suite_gguf_generative_2026-08-03.json",
+    "ggufGenerativePriorFailReport": "eval/reports/construction_god_suite_gguf_generative_2026-08-02.json",
+    "ggufGenerativePassRatePercent": 86.7,
+    "ggufGenerativeSuitePassed": true,
+    "ggufGenerativeValidatedAtUtc": "2026-08-03T03:01:41.5852140Z",
+    "ggufGenerativeCutoverRun": "https://github.com/Auricrux/auricrux-app/actions/runs/30778734923",
     "priorCandidateOnDisk": "checkpoint-115000",
     "stagedExportPath": "/mnt/auricrux-eod/export-staging/checkpoint-120000",
     "trainProgressNote": "120000 / 297000 (~40.4%); train PID alive — do not merge on train GPU",
@@ -53,7 +58,7 @@
     "midTrainProductCutover": "checkpoint-120000-q8-loaded",
     "tokenFactory": "do-not-tamper"
   },
-  "recordedAtUtc": "2026-08-02T21:56:00Z",
+  "recordedAtUtc": "2026-08-03T03:05:00Z",
   "auricruxFcaAlias": {
     "modelId": "auricrux-fca",
     "status": "replaced-by-ckpt120000-gguf",

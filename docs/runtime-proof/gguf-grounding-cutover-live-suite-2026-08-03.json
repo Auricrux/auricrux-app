@@ -1,0 +1,18 @@
+﻿{
+    "atUtc":  "2026-08-03T03:02:21.0459310Z",
+    "objective":  "Live dated GGUF generative suite PASS after grounding cutover",
+    "cutoverWorkflow":  "gcp-cutover-build-auricrux.yml",
+    "cutoverRunUrl":  "https://github.com/Auricrux/auricrux-app/actions/runs/30778734923",
+    "cutoverCommit":  "aaa0e61",
+    "preBaseline":  "docs/runtime-proof/gguf-grounding-precutover-baseline-2026-08-03.json",
+    "priorFailReport":  "eval/reports/construction_god_suite_gguf_generative_2026-08-02.json",
+    "priorFailRatePercent":  76.7,
+    "offlineAliasSupportOnly":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02_alias_rescore.json",
+    "liveReport":  "eval/reports/construction_god_suite_gguf_generative_2026-08-03.json",
+    "livePassRatePercent":  86.7,
+    "livePassedCases":  26,
+    "liveTotalCases":  30,
+    "suitePassed":  true,
+    "authority":  "live-dated-host-validation",
+    "trainInterrupted":  false
+}
