@@ -1,0 +1,93 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:52.3224195Z",
+    "token":  "GGUF_SUITE_FAILURE_REGRESSION_OK",
+    "passCount":  15,
+    "failCount":  0,
+    "authorityReport":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json",
+    "catalog":  "eval/gguf_suite_failure_regression_v1.json",
+    "suiteWeakened":  false,
+    "trainedToTest":  false,
+    "difficultCasesRemoved":  false,
+    "checks":  [
+                   {
+                       "id":  "GR-01-catalog",
+                       "status":  "PASS",
+                       "detail":  "catalog failures=7 nearFailures=13"
+                   },
+                   {
+                       "id":  "GR-02-canonical-suite",
+                       "status":  "PASS",
+                       "detail":  "suite cases=30"
+                   },
+                   {
+                       "id":  "GR-03-authority-report",
+                       "status":  "PASS",
+                       "detail":  "authority 23/30 (76.7%) FAIL preserved"
+                   },
+                   {
+                       "id":  "GR-04-analysis-doc",
+                       "status":  "PASS",
+                       "detail":  "GGUF_GENERATIVE_SUITE_FAILURE_ANALYSIS.md"
+                   },
+                   {
+                       "id":  "GR-05-failure-coverage",
+                       "status":  "PASS",
+                       "detail":  "All 7 authority FAILs covered"
+                   },
+                   {
+                       "id":  "GR-06-no-case-removal",
+                       "status":  "PASS",
+                       "detail":  "All failure/near-failure cases still in construction_god_suite_v1"
+                   },
+                   {
+                       "id":  "GR-07-no-suite-weaken",
+                       "status":  "PASS",
+                       "detail":  "Failure-case expectedKeywords not weakened; prompts preserved"
+                   },
+                   {
+                       "id":  "GR-08-failure-fields",
+                       "status":  "PASS",
+                       "detail":  "Each failure has prompt/retrieval/grounding/alias/scoring/reason/corrections"
+                   },
+                   {
+                       "id":  "GR-09-aliases",
+                       "status":  "PASS",
+                       "detail":  "Required keyword aliases present"
+                   },
+                   {
+                       "id":  "GR-10-grounding-expand",
+                       "status":  "PASS",
+                       "detail":  "Grounding + multi-domain ExpandSearchTerms (not silica-only) present"
+                   },
+                   {
+                       "id":  "GR-11-silica-corpus",
+                       "status":  "PASS",
+                       "detail":  "Silica corpus has respirable crystalline silica + respiratory"
+                   },
+                   {
+                       "id":  "GR-12-publish-dll",
+                       "status":  "PASS",
+                       "detail":  "Publish DLL contains ExpandSearchTerms"
+                   },
+                   {
+                       "id":  "GR-13-rescore-script",
+                       "status":  "PASS",
+                       "detail":  "rescore_gguf_report_aliases.py"
+                   },
+                   {
+                       "id":  "GR-14-docs",
+                       "status":  "PASS",
+                       "detail":  "GGUF_SUITE_FAILURE_REGRESSION.md"
+                   },
+                   {
+                       "id":  "GR-15-silica-retrieval-probe",
+                       "status":  "WARN",
+                       "detail":  "Skipped (-SkipLiveRetrievalProbe)"
+                   },
+                   {
+                       "id":  "GR-16-near-failures",
+                       "status":  "PASS",
+                       "detail":  "Near-failure watchlist count=13"
+                   }
+               ]
+}

@@ -13,12 +13,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    # Default `docker compose up` starts ollama only (no pull, no create, no Modelfile).
 
   # DEV FALLBACK ONLY (UNSAFE-06 / ZG-M03).
-  # Pulls llama3.2:3b and creates an alias Modelfile tag — NOT the product merged-LoRA GGUF path.
+  # NOT started by default. Requires explicit:
+  #   docker compose --profile dev-fallback up ollama-model-init
+  # Pulls llama3.2:3b and creates auricrux-fca-dev-fallback — NEVER product tag auricrux-fca.
   # Prod / GCE must use GCS mint/load for auricrux-fca. Do not run this profile against a host
-  # that already serves auricrux-fca-*-Q8_0.gguf (would clobber the product tag).
-  # Enable explicitly: docker compose --profile dev-fallback up ollama-model-init
+  # that already serves auricrux-fca-*-Q8_0.gguf if you intend to keep pointing PrimaryModel at auricrux-fca
+  # (this profile no longer overwrites that tag).
   ollama-model-init:
     profiles: ["dev-fallback"]
     image: ollama/ollama:latest
@@ -33,13 +36,23 @@ services:
     command:
       - |
         set -e
-        echo "DEV FALLBACK ONLY — not product GGUF cutover";
-        echo "Pulling base model llama3.2:3b ...";
-        ollama pull llama3.2:3b;
-        echo "Creating auricrux-fca alias from Modelfile (dev fallback) ...";
-        ollama create auricrux-fca -f /auricrux-system/Modelfile.auricrux-fca;
-        echo "auricrux-fca ready (dev fallback):";
-        ollama list;
+        echo "DEV FALLBACK ONLY — requires --profile dev-fallback"
+        echo "This path never creates or overwrites product tag auricrux-fca"
+        echo "PRODUCT_MODEL_CLOBBER_PROTECTION: refusing any create of auricrux-fca"
+        # Defense in depth: abort if a future edit reintroduces product-tag create.
+        if grep -q 'create auricrux-fca ' /proc/self/cmdline 2>/dev/null; then
+          echo "PRODUCT_MODEL_CLOBBER_BLOCKED"
+          exit 1
+        fi
+        echo "Pulling base model llama3.2:3b ..."
+        ollama pull llama3.2:3b
+        echo "Creating auricrux-fca-dev-fallback from Modelfile (NOT auricrux-fca) ..."
+        ollama create auricrux-fca-dev-fallback -f /auricrux-system/Modelfile.auricrux-fca
+        if ollama list | grep -E '^auricrux-fca[[:space:]]' >/dev/null 2>&1; then
+          echo "OK: existing product auricrux-fca left untouched"
+        fi
+        echo "Fallback ready. For local-only use set Auricrux__PrimaryModel=auricrux-fca-dev-fallback"
+        ollama list
     restart: "no"
 
   auricrux-web:
@@ -50,6 +63,7 @@ services:
     restart: unless-stopped
     depends_on:
       - ollama
+    # Web starts without model-init. Fallback is explicit profile only (see OLLAMA_INIT_SAFE_UNSAFE_PATHS.md).
     ports:
       - "8080:80"
     environment:

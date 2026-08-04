@@ -1,0 +1,58 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:54.2971610Z",
+    "token":  "OLLAMA_INIT_SAFETY_OK",
+    "passCount":  10,
+    "failCount":  0,
+    "checks":  [
+                   {
+                       "id":  "OI-01-profile-gate",
+                       "status":  "PASS",
+                       "detail":  "ollama-model-init requires profiles: [dev-fallback]"
+                   },
+                   {
+                       "id":  "OI-02-default-no-pull-create",
+                       "status":  "PASS",
+                       "detail":  "Default ollama + auricrux-web have no pull/create; web does not depend on model-init"
+                   },
+                   {
+                       "id":  "OI-03-llama32-pull-confined",
+                       "status":  "PASS",
+                       "detail":  "llama3.2 pull confined to profile-gated ollama-model-init (count=1)"
+                   },
+                   {
+                       "id":  "OI-04-no-product-tag-create",
+                       "status":  "PASS",
+                       "detail":  "init creates auricrux-fca-dev-fallback only (product tag untouched)"
+                   },
+                   {
+                       "id":  "OI-05-modelfile-banner",
+                       "status":  "PASS",
+                       "detail":  "Modelfile bans product overwrite; documents auricrux-fca-dev-fallback"
+                   },
+                   {
+                       "id":  "OI-06-warm-no-recreate",
+                       "status":  "PASS",
+                       "detail":  "Warm warms existing tag only; fails closed if missing"
+                   },
+                   {
+                       "id":  "OI-07-cutover-no-init",
+                       "status":  "PASS",
+                       "detail":  "Cutover rebuilds web only; does not Modelfile/llama3.2-init"
+                   },
+                   {
+                       "id":  "OI-08-fix-ollama-safe",
+                       "status":  "PASS",
+                       "detail":  "fix-ollama does not Modelfile/llama3.2-recreate product tag"
+                   },
+                   {
+                       "id":  "OI-09-primary-not-silent-fallback",
+                       "status":  "PASS",
+                       "detail":  "Default PrimaryModel=auricrux-fca (product); fallback requires explicit env"
+                   },
+                   {
+                       "id":  "OI-10-docs",
+                       "status":  "PASS",
+                       "detail":  "Safe/unsafe path documentation present"
+                   }
+               ]
+}

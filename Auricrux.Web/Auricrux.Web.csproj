@@ -7,6 +7,11 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Version>1.3.0</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <FileVersion>1.3.0.0</FileVersion>
+    <InformationalVersion>1.3.0</InformationalVersion>
+    <AuricruxPackageVersion>1.3.0</AuricruxPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +31,20 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <Content Include="..\auricrux\system\model_manifest.json" Link="auricrux\system\model_manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\auricrux\system\package_stamp.json" Link="auricrux\system\package_stamp.json" Condition="Exists('..\auricrux\system\package_stamp.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
+
+  <Target Name="WriteAuricruxPackageStamp" BeforeTargets="BeforeBuild;BeforePublish"
+          Condition="'$(OS)' == 'Windows_NT' AND Exists('$(MSBuildThisFileDirectory)..\scripts\Write-AuricruxPackageStamp.ps1')">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\scripts\Write-AuricruxPackageStamp.ps1&quot; -RepoRoot &quot;$(MSBuildThisFileDirectory)..&quot; -PackageVersion &quot;$(AuricruxPackageVersion)&quot;"
+          IgnoreExitCode="false" />
+  </Target>
 
 </Project>

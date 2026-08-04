@@ -2,6 +2,7 @@ name: GCP Cutover Build Auricrux
 
 # Builds current auricrux-app on the production VM and swaps auricrux-web (:4000)
 # + auricrux-api (:5001) so Caddy host auricrux.* serves latest capabilities/agent.
+# LIVE 3B TRAIN PROTECTION: product GCE only — never contacts train host/PID.
 on:
   workflow_dispatch:
     inputs:

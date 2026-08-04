@@ -1,0 +1,201 @@
+﻿{
+    "schemaVersion":  1,
+    "reportId":  "auricrux_remaining_blockers_v1",
+    "atUtc":  "2026-08-03T23:52:05.7239825Z",
+    "purpose":  "Single authoritative register of remaining Auricrux blockers. Excludes resolved safeguards and historical-only issues.",
+    "doc":  "docs/runtime-proof/AURICRUX_REMAINING_BLOCKERS.md",
+    "claimsForbidden":  [
+                            "Manifest PASS",
+                            "Release PASS",
+                            "PROMOTION_EVIDENCE_OK",
+                            "PACKAGE_HOST_CONSISTENCY_OK",
+                            "qualified live suite PASS"
+                        ],
+    "snapshot":  {
+                     "liveAuthority":  {
+                                           "status":  "FAIL",
+                                           "passRatePercent":  76.7,
+                                           "report":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json"
+                                       },
+                     "packageHostConsistency":  "PACKAGE_HOST_CONSISTENCY_BLOCKED",
+                     "liveDeploymentSafetyGate":  "DEPLOYMENT_SAFETY_GATE_BLOCKED",
+                     "offlineDeploymentSafetyGate":  "DEPLOYMENT_SAFETY_GATE_OK",
+                     "promotionEvidence":  "PROMOTION_EVIDENCE_BLOCKED",
+                     "cDrive":  {
+                                    "token":  "C_DRIVE_STORAGE_RISK_BLOCKED",
+                                    "cFreeGB":  36.06,
+                                    "kfFloorGB":  50
+                                },
+                     "train":  {
+                                   "status":  "running-do-not-interrupt",
+                                   "trainPid":  1019003,
+                                   "protection":  "LIVE_3B_TRAIN_PROTECTION_OK"
+                               },
+                     "modelLabWritable":  false,
+                     "l3":  "intentionally_empty_10B_to_X",
+                     "operationalDrift":  "OPERATIONAL_DRIFT_OK",
+                     "liveCutoverExecuted":  false,
+                     "burnDownStopMet":  true,
+                     "prepareApplyReady":  true
+                 },
+    "dependencyOrder":  [
+                            "RB-C2",
+                            "RB-C3",
+                            "RB-C1",
+                            "RB-H1"
+                        ],
+    "independent":  [
+                        "RB-H3",
+                        "RB-H2",
+                        "RB-L1",
+                        "RB-H4",
+                        "RB-M1"
+                    ],
+    "blockers":  [
+                     {
+                         "id":  "RB-C1",
+                         "severity":  "CRITICAL",
+                         "title":  "Live generative suite below threshold (authority FAIL)",
+                         "evidence":  "Ledger currentLiveAuthority FAIL 76.7%; construction_god_suite_gguf_generative_2026-08-02.json; manifest evalStatus FAIL threshold 80",
+                         "impact":  "Blocks Manifest PASS, Release PASS, and suite-score promotion evidence",
+                         "closureCondition":  "Dated live product-host suite suitePassed=true passRatePercent\u003e=80 with zero fallback contamination and packageIdentity; ledger currentLiveAuthority qualified PASS",
+                         "validationCondition":  "currentLiveAuthority.status=PASS rate\u003e=80; Assert-EvidenceLedgerIntegrity OK; manifest cites that report only",
+                         "burnDownClass":  "UPSTREAM",
+                         "remainingDependency":  "RB-C2 then RB-C3 then qualified live suite"
+                     },
+                     {
+                         "id":  "RB-C2",
+                         "severity":  "CRITICAL",
+                         "title":  "Intended package not proven on product host",
+                         "evidence":  "PACKAGE_HOST_CONSISTENCY_BLOCKED (no packageIdentity); productHostDeployRequired=true; liveCutoverExecuted=false; runtime-truth not on intended package",
+                         "impact":  "Cannot prove prepared package on host; blocks authoritative suite proof and package class of promotion evidence",
+                         "closureCondition":  "Follow RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md + Invoke-RbC2PackageWebCutoverPackage.ps1; manual gh workflow run action=full; PostVerify PASS. No weight replace.",
+                         "validationCondition":  "PACKAGE_HOST_CONSISTENCY_OK; /api/runtime-truth 200; live corpusSha matches publish",
+                         "burnDownClass":  "EXTERNAL_AUTHORITY",
+                         "remainingDependency":  "Operator-authorized package-web cutover"
+                     },
+                     {
+                         "id":  "RB-C3",
+                         "severity":  "CRITICAL",
+                         "title":  "Live deployment safety gate blocks authoritative suite entry",
+                         "evidence":  "DEPLOYMENT_SAFETY_GATE_BLOCKED; SG-20 FAIL from PACKAGE_HOST_CONSISTENCY_BLOCKED",
+                         "impact":  "Default authoritative suite path cannot start",
+                         "closureCondition":  "Clear RB-C2 so SG-20 passes",
+                         "validationCondition":  "Assert-GgufSuiteDeploymentSafetyGate.ps1 without SkipLiveProbes -\u003e DEPLOYMENT_SAFETY_GATE_OK",
+                         "burnDownClass":  "UPSTREAM",
+                         "remainingDependency":  "RB-C2"
+                     },
+                     {
+                         "id":  "RB-H1",
+                         "severity":  "HIGH",
+                         "title":  "Promotion evidence blocked",
+                         "evidence":  "PROMOTION_EVIDENCE_BLOCKED; suite score FAIL 76.7; package/host proof incomplete",
+                         "impact":  "Cannot authorize promotion or model-weight cutover",
+                         "closureCondition":  "All promotion evidence policy classes satisfied including qualified live PASS",
+                         "validationCondition":  "Assert-PromotionEvidenceGate.ps1 -\u003e PROMOTION_EVIDENCE_OK",
+                         "burnDownClass":  "UPSTREAM",
+                         "remainingDependency":  "RB-C1 + package proof"
+                     },
+                     {
+                         "id":  "RB-H2",
+                         "severity":  "HIGH",
+                         "title":  "Primary C: below KF 50 GB floor",
+                         "evidence":  "C_DRIVE_STORAGE_RISK_BLOCKED; cFreeGB=36.06; no D/E/F volume",
+                         "impact":  "Refuses multi-GB GGUF/Ollama staging on Primary; does not block remote package-web cutover",
+                         "closureCondition":  "Free \u003e=50 GB or off-C work/staging/OLLAMA_MODELS after dual-preserve; no unsafe deletes",
+                         "validationCondition":  "Assert-CDriveStorageRisk.ps1 -\u003e C_DRIVE_STORAGE_RISK_OK (or onPrimaryC=false documented)",
+                         "burnDownClass":  "INFRASTRUCTURE",
+                         "remainingDependency":  "Data disk / IT reclaim to \u003e=50GB free"
+                     },
+                     {
+                         "id":  "RB-H3",
+                         "severity":  "HIGH",
+                         "title":  "Live 3B train must not be interrupted",
+                         "evidence":  "trueGodRun.status=running-do-not-interrupt pid=1019003; LIVE_3B_TRAIN_PROTECTION_OK",
+                         "impact":  "No kill/pause/move; no competing GPU train/GPU merge on train host",
+                         "closureCondition":  "Natural completion (or founder-authorized stop only after PID gone + tip integrity)",
+                         "validationCondition":  "Status leaves running-do-not-interrupt; post-exit integrity/resume per golden path",
+                         "burnDownClass":  "OPERATIONAL_WAIT",
+                         "remainingDependency":  "Train completion"
+                     },
+                     {
+                         "id":  "RB-H4",
+                         "severity":  "HIGH",
+                         "title":  "model-lab not writable",
+                         "evidence":  "Write probe Access denied under C:\\Users\\Auricrux\\auricrux-model-lab",
+                         "impact":  "Local sync/apply into model-lab blocked for this identity",
+                         "closureCondition":  "Apply as Auricrux (preferred) or grant Michael Modify / writable AURICRUX_MODEL_LAB",
+                         "validationCondition":  "Probe create/delete succeeds under model-lab (or configured root)",
+                         "burnDownClass":  "OPERATIONAL_ACCESS",
+                         "reduced":  true,
+                         "reduction":  "Prepare applyReady=true after recovery schema align",
+                         "remainingDependency":  "Apply as Auricrux or ACL Modify for Michael"
+                     },
+                     {
+                         "id":  "RB-M1",
+                         "severity":  "MEDIUM",
+                         "title":  "Empty L3 overlays 10B to X",
+                         "evidence":  "L3_EMPTY_BEHAVIOR_OK intentionally_empty 10B-X; emptyL3Blocker open",
+                         "impact":  "Blocks tier promotion for 10B-X only; not live 3B suite/cutover",
+                         "closureCondition":  "Author real L3 cases for target tier (no fabricate)",
+                         "validationCondition":  "Test-AuricruxL3PromotionReady ready=true for target tier",
+                         "burnDownClass":  "CONTENT_AUTHORING",
+                         "remainingDependency":  "Author real L3 (no fabricate)"
+                     },
+                     {
+                         "id":  "RB-L1",
+                         "severity":  "LOW",
+                         "title":  "Work root still on Primary C",
+                         "evidence":  "Work root fallback on C:; CS-08 no non-C volume",
+                         "impact":  "Cannot relocate scratch off C: until disk attached",
+                         "closureCondition":  "Attach D/E/F; set AURICRUX_WORK_ROOT; Initialize-AuricruxWorkRoot",
+                         "validationCondition":  "onPrimaryC=false in storage/growth receipts",
+                         "burnDownClass":  "INFRASTRUCTURE",
+                         "remainingDependency":  "Non-C volume + Initialize-AuricruxWorkRoot"
+                     }
+                 ],
+    "closedThisPass":  [
+                           {
+                               "id":  "RB-M2",
+                               "title":  "Operational drift soft warnings (prepared stamp lag)",
+                               "closureEvidence":  "OPERATIONAL_DRIFT_OK; package-prepared aligned to publish stamp; SG-24 wired",
+                               "authorityElevated":  false,
+                               "cutoverExecuted":  false
+                           }
+                       ],
+    "excluded":  [
+                     {
+                         "item":  "Offline alias 80% claim risk",
+                         "reason":  "controlled by EVIDENCE_RULES_OK"
+                     },
+                     {
+                         "item":  "Historical 86.7/93.3 PASS",
+                         "reason":  "historical-only superseded"
+                     },
+                     {
+                         "item":  "Clobber/fallback/evidence/authority/golden-path/train-survivability OK tokens",
+                         "reason":  "resolved safeguards"
+                     },
+                     {
+                         "item":  "Cutover dry-run / promotion appRoot bug",
+                         "reason":  "resolved"
+                     },
+                     {
+                         "item":  "Manifest honest FAIL",
+                         "reason":  "correct reflection of RB-C1"
+                     },
+                     {
+                         "item":  "Local package prepared",
+                         "reason":  "done; remaining is deploy RB-C2"
+                     }
+                 ],
+    "burnDownDoc":  "docs/runtime-proof/BLOCKER_BURNDOWN_2026-08-03.md",
+    "burnDownReceipt":  "docs/runtime-proof/blocker-burndown-latest.json",
+    "reducedThisPass":  [
+                            {
+                                "reduction":  "Prepare recovery schema requireSchemaVersion 1-\u003e2; applyReady=true",
+                                "id":  "RB-H4",
+                                "authorityElevated":  false
+                            }
+                        ]
+}

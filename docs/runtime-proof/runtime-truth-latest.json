@@ -1,0 +1,43 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:52.3574196Z",
+    "token":  "RUNTIME_TRUTH_OK",
+    "passCount":  6,
+    "failCount":  0,
+    "checks":  [
+                   {
+                       "id":  "RT-01-service",
+                       "status":  "PASS",
+                       "detail":  "RuntimeTruthService.cs"
+                   },
+                   {
+                       "id":  "RT-02-route",
+                       "status":  "PASS",
+                       "detail":  "GET /api/runtime-truth mapped"
+                   },
+                   {
+                       "id":  "RT-03-docs",
+                       "status":  "PASS",
+                       "detail":  "RUNTIME_TRUTH.md"
+                   },
+                   {
+                       "id":  "RT-04-fields",
+                       "status":  "PASS",
+                       "detail":  "Required operational truth fields present"
+                   },
+                   {
+                       "id":  "RT-05-no-secrets",
+                       "status":  "PASS",
+                       "detail":  "No secret-like field names in RuntimeTruthService"
+                   },
+                   {
+                       "id":  "RT-06-appsettings",
+                       "status":  "PASS",
+                       "detail":  "host=product-gce recipe=product_gguf_serve_v1 deploy=local-dev"
+                   },
+                   {
+                       "id":  "RT-07-live",
+                       "status":  "WARN",
+                       "detail":  "Skipped (-SkipLiveProbe)"
+                   }
+               ]
+}

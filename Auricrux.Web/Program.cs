@@ -39,6 +39,8 @@ builder.Services.AddSingleton<ConstructionCalculatorService>();
 builder.Services.AddSingleton<ConstructionAgentService>();
 builder.Services.AddSingleton<ConstructionVisionService>();
 builder.Services.AddSingleton<CapabilitiesService>();
+builder.Services.AddSingleton<PackageIdentityService>();
+builder.Services.AddSingleton<RuntimeTruthService>();
 builder.Services.AddSingleton(sp =>
 {
     var configured = builder.Configuration["Auricrux:ApiEndpoint"]

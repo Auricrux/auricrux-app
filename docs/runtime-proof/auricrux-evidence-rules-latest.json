@@ -1,0 +1,66 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:54.4522434Z",
+    "token":  "EVIDENCE_RULES_OK",
+    "productHost":  "auricrux.futurecontractorsofamerica.com",
+    "skipManifestLiveCheck":  false,
+    "passCount":  11,
+    "failCount":  0,
+    "rulesDoc":  "docs/runtime-proof/AURICRUX_EVIDENCE_RULES.md",
+    "checks":  [
+                   {
+                       "id":  "ER-01-rules-doc",
+                       "status":  "PASS",
+                       "detail":  "Canonical evidence rules doc present with required classes"
+                   },
+                   {
+                       "id":  "ER-02-prior-fail-preserved",
+                       "status":  "PASS",
+                       "detail":  "Prior FAIL retained rate=76.7% path=C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\construction_god_suite_gguf_generative_2026-08-02.json"
+                   },
+                   {
+                       "id":  "ER-03-ledger-append-only",
+                       "status":  "PASS",
+                       "detail":  "entries=5 failRows=1 liveAuth=3 jsonl=True"
+                   },
+                   {
+                       "id":  "ER-04-no-score-upgrade-without-rerun",
+                       "status":  "PASS",
+                       "detail":  "FAIL history score stable at 76.7%"
+                   },
+                   {
+                       "id":  "ER-05-alias-rescore-support-only",
+                       "status":  "PASS",
+                       "detail":  "alias_rescore files=2 marked/treated support-only"
+                   },
+                   {
+                       "id":  "ER-06-rescore-script-stamp",
+                       "status":  "PASS",
+                       "detail":  "Rescore script stamps support-only / cannotReplaceLive"
+                   },
+                   {
+                       "id":  "ER-07-ledger-writer-live-only",
+                       "status":  "PASS",
+                       "detail":  "Ledger writer encodes live authority + offline refusal"
+                   },
+                   {
+                       "id":  "ER-08-manifest-pass-requires-live",
+                       "status":  "PASS",
+                       "detail":  "Manifest does not claim generative PASS (evalStatus=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80)"
+                   },
+                   {
+                       "id":  "ER-09-suite-unique-stamp",
+                       "status":  "PASS",
+                       "detail":  "Suite runner uses unique UTC stamps and refuses overwrite"
+                   },
+                   {
+                       "id":  "ER-10-release-pass-defined",
+                       "status":  "PASS",
+                       "detail":  "Release PASS defined as gate + live suite + identity + history"
+                   },
+                   {
+                       "id":  "ER-11-ledger-integrity",
+                       "status":  "PASS",
+                       "detail":  "EVIDENCE_LEDGER_INTEGRITY_OK (authority still only from qualifying evidence)"
+                   }
+               ]
+}

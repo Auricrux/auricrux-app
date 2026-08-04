@@ -1,0 +1,69 @@
+﻿{
+    "checks":  [
+                   {
+                       "detail":  "Ledger JSON present",
+                       "status":  "PASS",
+                       "id":  "EL-00-ledger-present"
+                   },
+                   {
+                       "detail":  "FAIL row+file retained at 76.7% evidenceId=gguf-suite-20260802T225650Z-FAIL",
+                       "status":  "PASS",
+                       "id":  "EL-01-historical-fail-preserved"
+                   },
+                   {
+                       "detail":  "PASS rows=2 files retained: gguf-suite-20260803T030141Z-PASS@86.7% retained; gguf-suite-20260803T035612Z-PASS@93.3% retained",
+                       "status":  "PASS",
+                       "id":  "EL-02-historical-pass-preserved"
+                   },
+                   {
+                       "detail":  "currentLiveAuthority status=FAIL rate=76.7 report=docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json onDisk=True",
+                       "status":  "PASS",
+                       "id":  "EL-03-authority-source-identified"
+                   },
+                   {
+                       "detail":  "offline rows in ledger as support=0; alias_rescore files=1 support-only; offline not elevating PASS authority",
+                       "status":  "PASS",
+                       "id":  "EL-04-offline-distinguished"
+                   },
+                   {
+                       "detail":  "live-class rows=3 authority-correction rows=2",
+                       "status":  "PASS",
+                       "id":  "EL-05-live-distinguished"
+                   },
+                   {
+                       "detail":  "superseded/disqualified PASS ids marked: gguf-suite-20260803T030141Z-PASS,gguf-suite-20260803T035612Z-PASS",
+                       "status":  "PASS",
+                       "id":  "EL-06-superseded-identified"
+                   },
+                   {
+                       "detail":  "json entries=5 jsonl lines=5 ids aligned (extraJsonlHistorical=0)",
+                       "status":  "PASS",
+                       "id":  "EL-07-audit-trace-intact"
+                   },
+                   {
+                       "detail":  "currentLiveAuthority=FAIL@76.7% protected; qualifiedPassRows=0; disqualifiedPassRows=2",
+                       "status":  "PASS",
+                       "id":  "EL-08-no-accidental-elevation"
+                   }
+               ],
+    "token":  "EVIDENCE_LEDGER_INTEGRITY_OK",
+    "qualifiedPassIds":  [
+
+                         ],
+    "passCount":  9,
+    "historicalFailRows":  1,
+    "policy":  "Authority must derive only from qualifying evidence. Offline and disqualified PASS cannot elevate currentLiveAuthority.",
+    "currentLiveAuthority":  {
+                                 "status":  "FAIL",
+                                 "report":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json",
+                                 "passRatePercent":  76.7
+                             },
+    "historicalPassRows":  2,
+    "atUtc":  "2026-08-03T23:52:54.4472493Z",
+    "failCount":  0,
+    "warnCount":  0,
+    "disqualifiedPassIds":  [
+                                "gguf-suite-20260803T030141Z-PASS",
+                                "gguf-suite-20260803T035612Z-PASS"
+                            ]
+}

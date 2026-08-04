@@ -1,0 +1,55 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:54.5052428Z",
+    "token":  "AUTHORITY_MAP_OK",
+    "passCount":  9,
+    "failCount":  0,
+    "checks":  [
+                   {
+                       "id":  "AM-01-policy",
+                       "status":  "PASS",
+                       "detail":  "auricrux_authority_chain_v1.json"
+                   },
+                   {
+                       "id":  "AM-02-doc",
+                       "status":  "PASS",
+                       "detail":  "AURICRUX_AUTHORITY_MAP.md"
+                   },
+                   {
+                       "id":  "AM-03-transitions",
+                       "status":  "PASS",
+                       "detail":  "All four authority transitions defined"
+                   },
+                   {
+                       "id":  "AM-04-live-pass-qualifiers",
+                       "status":  "PASS",
+                       "detail":  "Live PASS requires packageIdentity + zero fallback contamination"
+                   },
+                   {
+                       "id":  "AM-05-doc-sections",
+                       "status":  "PASS",
+                       "detail":  "Authority map doc covers all four + disqualify + order"
+                   },
+                   {
+                       "id":  "AM-06-ledger-qualify",
+                       "status":  "PASS",
+                       "detail":  "Ledger writer qualifies PASS and guards currentLiveAuthority"
+                   },
+                   {
+                       "id":  "AM-07-live-pointer",
+                       "status":  "PASS",
+                       "detail":  "currentLiveAuthority FAIL rate=76.7 (truthful)"
+                   },
+                   {
+                       "id":  "AM-08-manifest-align",
+                       "status":  "PASS",
+                       "detail":  "Manifest does not claim PASS (eval=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80)"
+                   },
+                   {
+                       "id":  "AM-09-deploy-kinds",
+                       "status":  "PASS",
+                       "detail":  "Deployment splits package-web vs model-weight; package cutover doesNotGrant PASS"
+                   }
+               ],
+    "policy":  "auricrux/system/auricrux_authority_chain_v1.json",
+    "doc":  "docs/runtime-proof/AURICRUX_AUTHORITY_MAP.md"
+}

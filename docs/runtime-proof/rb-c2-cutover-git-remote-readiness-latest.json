@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "reportId": "rb_c2_cutover_git_remote_readiness",
+  "atUtc": "2026-08-04T01:40:00Z",
+  "purpose": "Determine whether Actions would build the intended RB-C2 package or stale remote code. No cutover. No push. No PASS claim.",
+  "LOCAL_READY": true,
+  "REMOTE_READY": false,
+  "ACTIONS_WOULD_BUILD_INTENDED_SHA": false,
+  "branch": "main",
+  "defaultBranch": "main",
+  "localHead": "81063ed8792cb33a78e4d09620ee8edb2be42d81",
+  "remoteSha": "81063ed8792cb33a78e4d09620ee8edb2be42d81",
+  "upstream": "origin/main",
+  "aheadBehind": "0 0",
+  "actionsBuildModel": "actions/checkout@v4 of default branch main, then docker build of repo source (excludes _publish). Local _publish is comparison baseline only.",
+  "verdict": "Intended package exists only in the local working tree. origin/main tip equals local HEAD but does NOT contain working-tree package-identity changes. Dispatching now would build STALE remote code without packageIdentity/runtime-truth.",
+  "cutoverDispatched": false,
+  "pushed": false,
+  "authorityElevated": false
+}

@@ -9,6 +9,7 @@
 
 | Check | Result |
 |-------|--------|
+| **Safety gate** | `scripts/Assert-GgufSuiteDeploymentSafetyGate.ps1` → `DEPLOYMENT_SAFETY_GATE_OK` (required before live suite) |
 | `_publish/web/Auricrux.Web.dll` contains `ExpandSearchTerms` | PASS (ASCII) |
 | DLL contains grounding prompt (`Grounding excerpts`, `Prefer facts…`) | PASS (UTF-16LE) |
 | `_publish/web/Data/construction-corpus.json` silica + `respiratory` | PASS |
@@ -51,11 +52,16 @@ Ollama / `auricrux-fca` GGUF tag is **not** replaced by this cutover (warm workf
 3. Wait for green job; capture run id into runtime-proof JSON.
 4. Public smoke: `/api/health`, `/api/capabilities` (expect updated constructionMoat notes if CapabilitiesService shipped).
 5. Silica probe chat — expect silica/respirable language from grounded excerpts.
-6. Run suite:
+6. **Safety gate (hard):**
+   ```powershell
+   .\scripts\Assert-GgufSuiteDeploymentSafetyGate.ps1
+   # Must print DEPLOYMENT_SAFETY_GATE_OK; abort on FAIL
+   ```
+7. Run suite (gate enforced automatically):
    ```powershell
    .\scripts\run-gguf-construction-suite.ps1 -BaseUrl https://auricrux.futurecontractorsofamerica.com
    ```
-7. Update `model_manifest.json` **only if** dated live report `passRatePercent >= 80` and `suitePassed=true`.
+8. Update `model_manifest.json` **only if** dated live report `passRatePercent >= 80` and `suitePassed=true`.
 
 ## Evidence artifacts
 

@@ -1,0 +1,77 @@
+{
+    "schemaVersion":  1,
+    "evidenceId":  "authoritative-suite-rerun-package-20260803T233652Z",
+    "atUtc":  "2026-08-03T23:36:52.3442989Z",
+    "purpose":  "Verified prerequisites for authoritative live GGUF suite rerun. Suite not executed.",
+    "verdict":  "GO-WITH-BLOCKERS",
+    "token":  "AUTHORITATIVE_SUITE_RERUN_GO_WITH_BLOCKERS",
+    "suiteExecuted":  false,
+    "blockers":  [
+                     {
+                         "id":  "B3",
+                         "title":  "Operator package-web cutover not executed",
+                         "mapsTo":  [
+                                        "SR-22-package-host",
+                                        "SR-23-runtime-truth",
+                                        "SR-64-live-gate"
+                                    ],
+                         "closure":  "Follow RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md; gh workflow run gcp-cutover-build-auricrux.yml -f action=full"
+                     },
+                     {
+                         "id":  "B2",
+                         "title":  "Intended package not on product host",
+                         "mapsTo":  [
+                                        "SR-22-package-host",
+                                        "SR-23-runtime-truth"
+                                    ],
+                         "closure":  "Same cutover as B3; then PACKAGE_HOST_CONSISTENCY_OK + runtime-truth 200"
+                     },
+                     {
+                         "id":  "B1",
+                         "title":  "Host lacks packageIdentity",
+                         "mapsTo":  [
+                                        "SR-22-package-host"
+                                    ],
+                         "closure":  "Deploy package with PackageIdentityService + stamp"
+                     },
+                     {
+                         "id":  "B4",
+                         "title":  "Live safety gate blocks suite entry",
+                         "mapsTo":  [
+                                        "SR-64-live-gate"
+                                    ],
+                         "closure":  "Clear B1-B3; Assert-GgufSuiteDeploymentSafetyGate.ps1 without SkipLiveProbes"
+                     }
+                 ],
+    "checkFailures":  [
+                          {
+                              "id":  "SR-22-package-host",
+                              "detail":  "PACKAGE_HOST_CONSISTENCY_BLOCKED",
+                              "severity":  "live"
+                          },
+                          {
+                              "id":  "SR-23-runtime-truth",
+                              "detail":  "HTTP 404 - package cutover required (RB-C2)",
+                              "severity":  "live"
+                          },
+                          {
+                              "id":  "SR-64-live-gate",
+                              "detail":  "DEPLOYMENT_SAFETY_GATE_BLOCKED",
+                              "severity":  "live"
+                          }
+                      ],
+    "verifiedNotBlocking":  [
+                                "offline DEPLOYMENT_SAFETY_GATE_OK (when SR-60 PASS)",
+                                "EVIDENCE_RULES_OK / ledger integrity (when PASS)",
+                                "PROMOTION_EVIDENCE_BLOCKED does not block suite entry",
+                                "C: storage not suite-entry blocker"
+                            ],
+    "dependencyOrder":  [
+                            "B3",
+                            "B2",
+                            "B1",
+                            "B4",
+                            "authoritative suite rerun"
+                        ],
+    "packageReceipt":  "docs/runtime-proof/authoritative-suite-rerun-package-latest.json"
+}

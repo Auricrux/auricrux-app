@@ -1,0 +1,144 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:52.9504635Z",
+    "token":  "DEPLOYMENT_SAFETY_GATE_OK",
+    "baseUrl":  "https://auricrux.futurecontractorsofamerica.com",
+    "expectedHost":  "auricrux.futurecontractorsofamerica.com",
+    "publishDir":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web",
+    "skipLiveProbes":  true,
+    "passCount":  19,
+    "failCount":  0,
+    "trainStarted":  false,
+    "modelRecreated":  false,
+    "checks":  [
+                   {
+                       "id":  "SG-01-target-host",
+                       "status":  "PASS",
+                       "detail":  "https://auricrux.futurecontractorsofamerica.com"
+                   },
+                   {
+                       "id":  "SG-02-publish-package",
+                       "status":  "PASS",
+                       "detail":  "Complete package files=383"
+                   },
+                   {
+                       "id":  "SG-03-dll-version",
+                       "status":  "PASS",
+                       "detail":  "DLL sha256=fce0b6f8c19eâ€¦ mtimeUtc=2026-08-03T04:42:19.8332120Z"
+                   },
+                   {
+                       "id":  "SG-04-ExpandSearchTerms",
+                       "status":  "PASS",
+                       "detail":  "ExpandSearchTerms present in publish DLL"
+                   },
+                   {
+                       "id":  "SG-05-grounding-prompt",
+                       "status":  "PASS",
+                       "detail":  "Grounding prompt strings present in DLL"
+                   },
+                   {
+                       "id":  "SG-06-grounding-corpus",
+                       "status":  "PASS",
+                       "detail":  "corpus entries=80 path=C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web\\Data\\construction-corpus.json"
+                   },
+                   {
+                       "id":  "SG-07-silica-corpus",
+                       "status":  "PASS",
+                       "detail":  "silica content + respiratory tag present"
+                   },
+                   {
+                       "id":  "SG-08-no-modelfile-recreate",
+                       "status":  "PASS",
+                       "detail":  "Modelfile bannered DEV FALLBACK ONLY"
+                   },
+                   {
+                       "id":  "SG-09-no-llama32-default-pull",
+                       "status":  "PASS",
+                       "detail":  "llama3.2 pull + create confined to profile dev-fallback; creates auricrux-fca-dev-fallback only"
+                   },
+                   {
+                       "id":  "SG-09b-ollama-init-safety",
+                       "status":  "PASS",
+                       "detail":  "OLLAMA_INIT_SAFETY_OK"
+                   },
+                   {
+                       "id":  "SG-18-product-model-clobber",
+                       "status":  "PASS",
+                       "detail":  "PRODUCT_MODEL_CLOBBER_PROTECTION_OK"
+                   },
+                   {
+                       "id":  "SG-19-live-3b-train-protection",
+                       "status":  "PASS",
+                       "detail":  "LIVE_3B_TRAIN_PROTECTION_OK"
+                   },
+                   {
+                       "id":  "SG-20-package-host-consistency",
+                       "status":  "WARN",
+                       "detail":  "Skipped (-SkipLiveProbes) - run Assert-PackageHostConsistency.ps1 before authority suite"
+                   },
+                   {
+                       "id":  "SG-21-gguf-failure-regression",
+                       "status":  "PASS",
+                       "detail":  "GGUF_SUITE_FAILURE_REGRESSION_OK"
+                   },
+                   {
+                       "id":  "SG-22-runtime-truth",
+                       "status":  "PASS",
+                       "detail":  "RUNTIME_TRUTH_OK"
+                   },
+                   {
+                       "id":  "SG-23-promotion-evidence",
+                       "status":  "WARN",
+                       "detail":  "PROMOTION_EVIDENCE_BLOCKED (suite may still run; promote/cutover refuse until OK)"
+                   },
+                   {
+                       "id":  "SG-24-operational-drift",
+                       "status":  "WARN",
+                       "detail":  "OPERATIONAL_DRIFT_WARN (soft/expected signals; 0 FAIL)"
+                   },
+                   {
+                       "id":  "SG-25-ledger-integrity",
+                       "status":  "PASS",
+                       "detail":  "EVIDENCE_LEDGER_INTEGRITY_OK"
+                   },
+                   {
+                       "id":  "SG-10-no-unauthorized-replace",
+                       "status":  "PASS",
+                       "detail":  "Warm warms existing tag only; no Modelfile/llama3.2 recreate"
+                   },
+                   {
+                       "id":  "SG-11-rollback-available",
+                       "status":  "PASS",
+                       "detail":  "Procedure + baseline + cutover prev-rename present"
+                   },
+                   {
+                       "id":  "SG-12-manifest-preserved",
+                       "status":  "PASS",
+                       "detail":  "status=product-ollama-loaded-ckpt120000-q8; evalStatus=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80; kind=merged-lora-gguf-q8"
+                   },
+                   {
+                       "id":  "SG-15-package-stamp",
+                       "status":  "PASS",
+                       "detail":  "version=1.3.0; buildUtc=2026-08-03T23:36:58.3607966Z; suite=construction_god_suite_v1; path=C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web\\auricrux\\system\\package_stamp.json"
+                   },
+                   {
+                       "id":  "SG-13-product-fca-not-clobbered",
+                       "status":  "WARN",
+                       "detail":  "Skipped (-SkipLiveProbes)"
+                   },
+                   {
+                       "id":  "SG-14-no-alias-clobber",
+                       "status":  "WARN",
+                       "detail":  "Skipped (-SkipLiveProbes)"
+                   },
+                   {
+                       "id":  "SG-16-live-package-identity",
+                       "status":  "WARN",
+                       "detail":  "Skipped (-SkipLiveProbes)"
+                   },
+                   {
+                       "id":  "SG-17-dll-hash-compare",
+                       "status":  "WARN",
+                       "detail":  "Skipped (-SkipLiveProbes)"
+                   }
+               ]
+}

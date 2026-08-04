@@ -1,0 +1,127 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:52.7784631Z",
+    "token":  "PROMOTION_EVIDENCE_BLOCKED",
+    "purpose":  "evidence-based-promotion-gate",
+    "assumptionBased":  false,
+    "passCount":  8,
+    "failCount":  5,
+    "warnCount":  1,
+    "baseUrl":  "https://auricrux.futurecontractorsofamerica.com",
+    "expectedHost":  "auricrux.futurecontractorsofamerica.com",
+    "expectedProductModel":  "auricrux-fca",
+    "passThresholdPercent":  80,
+    "skipLiveProbes":  true,
+    "allowEvidenceIncomplete":  false,
+    "evidenceSnapshots":  {
+                              "liveAuthority":  {
+                                                    "status":  "FAIL",
+                                                    "passRatePercent":  76.7,
+                                                    "report":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json",
+                                                    "reportExists":  true
+                                                },
+                              "manifest":  {
+                                               "evalStatus":  "PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80",
+                                               "ggufGenerativeSuitePassed":  false,
+                                               "ggufGenerativePassRatePercent":  76.7,
+                                               "ggufGenerativeReport":  "eval/reports/construction_god_suite_gguf_generative_2026-08-02.json",
+                                               "productHostDeployRequired":  true
+                                           }
+                          },
+    "checks":  [
+                   {
+                       "id":  "PG-00-policy",
+                       "status":  "PASS",
+                       "detail":  "Policy lists all nine required evidence classes",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\auricrux\\system\\promotion_evidence_policy_v1.json"
+                   },
+                   {
+                       "id":  "PG-LIVE",
+                       "status":  "WARN",
+                       "detail":  "Live probes skipped (-SkipLiveProbes). Host/package/model/fallback cannot be proven â€” treat as incomplete for promotion.",
+                       "evidenceRef":  ""
+                   },
+                   {
+                       "id":  "PG-02-correct-package",
+                       "status":  "FAIL",
+                       "detail":  "Cannot prove correct package without live package-host consistency (SkipLiveProbes)",
+                       "evidenceRef":  ""
+                   },
+                   {
+                       "id":  "PG-03-correct-model",
+                       "status":  "FAIL",
+                       "detail":  "Cannot prove correct model without live probes",
+                       "evidenceRef":  ""
+                   },
+                   {
+                       "id":  "PG-03b-config-primary",
+                       "status":  "PASS",
+                       "detail":  "appsettings PrimaryModel=auricrux-fca",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\Auricrux.Web\\appsettings.json"
+                   },
+                   {
+                       "id":  "PG-04-suite-score",
+                       "status":  "FAIL",
+                       "detail":  "Required suite score not met: Live authority status=FAIL rate=76.7 threshold=80 reportExists=True",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\auricrux_evidence_ledger_v1.json"
+                   },
+                   {
+                       "id":  "PG-05-no-unsafe-fallback",
+                       "status":  "FAIL",
+                       "detail":  "Cannot prove fallback-free without live probes",
+                       "evidenceRef":  ""
+                   },
+                   {
+                       "id":  "PG-06-no-clobber-policy",
+                       "status":  "PASS",
+                       "detail":  "PRODUCT_MODEL_CLOBBER_PROTECTION_OK",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\product-model-clobber-protection-latest.json"
+                   },
+                   {
+                       "id":  "PG-06-no-clobber-event",
+                       "status":  "PASS",
+                       "detail":  "No unauthorized clobber evidence markers found",
+                       "evidenceRef":  ""
+                   },
+                   {
+                       "id":  "PG-07-rollback-exists",
+                       "status":  "PASS",
+                       "detail":  "Procedure + baseline + cutover prev-rename present",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\gguf-suite-live-cutover-procedure-2026-08-03.md"
+                   },
+                   {
+                       "id":  "PG-08-evidence-rules",
+                       "status":  "PASS",
+                       "detail":  "EVIDENCE_RULES_OK",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\auricrux-evidence-rules-latest.json"
+                   },
+                   {
+                       "id":  "PG-08-manifest-truthful",
+                       "status":  "FAIL",
+                       "detail":  "productHostDeployRequired=true (host package not proven current)",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\auricrux\\system\\model_manifest.json"
+                   },
+                   {
+                       "id":  "PG-09-ledger-writer",
+                       "status":  "PASS",
+                       "detail":  "Ledger writer present",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\scripts\\Write-GgufSuiteEvidenceLedger.ps1"
+                   },
+                   {
+                       "id":  "PG-09-ledger-updated",
+                       "status":  "PASS",
+                       "detail":  "entries=5; updatedAtUtc=2026-08-03T09:38:34.6268882Z; authority=FAIL",
+                       "evidenceRef":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\auricrux_evidence_ledger_v1.json"
+                   }
+               ],
+    "requiredProof":  [
+                          "correct_host",
+                          "correct_package",
+                          "correct_model",
+                          "suite_score_met",
+                          "no_unsafe_fallback",
+                          "no_clobber_event",
+                          "rollback_exists",
+                          "manifest_truthful",
+                          "evidence_ledger_updated"
+                      ]
+}

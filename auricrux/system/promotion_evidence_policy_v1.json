@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "policyId": "auricrux_promotion_evidence_v1",
+  "purpose": "Promotion of a model or package is evidence-based only. Missing evidence = BLOCKED (never assume).",
+  "tokenOk": "PROMOTION_EVIDENCE_OK",
+  "tokenBlocked": "PROMOTION_EVIDENCE_BLOCKED",
+  "requiredEvidence": [
+    {
+      "id": "correct_host",
+      "description": "Live host matches expected product host / host profile",
+      "artifacts": ["runtime-truth", "package-host-consistency", "health"]
+    },
+    {
+      "id": "correct_package",
+      "description": "Host package identity matches intended publish package",
+      "artifacts": ["package-host-consistency", "package_stamp", "corpusSha256"]
+    },
+    {
+      "id": "correct_model",
+      "description": "Active primary model matches expected product model",
+      "artifacts": ["runtime-truth.activeModel", "health.primaryModel", "appsettings.PrimaryModel"]
+    },
+    {
+      "id": "suite_score_met",
+      "description": "Dated live product-host suite PASS at threshold (not offline rescore)",
+      "artifacts": ["dated live suite report", "evidence ledger currentLiveAuthority"],
+      "passThresholdPercent": 80,
+      "authorityClass": "live-dated-host-validation"
+    },
+    {
+      "id": "no_unsafe_fallback",
+      "description": "No corpus-fallback / ollama-degraded / interim llama3.2 / ForceCorpusFallback",
+      "artifacts": ["runtime-truth.fallbackModeActive", "health.runtimeMode"]
+    },
+    {
+      "id": "no_clobber_event",
+      "description": "Clobber protection OK; no unauthorized product-tag clobber evidence",
+      "artifacts": ["Assert-ProductModelClobberProtection", "product_model_clobber_policy.json"]
+    },
+    {
+      "id": "rollback_exists",
+      "description": "Rollback procedure + precutover baseline + cutover prev-rename present",
+      "artifacts": ["gguf-suite-live-cutover-procedure", "precutover baseline", "gcp-cutover-build-auricrux.yml"]
+    },
+    {
+      "id": "manifest_truthful",
+      "description": "Manifest evalStatus/score agree with cited live report; no PASS claim without live evidence",
+      "artifacts": ["model_manifest.json", "cited ggufGenerativeReport", "Assert-AuricruxEvidenceRules"]
+    },
+    {
+      "id": "evidence_ledger_updated",
+      "description": "Evidence ledger present, cites current live authority report, append-only writer intact",
+      "artifacts": ["auricrux_evidence_ledger_v1.json", "Write-GgufSuiteEvidenceLedger.ps1"]
+    }
+  ],
+  "defaults": {
+    "expectedHost": "auricrux.futurecontractorsofamerica.com",
+    "expectedProductModel": "auricrux-fca",
+    "expectedHostProfile": "product-gce",
+    "passThresholdPercent": 80,
+    "suiteTarget": "construction_god_suite_v1"
+  },
+  "forbiddenAssumptions": [
+    "Offline alias rescore is not live suite PASS",
+    "Local/package-only checks are not host authority",
+    "Missing packageIdentity is not assumed current",
+    "Missing runtime-truth is not assumed healthy",
+    "Manifest PASS without matching dated live report is not promotion-green"
+  ],
+  "emergencyBypass": {
+    "switch": "AllowEvidenceIncomplete",
+    "note": "Emergency only. Still records BLOCKED reasons; does not rewrite ledger or claim PASS."
+  }
+}

@@ -1,0 +1,58 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:54.0049438Z",
+    "token":  "LIVE_3B_TRAIN_PROTECTION_OK",
+    "passCount":  9,
+    "failCount":  0,
+    "trainStatusFromManifest":  "running-do-not-interrupt",
+    "trainPidFromManifest":  1019003,
+    "remoteProbePerformed":  false,
+    "trainTouched":  false,
+    "policyPath":  "auricrux/system/live_3b_train_protection_policy.json",
+    "checks":  [
+                   {
+                       "id":  "TP-01-policy",
+                       "status":  "PASS",
+                       "detail":  "Live 3B train protection policy present"
+                   },
+                   {
+                       "id":  "TP-02-manifest-status",
+                       "status":  "PASS",
+                       "detail":  "status=running-do-not-interrupt pid=1019003 host=auricrux-gpu-ncast4-t4 (not probed)"
+                   },
+                   {
+                       "id":  "TP-03-suite-deploy-isolated",
+                       "status":  "PASS",
+                       "detail":  "Suite/gate/warm/init/cutover/load/deploy do not contact train host/PID"
+                   },
+                   {
+                       "id":  "TP-04-no-kill-patterns",
+                       "status":  "PASS",
+                       "detail":  "No kill/vm-stop/gpu-reset patterns in app scripts/workflows"
+                   },
+                   {
+                       "id":  "TP-05-cpu-export-guard",
+                       "status":  "PASS",
+                       "detail":  "CPU export stages/copies only; forces CUDA_VISIBLE_DEVICES empty; no kill"
+                   },
+                   {
+                       "id":  "TP-06-models-hub-banners",
+                       "status":  "PASS",
+                       "detail":  "Models hub/audit scripts declare no PID kill"
+                   },
+                   {
+                       "id":  "TP-07-warm-init-no-train-host",
+                       "status":  "PASS",
+                       "detail":  "Warm/init confined to product Ollama; no train-host markers"
+                   },
+                   {
+                       "id":  "TP-08-docs",
+                       "status":  "PASS",
+                       "detail":  "Live 3B train protection documentation present"
+                   },
+                   {
+                       "id":  "TP-09-no-remote-probe",
+                       "status":  "PASS",
+                       "detail":  "Assert did not SSH/probe/kill/pause/move train PID (static only)"
+                   }
+               ]
+}

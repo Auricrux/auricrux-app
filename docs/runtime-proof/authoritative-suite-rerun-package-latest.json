@@ -1,0 +1,325 @@
+{
+    "schemaVersion":  1,
+    "packageId":  "authoritative-suite-rerun-package-20260803T233652Z",
+    "purpose":  "authoritative-live-gguf-suite-rerun-package",
+    "atUtc":  "2026-08-03T23:36:52.3442989Z",
+    "verdict":  "GO-WITH-BLOCKERS",
+    "token":  "AUTHORITATIVE_SUITE_RERUN_GO_WITH_BLOCKERS",
+    "reason":  "Offline package + rules + rollback ready; live host/gate blockers remain (RB-C2/RB-C3). Do not run authoritative suite yet.",
+    "suiteExecuted":  false,
+    "skipSafetyGateAuthorized":  false,
+    "pass":  25,
+    "fail":  3,
+    "warn":  1,
+    "hardFailCount":  0,
+    "liveFailCount":  3,
+    "baseUrl":  "https://auricrux.futurecontractorsofamerica.com",
+    "publishDir":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web",
+    "areas":  [
+                  "deployment-package",
+                  "target-host",
+                  "authority-rules",
+                  "manifest-rules",
+                  "ledger-rules",
+                  "safety-gates",
+                  "rollback-package"
+              ],
+    "checks":  [
+                   {
+                       "id":  "SR-10-publish-complete",
+                       "area":  "deployment-package",
+                       "status":  "PASS",
+                       "detail":  "_publish/web complete (DLL/corpus/stamp/manifest/appsettings)",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-11-expand-search",
+                       "area":  "deployment-package",
+                       "status":  "PASS",
+                       "detail":  "ExpandSearchTerms in publish DLL",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-12-identity-capability",
+                       "area":  "deployment-package",
+                       "status":  "PASS",
+                       "detail":  "RuntimeTruth/packageIdentity strings present in DLL",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-13-stamp",
+                       "area":  "deployment-package",
+                       "status":  "PASS",
+                       "detail":  "version=1.3.0 suite=construction_god_suite_v1 host=product-gce",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-14-suite-def",
+                       "area":  "deployment-package",
+                       "status":  "PASS",
+                       "detail":  "eval/construction_god_suite_v1.json present",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-15-suite-runner",
+                       "area":  "deployment-package",
+                       "status":  "PASS",
+                       "detail":  "Suite runner enforces safety gate by default",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-20-host-url",
+                       "area":  "target-host",
+                       "status":  "PASS",
+                       "detail":  "https://auricrux.futurecontractorsofamerica.com",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-21-health",
+                       "area":  "target-host",
+                       "status":  "PASS",
+                       "detail":  "status=healthy model=auricrux-fca mode=ollama-live",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-22-package-host",
+                       "area":  "target-host",
+                       "status":  "FAIL",
+                       "detail":  "PACKAGE_HOST_CONSISTENCY_BLOCKED",
+                       "severity":  "live"
+                   },
+                   {
+                       "id":  "SR-23-runtime-truth",
+                       "area":  "target-host",
+                       "status":  "FAIL",
+                       "detail":  "HTTP 404 - package cutover required (RB-C2)",
+                       "severity":  "live"
+                   },
+                   {
+                       "id":  "SR-30-authority-map",
+                       "area":  "authority-rules",
+                       "status":  "PASS",
+                       "detail":  "AUTHORITY_MAP_OK",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-31-authority-docs",
+                       "area":  "authority-rules",
+                       "status":  "PASS",
+                       "detail":  "Authority map doc + chain policy present",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-40-manifest-honest",
+                       "area":  "manifest-rules",
+                       "status":  "PASS",
+                       "detail":  "FAIL@76.7% suitePassed=false eval=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-41-manifest-deploy-required",
+                       "area":  "manifest-rules",
+                       "status":  "PASS",
+                       "detail":  "productHostDeployRequired=true (honest pre-cutover)",
+                       "severity":  "soft"
+                   },
+                   {
+                       "id":  "SR-42-manifest-train",
+                       "area":  "manifest-rules",
+                       "status":  "PASS",
+                       "detail":  "Train do-not-interrupt marker retained",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-50-evidence-rules",
+                       "area":  "ledger-rules",
+                       "status":  "PASS",
+                       "detail":  "EVIDENCE_RULES_OK",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-51-ledger-integrity",
+                       "area":  "ledger-rules",
+                       "status":  "PASS",
+                       "detail":  "EVIDENCE_LEDGER_INTEGRITY_OK",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-52-ledger-authority",
+                       "area":  "ledger-rules",
+                       "status":  "PASS",
+                       "detail":  "currentLiveAuthority FAIL@76.7%",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-60-offline-gate",
+                       "area":  "safety-gates",
+                       "status":  "PASS",
+                       "detail":  "DEPLOYMENT_SAFETY_GATE_OK",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-61-train-protect",
+                       "area":  "safety-gates",
+                       "status":  "PASS",
+                       "detail":  "LIVE_3B_TRAIN_PROTECTION_OK",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-62-clobber",
+                       "area":  "safety-gates",
+                       "status":  "PASS",
+                       "detail":  "PRODUCT_MODEL_CLOBBER_PROTECTION_OK",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-63-fallback",
+                       "area":  "safety-gates",
+                       "status":  "PASS",
+                       "detail":  "PRODUCT_FALLBACK_PROFILE_OK",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-64-live-gate",
+                       "area":  "safety-gates",
+                       "status":  "FAIL",
+                       "detail":  "DEPLOYMENT_SAFETY_GATE_BLOCKED",
+                       "severity":  "live"
+                   },
+                   {
+                       "id":  "SR-65-promotion",
+                       "area":  "safety-gates",
+                       "status":  "WARN",
+                       "detail":  "PROMOTION_EVIDENCE_BLOCKED (expected; blocks promote/Release not suite entry)",
+                       "severity":  "soft"
+                   },
+                   {
+                       "id":  "SR-70-rollback-proc",
+                       "area":  "rollback-package",
+                       "status":  "PASS",
+                       "detail":  "Cutover rollback procedure present",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-71-precutover-baseline",
+                       "area":  "rollback-package",
+                       "status":  "PASS",
+                       "detail":  "Precutover baseline present",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-72-workflow-rollback",
+                       "area":  "rollback-package",
+                       "status":  "PASS",
+                       "detail":  "Workflow prev-rename + PrimaryModel preserve",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-73-rb-c2-package",
+                       "area":  "rollback-package",
+                       "status":  "PASS",
+                       "detail":  "RB-C2 execution package present",
+                       "severity":  "hard"
+                   },
+                   {
+                       "id":  "SR-74-dryrun-drill",
+                       "area":  "rollback-package",
+                       "status":  "PASS",
+                       "detail":  "CUTOVER_ROLLBACK_DRILL_OK_LIVE_BLOCKED",
+                       "severity":  "hard"
+                   }
+               ],
+    "blockers":  [
+                     {
+                         "id":  "SR-22-package-host",
+                         "area":  "target-host",
+                         "detail":  "PACKAGE_HOST_CONSISTENCY_BLOCKED",
+                         "severity":  "live"
+                     },
+                     {
+                         "id":  "SR-23-runtime-truth",
+                         "area":  "target-host",
+                         "detail":  "HTTP 404 - package cutover required (RB-C2)",
+                         "severity":  "live"
+                     },
+                     {
+                         "id":  "SR-64-live-gate",
+                         "area":  "safety-gates",
+                         "detail":  "DEPLOYMENT_SAFETY_GATE_BLOCKED",
+                         "severity":  "live"
+                     }
+                 ],
+    "namedBlockersActive":  [
+                                {
+                                    "id":  "B3",
+                                    "title":  "Operator package-web cutover not executed",
+                                    "mapsTo":  [
+                                                   "SR-22-package-host",
+                                                   "SR-23-runtime-truth",
+                                                   "SR-64-live-gate"
+                                               ],
+                                    "closure":  "Follow RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md; gh workflow run gcp-cutover-build-auricrux.yml -f action=full"
+                                },
+                                {
+                                    "id":  "B2",
+                                    "title":  "Intended package not on product host",
+                                    "mapsTo":  [
+                                                   "SR-22-package-host",
+                                                   "SR-23-runtime-truth"
+                                               ],
+                                    "closure":  "Same cutover as B3; then PACKAGE_HOST_CONSISTENCY_OK + runtime-truth 200"
+                                },
+                                {
+                                    "id":  "B1",
+                                    "title":  "Host lacks packageIdentity",
+                                    "mapsTo":  [
+                                                   "SR-22-package-host"
+                                               ],
+                                    "closure":  "Deploy package with PackageIdentityService + stamp"
+                                },
+                                {
+                                    "id":  "B4",
+                                    "title":  "Live safety gate blocks suite entry",
+                                    "mapsTo":  [
+                                                   "SR-64-live-gate"
+                                               ],
+                                    "closure":  "Clear B1-B3; Assert-GgufSuiteDeploymentSafetyGate.ps1 without SkipLiveProbes"
+                                }
+                            ],
+    "dependencyOrder":  [
+                            "B3",
+                            "B2",
+                            "B1",
+                            "B4",
+                            "authoritative suite rerun"
+                        ],
+    "tokens":  {
+                   "healthPrimaryModel":  "auricrux-fca",
+                   "healthRuntimeMode":  "ollama-live",
+                   "PACKAGE_HOST_CONSISTENCY_BLOCKED":  true,
+                   "AUTHORITY_MAP_OK":  true,
+                   "EVIDENCE_RULES_OK":  true,
+                   "EVIDENCE_LEDGER_INTEGRITY_OK":  true,
+                   "DEPLOYMENT_SAFETY_GATE_OK":  true,
+                   "LIVE_3B_TRAIN_PROTECTION_OK":  true,
+                   "PRODUCT_MODEL_CLOBBER_PROTECTION_OK":  true,
+                   "PRODUCT_FALLBACK_PROFILE_OK":  true,
+                   "DEPLOYMENT_SAFETY_GATE_BLOCKED":  true,
+                   "PROMOTION_EVIDENCE_BLOCKED":  true,
+                   "CUTOVER_ROLLBACK_DRILL_OK_LIVE_BLOCKED":  true
+               },
+    "suiteCommandWhenGo":  ".\\scripts\\run-gguf-construction-suite.ps1 -BaseUrl https://auricrux.futurecontractorsofamerica.com",
+    "forbiddenForAuthority":  [
+                                  "-SkipSafetyGate",
+                                  "offline alias rescore as live PASS",
+                                  "Manifest PASS without qualified live report",
+                                  "suite while PACKAGE_HOST_CONSISTENCY_BLOCKED"
+                              ],
+    "nextOperatorAction":  "Close live blockers (RB-C2 cutover -\u003e RB-C3 live gate OK), re-run this package to GO, then run suite. Forbidden: -SkipSafetyGate for authority.",
+    "related":  {
+                    "packageDoc":  "docs/runtime-proof/AUTHORITATIVE_LIVE_GGUF_SUITE_RERUN_PACKAGE.md",
+                    "rbC2":  "docs/runtime-proof/RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md",
+                    "evidenceRules":  "docs/runtime-proof/AURICRUX_EVIDENCE_RULES.md",
+                    "safetyGate":  "docs/runtime-proof/GGUF_DEPLOYMENT_SAFETY_GATE.md"
+                }
+}

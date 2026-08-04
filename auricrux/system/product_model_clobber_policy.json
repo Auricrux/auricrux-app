@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "productModelTag": "auricrux-fca",
+  "policy": "Refuse to overwrite, recreate, rename, or replace existing auricrux-fca unless an explicit authorized cutover path is used.",
+  "forbiddenWithoutAuthorization": [
+    "ollama create auricrux-fca",
+    "ollama rm auricrux-fca",
+    "ollama cp <any> auricrux-fca",
+    "ollama create from Modelfile.auricrux-fca targeting auricrux-fca"
+  ],
+  "authorization": {
+    "workflowInput": "authorize_product_model_cutover",
+    "workflowInputMustBe": true,
+    "reasonInput": "cutover_reason",
+    "envFlag": "AURICRUX_PRODUCT_MODEL_CUTOVER_AUTHORIZED",
+    "envFlagMustBe": "1",
+    "reasonEnv": "AURICRUX_PRODUCT_MODEL_CUTOVER_REASON",
+    "blockToken": "PRODUCT_MODEL_CLOBBER_BLOCKED",
+    "okToken": "PRODUCT_MODEL_CUTOVER_AUTHORIZED"
+  },
+  "authorizedCutoverPaths": [
+    {
+      "id": "gcp-load-gguf",
+      "path": ".github/workflows/gcp-load-ckpt110000-gguf.yml",
+      "kind": "gcs-gguf-load",
+      "notes": "Only authorized path to rm+create product tag from GGUF object. Requires workflow_dispatch authorize_product_model_cutover=true + cutover_reason."
+    }
+  ],
+  "mustNeverMutateProductTag": [
+    {
+      "id": "compose-default",
+      "path": "docker-compose.yml",
+      "kind": "compose"
+    },
+    {
+      "id": "compose-dev-fallback",
+      "path": "docker-compose.yml",
+      "kind": "fallback-init",
+      "notes": "Profile dev-fallback may create auricrux-fca-dev-fallback only."
+    },
+    {
+      "id": "gcp-warm",
+      "path": ".github/workflows/gcp-warm-auricrux-fca.yml",
+      "kind": "warm"
+    },
+    {
+      "id": "gcp-cutover-build",
+      "path": ".github/workflows/gcp-cutover-build-auricrux.yml",
+      "kind": "deploy-web"
+    },
+    {
+      "id": "gcp-vm-cutover-deploy",
+      "path": ".github/workflows/gcp-vm-cutover-deploy.yml",
+      "kind": "deploy-web"
+    },
+    {
+      "id": "gcp-vm-fix-ollama",
+      "path": ".github/workflows/gcp-vm-fix-auricrux-ollama.yml",
+      "kind": "ops"
+    },
+    {
+      "id": "deploy-azure",
+      "path": "scripts/deploy_azure.ps1",
+      "kind": "deploy-web"
+    },
+    {
+      "id": "modelfile-dev-fallback",
+      "path": "auricrux/system/Modelfile.auricrux-fca",
+      "kind": "fallback"
+    }
+  ],
+  "evidencePath": "docs/runtime-proof/product-model-cutover-evidence",
+  "assertScript": "scripts/Assert-ProductModelClobberProtection.ps1",
+  "requireScript": "scripts/Require-ProductModelCutoverAuthorization.ps1"
+}

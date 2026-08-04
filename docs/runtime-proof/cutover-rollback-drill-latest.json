@@ -1,0 +1,287 @@
+﻿{
+    "schemaVersion":  1,
+    "drillId":  "cutover-rollback-drill-20260803T235253Z",
+    "atUtc":  "2026-08-03T23:52:53.0264629Z",
+    "token":  "CUTOVER_ROLLBACK_DRILL_OK_LIVE_BLOCKED",
+    "purpose":  "dry-run-cutover-and-rollback-drill",
+    "constraints":  [
+                        "Do not touch live 3B train",
+                        "Do not replace product model unless authorized cutover path",
+                        "Stop at dry-run if live unsafe; this script never executes live cutover"
+                    ],
+    "proved":  {
+                   "currentStateDetected":  true,
+                   "targetStatePrepared":  true,
+                   "rollbackStateAvailable":  true,
+                   "failureCanBeDetected":  true,
+                   "recoveryInstructionsClear":  true,
+                   "evidenceLogged":  true
+               },
+    "passCount":  21,
+    "failCount":  0,
+    "warnCount":  2,
+    "blockers":  [
+                     "PROMOTION_EVIDENCE not OK (token=PROMOTION_EVIDENCE_BLOCKED) - model promote / Release PASS refused; package web cutover still requires explicit operator workflow dispatch (not this drill)"
+                 ],
+    "phases":  {
+                   "1_detect_current":  {
+                                            "probedAtUtc":  "2026-08-03T23:52:53.0264629Z",
+                                            "baseUrl":  "https://auricrux.futurecontractorsofamerica.com",
+                                            "health":  {
+                                                           "status":  "healthy",
+                                                           "primaryModel":  "auricrux-fca",
+                                                           "primaryModelReady":  true,
+                                                           "runtimeMode":  "ollama-live",
+                                                           "ollamaReachable":  true,
+                                                           "corpusEntries":  80
+                                                       },
+                                            "capabilities":  {
+                                                                 "packageIdentityPresent":  false,
+                                                                 "packageVersion":  null,
+                                                                 "corpusSha256":  null,
+                                                                 "dllSha256":  null,
+                                                                 "primaryModel":  null,
+                                                                 "promotedFineTuneLive":  true,
+                                                                 "evalSuiteLastResult":  "PRODUCT-LOADED-GGUF-GENERATIVE-86.7-PASS-THRESHOLD-80"
+                                                             },
+                                            "runtimeTruth":  null,
+                                            "packageIdentityPresent":  false,
+                                            "primaryModel":  "auricrux-fca",
+                                            "runtimeMode":  "ollama-live",
+                                            "trainStatusFromManifest":  "running-do-not-interrupt"
+                                        },
+                   "2_prepare_target":  {
+                                            "publishDir":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web",
+                                            "packageReady":  true,
+                                            "stamp":  {
+                                                          "packageVersion":  "1.3.0",
+                                                          "buildTimestampUtc":  "2026-08-03T23:52:53.4912411Z",
+                                                          "suiteTarget":  "construction_god_suite_v1",
+                                                          "hostProfile":  "product-gce",
+                                                          "recipeProfile":  "product_gguf_serve_v1",
+                                                          "deploymentSource":  "gcp-cutover-dry-run",
+                                                          "path":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web\\auricrux\\system\\package_stamp.json"
+                                                      },
+                                            "dllPresent":  true,
+                                            "corpusPresent":  true,
+                                            "expandSearch":  true,
+                                            "primaryModel":  "auricrux-fca",
+                                            "deploymentSourcePlanned":  "gcp-cutover-build-auricrux"
+                                        },
+                   "3_rollback_available":  {
+                                                "procedurePath":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\gguf-suite-live-cutover-procedure-2026-08-03.md",
+                                                "baselinePath":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\docs\\runtime-proof\\gguf-grounding-precutover-baseline-2026-08-03.json",
+                                                "procedureHasPrevRename":  true,
+                                                "baselinePresent":  true,
+                                                "workflowPrevRename":  true,
+                                                "recoveryStepsDocumented":  true
+                                            },
+                   "4_failure_detection":  {
+                                               "detectors":  [
+                                                                 {
+                                                                     "id":  "health-not-healthy",
+                                                                     "signal":  "GET /api/health status not healthy/degraded after swap",
+                                                                     "assert":  "curl health / Assert gate SG-13"
+                                                                 },
+                                                                 {
+                                                                     "id":  "model-wrong",
+                                                                     "signal":  "primaryModel != auricrux-fca OR not ready",
+                                                                     "assert":  "/api/health + /api/runtime-truth"
+                                                                 },
+                                                                 {
+                                                                     "id":  "fallback-active",
+                                                                     "signal":  "fallbackModeActive=true or runtimeMode corpus-fallback/ollama-degraded",
+                                                                     "assert":  "/api/runtime-truth"
+                                                                 },
+                                                                 {
+                                                                     "id":  "package-mismatch",
+                                                                     "signal":  "packageIdentity corpus/DLL/version != intended publish",
+                                                                     "assert":  "Assert-PackageHostConsistency.ps1"
+                                                                 },
+                                                                 {
+                                                                     "id":  "suite-fail",
+                                                                     "signal":  "dated live suite passRate \u003c 80 or suitePassed=false",
+                                                                     "assert":  "run-gguf-construction-suite.ps1 + ledger"
+                                                                 },
+                                                                 {
+                                                                     "id":  "identity-absent",
+                                                                     "signal":  "packageIdentity still absent after identity-capable cutover",
+                                                                     "assert":  "/api/capabilities"
+                                                                 },
+                                                                 {
+                                                                     "id":  "clobber-attempt",
+                                                                     "signal":  "unauthorized ollama create/rm auricrux-fca",
+                                                                     "assert":  "Require-ProductModelCutoverAuthorization / clobber policy"
+                                                                 }
+                                                             ],
+                                               "assertScripts":  [
+                                                                     "Assert-PackageHostConsistency.ps1",
+                                                                     "Assert-RuntimeTruth.ps1",
+                                                                     "Assert-PromotionEvidenceGate.ps1",
+                                                                     "Assert-GgufSuiteDeploymentSafetyGate.ps1",
+                                                                     "Assert-ProductModelClobberProtection.ps1",
+                                                                     "Assert-Live3bTrainProtection.ps1"
+                                                                 ],
+                                               "simulatedKnownFailures":  [
+                                                                              "If cutover ships identity-less build, PH-09 still FAIL",
+                                                                              "If cutover omits RuntimeTruthService, /api/runtime-truth stays 404",
+                                                                              "Live suite authority still FAIL at 76.7%  -  cutover alone does not clear score"
+                                                                          ]
+                                           },
+                   "5_recovery_instructions":  {
+                                                   "sourceDoc":  "docs/runtime-proof/gguf-suite-live-cutover-procedure-2026-08-03.md",
+                                                   "steps":  [
+                                                                 "On product VM only (never train host): identify auricrux-web-prev-* and auricrux-api-prev-*",
+                                                                 "Stop failed new containers; rename them to *-failed-\u003cunix\u003e",
+                                                                 "Rename prev containers back to auricrux-web / auricrux-api",
+                                                                 "docker start auricrux-web auricrux-api",
+                                                                 "Verify curl http://127.0.0.1:5001/api/health and public /api/health",
+                                                                 "Re-run Assert-PackageHostConsistency.ps1 and Assert-RuntimeTruth.ps1",
+                                                                 "Do NOT mutate product Ollama tag unless Require-ProductModelCutoverAuthorization passes",
+                                                                 "Do NOT contact auricrux-gpu-ncast4 / train PID 1019003"
+                                                             ],
+                                                   "productModelNote":  "Package rollback does not change Ollama weights; product tag remains auricrux-fca",
+                                                   "trainNote":  "Rollback is product GCE only; live 3B train is untouched"
+                                               },
+                   "6_safety":  {
+                                    "live3bTrainTouched":  false,
+                                    "productModelReplaced":  false,
+                                    "liveCutoverExecuted":  false,
+                                    "ghWorkflowDispatched":  false
+                                },
+                   "7_live_decision":  {
+                                           "liveCutoverExecuted":  false,
+                                           "productModelReplaceExecuted":  false,
+                                           "trainTouched":  false,
+                                           "stopAtDryRun":  true,
+                                           "packageCutoverPrereqsMet":  true,
+                                           "nextAuthorizedAction":  "Operator may dispatch: gh workflow run gcp-cutover-build-auricrux.yml -f action=full (product GCE only; does not replace auricrux-fca weights)",
+                                           "modelPromoteAuthorized":  false,
+                                           "modelPromoteNote":  "Model promote requires PROMOTION_EVIDENCE_OK + Require-ProductModelCutoverAuthorization  -  not this drill"
+                                       }
+               },
+    "checks":  [
+                   {
+                       "id":  "DR-00-mode",
+                       "status":  "PASS",
+                       "detail":  "Dry-run only (AllowLiveCutover unset)"
+                   },
+                   {
+                       "id":  "DR-01-current-health",
+                       "status":  "PASS",
+                       "detail":  "health=healthy model=auricrux-fca ready mode=ollama-live"
+                   },
+                   {
+                       "id":  "DR-01b-current-package",
+                       "status":  "WARN",
+                       "detail":  "Host lacks packageIdentity - current package ambiguous (pre-cutover)"
+                   },
+                   {
+                       "id":  "DR-01c-runtime-truth",
+                       "status":  "WARN",
+                       "detail":  "Runtime truth 404  -  target package not yet on host (expected pre-cutover)"
+                   },
+                   {
+                       "id":  "DR-01d-train-detected",
+                       "status":  "PASS",
+                       "detail":  "Live 3B train status recorded (do not touch): running-do-not-interrupt"
+                   },
+                   {
+                       "id":  "DR-02-stamp-prepared",
+                       "status":  "PASS",
+                       "detail":  "package_stamp.json refreshed for intended cutover package"
+                   },
+                   {
+                       "id":  "DR-02b-publish-package",
+                       "status":  "PASS",
+                       "detail":  "Publish package present (DLL + corpus)"
+                   },
+                   {
+                       "id":  "DR-02c-stamp-fields",
+                       "status":  "PASS",
+                       "detail":  "version=1.3.0 suite=construction_god_suite_v1 deploy=gcp-cutover-dry-run"
+                   },
+                   {
+                       "id":  "DR-02d-expand-search",
+                       "status":  "PASS",
+                       "detail":  "ExpandSearchTerms present in publish DLL"
+                   },
+                   {
+                       "id":  "DR-02e-cutover-workflow",
+                       "status":  "PASS",
+                       "detail":  "gcp-cutover-build-auricrux.yml preserves PrimaryModel + prev-rename; train host not contacted"
+                   },
+                   {
+                       "id":  "DR-02f-no-model-replace",
+                       "status":  "PASS",
+                       "detail":  "Product model replace gated by Require-ProductModelCutoverAuthorization (not this package cutover)"
+                   },
+                   {
+                       "id":  "DR-02g-cutover-no-ollama-mutate",
+                       "status":  "PASS",
+                       "detail":  "Package cutover workflow does not mutate product Ollama tag"
+                   },
+                   {
+                       "id":  "DR-03-rollback-procedure",
+                       "status":  "PASS",
+                       "detail":  "Cutover procedure documents prev-container rollback + health verify"
+                   },
+                   {
+                       "id":  "DR-03b-precutover-baseline",
+                       "status":  "PASS",
+                       "detail":  "Baseline present phase=pre-cutover-baseline priorRate=76.7"
+                   },
+                   {
+                       "id":  "DR-03c-workflow-prev",
+                       "status":  "PASS",
+                       "detail":  "Cutover workflow renames containers to *-prev-\u003cunix\u003e before swap"
+                   },
+                   {
+                       "id":  "DR-04-failure-detectors",
+                       "status":  "PASS",
+                       "detail":  "Failure detectors present (7 signals, 6 asserts)"
+                   },
+                   {
+                       "id":  "DR-04b-simulated-failure-awareness",
+                       "status":  "PASS",
+                       "detail":  "Known post-cutover failure signals documented: 3"
+                   },
+                   {
+                       "id":  "DR-05-recovery-instructions",
+                       "status":  "PASS",
+                       "detail":  "Recovery steps present in procedure + drill receipt"
+                   },
+                   {
+                       "id":  "DR-06-train-protection",
+                       "status":  "PASS",
+                       "detail":  "LIVE_3B_TRAIN_PROTECTION_OK (drill did not touch train)"
+                   },
+                   {
+                       "id":  "DR-06b-clobber-protection",
+                       "status":  "PASS",
+                       "detail":  "PRODUCT_MODEL_CLOBBER_PROTECTION_OK (no unauthorized model replace)"
+                   },
+                   {
+                       "id":  "DR-06c-no-live-mutate",
+                       "status":  "PASS",
+                       "detail":  "Drill invoked no gh workflow run, no gcloud compute, no ollama rm/create"
+                   },
+                   {
+                       "id":  "DR-07-package-cutover-prereqs",
+                       "status":  "PASS",
+                       "detail":  "Package cutover prereqs met for AUTHORIZED workflow (not executed by drill)"
+                   },
+                   {
+                       "id":  "DR-07b-stop-at-dry-run",
+                       "status":  "PASS",
+                       "detail":  "Live action stopped at dry-run by design  -  no workflow dispatch"
+                   }
+               ],
+    "liveActionsTaken":  {
+                             "containerSwap":  false,
+                             "ollamaMutate":  false,
+                             "trainContact":  false,
+                             "ghWorkflowRun":  false,
+                             "gcloudSsh":  false
+                         }
+}

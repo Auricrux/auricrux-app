@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "policyId": "live_3b_train_protection_v1",
+  "purpose": "Protect live 3B TRUE God training job. Never interrupt, overwrite, corrupt, starve, restart, pause, move, or optimize it from automation.",
+  "protectedJob": {
+    "statusField": "trueGodRun.status",
+    "requiredStatus": "running-do-not-interrupt",
+    "pidField": "trueGodRun.trainPid",
+    "hostField": "trueGodRun.host",
+    "resourceGroupField": "trueGodRun.resourceGroup",
+    "manifestPath": "auricrux/system/model_manifest.json"
+  },
+  "forbiddenActions": [
+    "kill/pkill/killall targeting train PID or train python",
+    "az vm stop/deallocate/restart/delete of train host",
+    "pause/resume/nice/renice/cgroup starve of train process",
+    "GPU merge/export with CUDA_VISIBLE_DEVICES non-empty on train host",
+    "starting competing train on same GPU while status=running-do-not-interrupt",
+    "deleting sole live checkpoint / wiping train run root",
+    "token-factory tamper while train running"
+  ],
+  "allowedReadOnly": [
+    "ps -p <trainPid> existence probe",
+    "ls checkpoint dirs",
+    "manifest/ops context reads"
+  ],
+  "allowedWithCpuOnlyGuard": [
+    "stage checkpoint file copy to export-staging",
+    "CPU merge/export with CUDA_VISIBLE_DEVICES empty (never on train GPU)"
+  ],
+  "mustNeverContactTrainHost": [
+    "scripts/run-gguf-construction-suite.ps1",
+    "scripts/Assert-GgufSuiteDeploymentSafetyGate.ps1",
+    "scripts/Assert-OllamaInitSafety.ps1",
+    "scripts/Assert-ProductModelClobberProtection.ps1",
+    "docker-compose.yml",
+    ".github/workflows/gcp-warm-auricrux-fca.yml",
+    ".github/workflows/gcp-cutover-build-auricrux.yml",
+    ".github/workflows/gcp-load-ckpt110000-gguf.yml",
+    "scripts/deploy_azure.ps1"
+  ],
+  "cpuExportGuardScript": "scripts/stage-and-cpu-export-checkpoint.ps1",
+  "assertScript": "scripts/Assert-Live3bTrainProtection.ps1",
+  "blockToken": "LIVE_3B_TRAIN_PROTECTION_BLOCKED",
+  "okToken": "LIVE_3B_TRAIN_PROTECTION_OK"
+}

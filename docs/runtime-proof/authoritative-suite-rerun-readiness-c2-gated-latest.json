@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "reportId": "authoritative_suite_rerun_readiness_c2_gated",
+  "atUtc": "2026-08-03T23:54:00Z",
+  "blockerPriority": 2,
+  "mode": "blocker-elimination",
+  "suiteExecuted": false,
+  "priorPackageVerdict": "GO-WITH-BLOCKERS",
+  "priorToken": "AUTHORITATIVE_SUITE_RERUN_GO_WITH_BLOCKERS",
+  "hardFailCount": 0,
+  "liveFailCount": 3,
+  "liveBlockersOnly": [
+    "SR-22-package-host: PACKAGE_HOST_CONSISTENCY_BLOCKED",
+    "SR-23-runtime-truth: HTTP 404 (RB-C2)",
+    "SR-64-live-gate: DEPLOYMENT_SAFETY_GATE_BLOCKED"
+  ],
+  "readinessClass": "READY_EXCEPT_RB_C2",
+  "postCutoverSequence": [
+    "Invoke-RbC2PackageWebCutoverPackage.ps1 -Phase PostVerify -GhRunId <id> [-MarkExecuted]",
+    "Assert-PackageHostConsistency.ps1 -> PACKAGE_HOST_CONSISTENCY_OK",
+    "Invoke-AuthoritativeSuiteRerunPackage.ps1 -> expect GO (re-run only after C2)",
+    "run-gguf-construction-suite.ps1 (authoritative live; no SkipSafetyGate)"
+  ],
+  "doNotRunSuiteUntil": "RB-C2 PostVerify PASS + live gate OK",
+  "claimsForbidden": [
+    "suite PASS",
+    "Manifest PASS",
+    "GO without clearing live blockers"
+  ]
+}

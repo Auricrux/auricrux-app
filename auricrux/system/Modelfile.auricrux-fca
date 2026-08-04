@@ -1,21 +1,23 @@
-﻿# NOTE (2026-08-01): Product GCP Ollama auricrux-fca was replaced by merged checkpoint-110000 Q8_0 GGUF
-# (see model_manifest.json / workflow gcp-load-ckpt110000-gguf.yml). This file remains the interim
-# alias recipe for local/dev when the fine-tune GGUF is unavailable.
-# Auricrux FCA interim specialist alias
+﻿# DEV FALLBACK ONLY (2026-08-02)
 #
-# This is the exact Modelfile backing the "auricrux-fca" Ollama model that Auricrux.Web
-# calls by default (Auricrux:PrimaryModel in appsettings.json). It is a system-prompt
-# alias over the llama3.2:3b base model â€” NOT the fine-tuned true-god checkpoint-70000
-# adapter (see auricrux/system/model_manifest.json for that promotion status). It exists
-# so the product always has a real, named, pullable specialist model instead of a bare
-# "llama3.2" label, matching AUX-002/AUX-004's construction-specialist positioning.
+# Production GCP Ollama `auricrux-fca` serves merged LoRA Q8 GGUF from the live TRUE God
+# train tip (see auricrux/system/model_manifest.json — currently checkpoint-120000).
+# Do NOT use this file to overwrite product weights.
+# Do NOT run: ollama create auricrux-fca -f Modelfile.auricrux-fca
+# That command would clobber the product GGUF tag. Forbidden on product hosts.
 #
-# Build locally:
+# This Modelfile is the local/dev interim alias over llama3.2:3b when the fine-tune GGUF
+# is unavailable. Product promotion path: CPU merge on train host → GCS → gcp-load GGUF workflow.
+#
+# Build local fallback only (explicit; never default startup):
+#   docker compose --profile dev-fallback up ollama-model-init
+#   # or manually:
 #   ollama pull llama3.2:3b
-#   ollama create auricrux-fca -f auricrux/system/Modelfile.auricrux-fca
+#   ollama create auricrux-fca-dev-fallback -f auricrux/system/Modelfile.auricrux-fca
 #
-# Verify:
-#   ollama run auricrux-fca "What is a sill plate?"
+# Verify fallback:
+#   ollama run auricrux-fca-dev-fallback "What is a sill plate?"
+#   # Point local web: Auricrux__PrimaryModel=auricrux-fca-dev-fallback
 
 FROM llama3.2:3b
 

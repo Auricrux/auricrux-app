@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "purpose": "remaining-blockers-dependency-graph",
+  "atUtc": "2026-08-03T23:50:00Z",
+  "noNewBlockerCategories": true,
+  "blockerIds": ["RB-C1", "RB-C2", "RB-C3", "RB-H1", "RB-H2", "RB-H3", "RB-H4", "RB-M1", "RB-L1"],
+  "criticalIds": ["RB-C1", "RB-C2", "RB-C3"],
+  "rootBlockers": [
+    { "id": "RB-C2", "note": "Critical-chain entry; remote cutover" },
+    { "id": "RB-H2", "note": "Storage floor; parallel" },
+    { "id": "RB-H3", "note": "Protect until natural train completion" },
+    { "id": "RB-H4", "note": "ACL; independent of host package" },
+    { "id": "RB-M1", "note": "L3 content; independent of 3B live path" }
+  ],
+  "enablersNotBlockerIds": [
+    { "id": "data-disk-D-E-F", "unlocks": ["RB-H2", "RB-L1"] }
+  ],
+  "dependentBlockers": [
+    { "id": "RB-C3", "dependsOn": ["RB-C2"], "hardness": "hard" },
+    { "id": "RB-C1", "dependsOn": ["RB-C3", "RB-C2"], "hardness": "hard", "note": "C3 enables suite entry; C1 still needs qualified PASS" },
+    { "id": "RB-H1", "dependsOn": ["RB-C2", "RB-C1"], "hardness": "hard-for-full-OK", "note": "Partial clear as C2 then C1 land" },
+    { "id": "RB-L1", "dependsOn": ["data-disk-D-E-F"], "hardness": "hard", "relatedTo": ["RB-H2"] }
+  ],
+  "autoClearOrDisappear": [
+    { "id": "RB-C3", "when": "RB-C2 closed", "mechanism": "SG-20 package-host consistency" },
+    { "id": "RB-H1-partial", "when": "RB-C2 closed", "mechanism": "package/host promotion classes" },
+    { "id": "RB-H1-full", "when": "RB-C1 and RB-C2 closed", "mechanism": "PROMOTION_EVIDENCE_OK" },
+    { "id": "RB-L1-often", "when": "RB-H2 remediation includes off-C work root", "mechanism": "onPrimaryC=false" }
+  ],
+  "doesNotAutoClear": ["RB-C1", "RB-H2", "RB-H3", "RB-H4", "RB-M1"],
+  "shortestPathToZeroCritical": {
+    "target": ["RB-C1", "RB-C2", "RB-C3"],
+    "steps": [
+      { "order": 1, "id": "RB-C2", "action": "package-web cutover + PostVerify" },
+      { "order": 2, "id": "RB-C3", "action": "verify live DEPLOYMENT_SAFETY_GATE_OK (expect auto-clear)" },
+      { "order": 3, "id": "RB-C1", "action": "authoritative live suite qualified PASS + ledger" }
+    ],
+    "excludedFromShortestCriticalPath": ["RB-H1", "RB-H2", "RB-H3", "RB-H4", "RB-M1", "RB-L1"],
+    "softConstraintsDuringPath": ["RB-H3-do-not-interrupt-train"]
+  },
+  "doc": "docs/runtime-proof/REMAINING_BLOCKERS_DEPENDENCY_GRAPH.md"
+}

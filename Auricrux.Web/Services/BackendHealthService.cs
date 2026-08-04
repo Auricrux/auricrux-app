@@ -16,6 +16,7 @@ public sealed class BackendHealthReport
     public IReadOnlyList<string> MemoryBackends { get; set; } = [];
     public IReadOnlyList<string> Models { get; set; } = [];
     public string RuntimeMode { get; set; } = "corpus-fallback";
+    public PackageIdentitySnapshot? PackageIdentity { get; set; }
 }
 
 public sealed class BackendHealthService(
@@ -23,19 +24,23 @@ public sealed class BackendHealthService(
     ConversationMemoryService memory,
     IHttpClientFactory httpClientFactory,
     IConfiguration config,
+    PackageIdentityService packageIdentity,
     ILogger<BackendHealthService> logger)
 {
     public async Task<BackendHealthReport> ProbeAsync(CancellationToken ct = default)
     {
         var primary = config["Auricrux:PrimaryModel"] ?? "llama3.2";
         var ollamaBase = (config["Auricrux:OllamaUrl"] ?? "http://127.0.0.1:11434").TrimEnd('/');
+        var pkg = packageIdentity.GetIdentity();
         var report = new BackendHealthReport
         {
             PrimaryModel = primary,
             CorpusEntries = intelligence.CorpusEntryCount,
             MemoryBackends = memory.Backends,
             Models = intelligence.AvailableModels,
-            Timestamp = DateTime.UtcNow
+            Timestamp = DateTime.UtcNow,
+            Version = string.IsNullOrWhiteSpace(pkg.PackageVersion) ? "1.3.0" : pkg.PackageVersion,
+            PackageIdentity = pkg
         };
 
         try

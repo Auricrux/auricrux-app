@@ -15,7 +15,7 @@
     "title": "CSI Division 05 Metals / Structural Steel",
     "scope": "internal",
     "content": "Structural steel erection sequencing: verify anchor bolt survey before steel delivery, torque bolts per RCSC specification (snug-tight then turn-of-nut or DTI washers for slip-critical), and confirm AISC-certified fabricator shop drawings before fabrication release.",
-    "tags": ["steel", "structural", "erection", "aisc", "csi"]
+    "tags": ["steel", "structural", "erection", "aisc", "csi", "rcsc", "bolt", "slip-critical"]
   },
   {
     "title": "CSI Division 06 Wood, Plastics, Composites / Rough Framing",
@@ -219,7 +219,7 @@
     "title": "Earthwork and Compaction Testing",
     "scope": "internal",
     "content": "Compact structural fill in lifts (typically 8-12 in loose) and verify with a nuclear density gauge or sand-cone test to reach the specified percent of Standard/Modified Proctor before placing footings or slabs.",
-    "tags": ["earthwork", "compaction", "proctor", "testing"]
+    "tags": ["earthwork", "compaction", "proctor", "testing", "density", "footing", "nuclear density"]
   },
   {
     "title": "Concrete Slab-on-Grade Best Practices",

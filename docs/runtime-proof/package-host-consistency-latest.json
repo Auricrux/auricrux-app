@@ -1,0 +1,128 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:55.8039020Z",
+    "token":  "PACKAGE_HOST_CONSISTENCY_BLOCKED",
+    "baseUrl":  "https://auricrux.futurecontractorsofamerica.com",
+    "publishDir":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web",
+    "expectedHost":  "auricrux.futurecontractorsofamerica.com",
+    "expectedProductModel":  "auricrux-fca",
+    "passCount":  11,
+    "failCount":  8,
+    "warnCount":  0,
+    "publish":  {
+                    "corpusSha256":  "f7dc9b230c8aa676cb4c4a07a2d6b24716e8c7c41cb861eed7e2e75f7f585d5b",
+                    "dllSha256":  "fce0b6f8c19e8fa38c9eb58d86db285f2b4a2df02c4134abbdc2447a8d35fa3c",
+                    "corpusEntries":  80,
+                    "packageVersion":  "1.3.0",
+                    "suiteTarget":  "construction_god_suite_v1",
+                    "primaryModel":  "auricrux-fca",
+                    "manifestEvalStatus":  "PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80"
+                },
+    "live":  {
+                 "packageIdentityPresent":  false,
+                 "packageVersion":  null,
+                 "corpusSha256":  null,
+                 "dllSha256":  null,
+                 "suiteTarget":  null,
+                 "primaryModel":  "auricrux-fca",
+                 "manifestEvalStatus":  null,
+                 "ollamaReachable":  true,
+                 "runtimeMode":  "ollama-live"
+             },
+    "checks":  [
+                   {
+                       "id":  "PH-01-publish-package",
+                       "status":  "PASS",
+                       "detail":  "Publish package present (DLL + corpus)"
+                   },
+                   {
+                       "id":  "PH-02-publish-stamp",
+                       "status":  "PASS",
+                       "detail":  "stamp version=1.3.0 suite=construction_god_suite_v1"
+                   },
+                   {
+                       "id":  "PH-03-publish-config",
+                       "status":  "PASS",
+                       "detail":  "appsettings PrimaryModel=auricrux-fca"
+                   },
+                   {
+                       "id":  "PH-04-publish-manifest",
+                       "status":  "PASS",
+                       "detail":  "modelId present; evalStatus=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80"
+                   },
+                   {
+                       "id":  "PH-05-publish-expand-search",
+                       "status":  "PASS",
+                       "detail":  "ExpandSearchTerms present in publish DLL"
+                   },
+                   {
+                       "id":  "PH-06-target-host",
+                       "status":  "PASS",
+                       "detail":  "https://auricrux.futurecontractorsofamerica.com"
+                   },
+                   {
+                       "id":  "PH-07-health-reachable",
+                       "status":  "PASS",
+                       "detail":  "status=healthy"
+                   },
+                   {
+                       "id":  "PH-08-capabilities-reachable",
+                       "status":  "PASS",
+                       "detail":  "capabilities OK"
+                   },
+                   {
+                       "id":  "PH-09-package-identity-present",
+                       "status":  "FAIL",
+                       "detail":  "AMBIGUOUS/STALE: host does not report packageIdentity - cannot prove intended package is deployed"
+                   },
+                   {
+                       "id":  "PH-10-product-model-name",
+                       "status":  "PASS",
+                       "detail":  "primaryModel=auricrux-fca ready"
+                   },
+                   {
+                       "id":  "PH-11-model-endpoint",
+                       "status":  "PASS",
+                       "detail":  "ollamaReachable mode=ollama-live hostHint=n/a-until-cutover"
+                   },
+                   {
+                       "id":  "PH-12-suite-target",
+                       "status":  "FAIL",
+                       "detail":  "Cannot verify suite target without packageIdentity"
+                   },
+                   {
+                       "id":  "PH-13-manifest-version",
+                       "status":  "FAIL",
+                       "detail":  "Cannot verify manifest without packageIdentity"
+                   },
+                   {
+                       "id":  "PH-14-corpus-files",
+                       "status":  "FAIL",
+                       "detail":  "Cannot verify corpus without packageIdentity"
+                   },
+                   {
+                       "id":  "PH-15-package-version",
+                       "status":  "FAIL",
+                       "detail":  "Cannot verify package version without packageIdentity"
+                   },
+                   {
+                       "id":  "PH-16-dll-identity",
+                       "status":  "FAIL",
+                       "detail":  "Cannot verify DLL identity without packageIdentity"
+                   },
+                   {
+                       "id":  "PH-17-search-expansion",
+                       "status":  "PASS",
+                       "detail":  "search expansion OK hits=12 (silica/respirable present)"
+                   },
+                   {
+                       "id":  "PH-18-env-config-signals",
+                       "status":  "FAIL",
+                       "detail":  "No packageIdentity - env/config signals unavailable"
+                   },
+                   {
+                       "id":  "PH-19-host-unambiguous",
+                       "status":  "FAIL",
+                       "detail":  "No packageIdentity - host identity ambiguous"
+                   }
+               ]
+}

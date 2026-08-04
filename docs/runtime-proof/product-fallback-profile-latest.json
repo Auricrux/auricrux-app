@@ -1,0 +1,43 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:54.3812404Z",
+    "token":  "PRODUCT_FALLBACK_PROFILE_OK",
+    "passCount":  7,
+    "failCount":  0,
+    "checks":  [
+                   {
+                       "id":  "FP-01-primary",
+                       "status":  "PASS",
+                       "detail":  "PrimaryModel=auricrux-fca"
+                   },
+                   {
+                       "id":  "FP-02-force-corpus",
+                       "status":  "PASS",
+                       "detail":  "ForceCorpusFallback=false"
+                   },
+                   {
+                       "id":  "FP-03-recipe",
+                       "status":  "PASS",
+                       "detail":  "RecipeProfile=product_gguf_serve_v1"
+                   },
+                   {
+                       "id":  "FP-04-host",
+                       "status":  "PASS",
+                       "detail":  "HostProfile=product-gce"
+                   },
+                   {
+                       "id":  "FP-05-ollama-init",
+                       "status":  "PASS",
+                       "detail":  "OLLAMA_INIT_SAFETY_OK (dev-fallback explicit only)"
+                   },
+                   {
+                       "id":  "FP-06-docs",
+                       "status":  "PASS",
+                       "detail":  "OLLAMA_INIT_SAFE_UNSAFE_PATHS.md"
+                   },
+                   {
+                       "id":  "FP-07-live",
+                       "status":  "PASS",
+                       "detail":  "Live model=auricrux-fca mode=ollama-live (not interim fallback)"
+                   }
+               ]
+}

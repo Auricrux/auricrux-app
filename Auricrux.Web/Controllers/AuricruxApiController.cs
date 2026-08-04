@@ -10,6 +10,7 @@ public sealed class AuricruxApiController(
     ConstructionIntelligenceService intelligence,
     BackendHealthService health,
     CapabilitiesService capabilities,
+    RuntimeTruthService runtimeTruth,
     FreemiumAccountStore accounts,
     WebBrowseService webBrowse,
     ConstructionAgentService agent,
@@ -33,11 +34,24 @@ public sealed class AuricruxApiController(
         return StatusCode(statusCode, report);
     }
 
+    [HttpGet("runtime-truth")]
+    [HttpGet("truth")]
+    public async Task<ActionResult<RuntimeTruthReport>> GetRuntimeTruth(CancellationToken cancellationToken)
+    {
+        var host = Request.Host.Host;
+        var report = await runtimeTruth.GetAsync(host, cancellationToken);
+        return Ok(report);
+    }
+
     [HttpGet("models")]
     public ActionResult<object> ListModels() => Ok(new { models = intelligence.AvailableModels });
 
     [HttpGet("capabilities")]
-    public ActionResult<CapabilitiesReport> GetCapabilities() => Ok(capabilities.GetReport());
+    public ActionResult<CapabilitiesReport> GetCapabilities()
+    {
+        var host = $"{Request.Scheme}://{Request.Host}";
+        return Ok(capabilities.GetReport(host));
+    }
 
     [HttpPost("chat")]
     public async Task<ActionResult<ChatResponse>> Chat(

@@ -1,0 +1,178 @@
+﻿{
+    "checks":  [
+                   {
+                       "detail":  "auricrux_operational_drift_v1",
+                       "status":  "PASS",
+                       "id":  "OD-00-policy",
+                       "class":  "policy"
+                   },
+                   {
+                       "detail":  "Publish DLL present",
+                       "status":  "PASS",
+                       "id":  "OD-10-publish-present",
+                       "class":  "stale_publish_package"
+                   },
+                   {
+                       "detail":  "packageVersion=1.3.0",
+                       "status":  "PASS",
+                       "id":  "OD-11-stamp-version",
+                       "class":  "stale_publish_package"
+                   },
+                   {
+                       "detail":  "deploymentSource=gcp-cutover-dry-run",
+                       "status":  "PASS",
+                       "id":  "OD-12-stamp-source",
+                       "class":  "stale_publish_package"
+                   },
+                   {
+                       "detail":  "prepared dllSha matches publish",
+                       "status":  "PASS",
+                       "id":  "OD-13-prepared-dll",
+                       "class":  "stale_publish_package"
+                   },
+                   {
+                       "detail":  "prepared corpusSha matches publish",
+                       "status":  "PASS",
+                       "id":  "OD-14-prepared-corpus",
+                       "class":  "stale_corpora"
+                   },
+                   {
+                       "detail":  "Publish stamp newer than package-prepared receipt (re-stamp after prepare)",
+                       "status":  "WARN",
+                       "id":  "OD-15-prepared-vs-stamp",
+                       "class":  "stale_deployment_artifacts"
+                   },
+                   {
+                       "detail":  "corpusSha=f7dc9b230c8a...",
+                       "status":  "PASS",
+                       "id":  "OD-20-corpus-hash",
+                       "class":  "stale_corpora"
+                   },
+                   {
+                       "detail":  "evalStatus=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80 rate=76.7",
+                       "status":  "PASS",
+                       "id":  "OD-30-manifest-repo-pub",
+                       "class":  "stale_manifests"
+                   },
+                   {
+                       "detail":  "Honest FAIL align rate=76.7",
+                       "status":  "PASS",
+                       "id":  "OD-31-manifest-vs-ledger",
+                       "class":  "stale_manifests"
+                   },
+                   {
+                       "detail":  "entries=5",
+                       "status":  "PASS",
+                       "id":  "OD-40-ledger-present",
+                       "class":  "stale_ledgers"
+                   },
+                   {
+                       "detail":  "jsonl aligned count=5",
+                       "status":  "PASS",
+                       "id":  "OD-41-ledger-jsonl",
+                       "class":  "stale_ledgers"
+                   },
+                   {
+                       "detail":  "authority report on disk: construction_god_suite_gguf_generative_2026-08-02.json",
+                       "status":  "PASS",
+                       "id":  "OD-42-authority-report",
+                       "class":  "stale_ledgers"
+                   },
+                   {
+                       "detail":  "Ledger vs newest suite lag ok (lag=-5.7h)",
+                       "status":  "PASS",
+                       "id":  "OD-43-ledger-age",
+                       "class":  "stale_ledgers"
+                   },
+                   {
+                       "detail":  "suiteTarget=construction_god_suite_v1",
+                       "status":  "PASS",
+                       "id":  "OD-50-suite-target",
+                       "class":  "stale_runtime_versions"
+                   },
+                   {
+                       "detail":  "hostProfile=product-gce recipe=product_gguf_serve_v1",
+                       "status":  "PASS",
+                       "id":  "OD-51-profiles",
+                       "class":  "stale_runtime_versions"
+                   },
+                   {
+                       "detail":  "prepared liveCutoverExecuted=False",
+                       "status":  "PASS",
+                       "id":  "OD-60-prepared-receipt",
+                       "class":  "stale_deployment_artifacts"
+                   },
+                   {
+                       "detail":  "package-prepared age=13.8h",
+                       "status":  "PASS",
+                       "id":  "OD-61-prepared-age",
+                       "class":  "stale_deployment_artifacts"
+                   },
+                   {
+                       "detail":  "Live probe skipped (default; use -ProbeLive)",
+                       "status":  "PASS",
+                       "id":  "OD-70-live-identity",
+                       "class":  "stale_deployment_artifacts"
+                   },
+                   {
+                       "detail":  "OPERATIONAL_DRIFT.md",
+                       "status":  "PASS",
+                       "id":  "OD-80-doc",
+                       "class":  "policy"
+                   }
+               ],
+    "atUtc":  "2026-08-03T23:52:54.5572467Z",
+    "warnCount":  1,
+    "cutoverExecutedClaim":  false,
+    "probeLive":  false,
+    "token":  "OPERATIONAL_DRIFT_WARN",
+    "failCount":  0,
+    "falsePositiveNote":  "Pre-cutover missing host identity is WARN. Age alone is WARN unless -StrictAge. Honest FAIL align is PASS.",
+    "passCount":  19,
+    "policyPath":  "auricrux/system/auricrux_operational_drift_v1.json",
+    "byClass":  {
+                    "stale_corpora":  {
+                                          "pass":  2,
+                                          "fail":  0,
+                                          "warn":  0
+                                      },
+                    "stale_publish_package":  {
+                                                  "pass":  4,
+                                                  "fail":  0,
+                                                  "warn":  0
+                                              },
+                    "policy":  {
+                                   "pass":  2,
+                                   "fail":  0,
+                                   "warn":  0
+                               },
+                    "stale_ledgers":  {
+                                          "pass":  4,
+                                          "fail":  0,
+                                          "warn":  0
+                                      },
+                    "stale_manifests":  {
+                                            "pass":  2,
+                                            "fail":  0,
+                                            "warn":  0
+                                        },
+                    "stale_runtime_versions":  {
+                                                   "pass":  2,
+                                                   "fail":  0,
+                                                   "warn":  0
+                                               },
+                    "stale_deployment_artifacts":  {
+                                                       "pass":  3,
+                                                       "fail":  0,
+                                                       "warn":  1
+                                                   }
+                },
+    "strictAge":  false,
+    "fingerprints":  {
+                         "publishDllSha12":  "fce0b6f8c19e",
+                         "packageVersion":  "1.3.0",
+                         "sourceCorpusSha12":  "f7dc9b230c8a",
+                         "buildTimestampUtc":  "2026-08-03T23:52:53.4912411Z",
+                         "publishCorpusSha12":  "f7dc9b230c8a"
+                     }
+}

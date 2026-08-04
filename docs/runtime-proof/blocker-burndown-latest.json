@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "reportId": "auricrux_blocker_burndown_2026_08_03",
+  "atUtc": "2026-08-03T19:52:00Z",
+  "mode": "blocker-burn-down",
+  "doc": "docs/runtime-proof/BLOCKER_BURNDOWN_2026-08-03.md",
+  "forbidden": [
+    "new architecture",
+    "new governance",
+    "new evaluations",
+    "new standards",
+    "false PASS",
+    "authority escalation",
+    "product model_manifest write without evidence",
+    "host cutover without authorization",
+    "train interrupt"
+  ],
+  "stopConditionMet": true,
+  "stopReason": "All remaining open blockers classified as external authority, infrastructure, operational access/wait, content authoring, or upstream of those classes.",
+  "summary": {
+    "closedThisPass": 0,
+    "reducedThisPass": 1,
+    "alreadyClosed": ["RB-M2"],
+    "externalAuthority": ["RB-C2"],
+    "infrastructure": ["RB-H2", "RB-L1"],
+    "operationalAccess": ["RB-H4"],
+    "operationalWait": ["RB-H3"],
+    "contentAuthoring": ["RB-M1"],
+    "upstreamBlocked": ["RB-C3", "RB-C1", "RB-H1"]
+  },
+  "verifiedSnapshot": {
+    "RB_C1": "FAIL@76.7",
+    "RB_C2": "PACKAGE_HOST_CONSISTENCY_BLOCKED",
+    "RB_C3": "DEPLOYMENT_SAFETY_GATE_BLOCKED",
+    "RB_H1": "PROMOTION_EVIDENCE_BLOCKED",
+    "RB_H2": "C_DRIVE_STORAGE_RISK_BLOCKED",
+    "cFreeGB": 36.06,
+    "RB_H3_status": "running-do-not-interrupt",
+    "RB_H3_pid": 1019003,
+    "RB_H3_protection": "LIVE_3B_TRAIN_PROTECTION_OK",
+    "RB_H4_write": "WRITE_FAIL",
+    "RB_H4_prepareApplyReady": true,
+    "RB_H4_modelLabWritable": false,
+    "RB_M1": "L3_EMPTY_BEHAVIOR_OK",
+    "RB_L1_onPrimaryC": true,
+    "volumes": "C"
+  },
+  "items": [
+    {
+      "id": "RB-C2",
+      "burnDownClass": "EXTERNAL_AUTHORITY",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "Operator-authorized gh workflow cutover (action=full); PostVerify PACKAGE_HOST_CONSISTENCY_OK"
+    },
+    {
+      "id": "RB-C3",
+      "burnDownClass": "UPSTREAM",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "RB-C2 clears SG-20"
+    },
+    {
+      "id": "RB-C1",
+      "burnDownClass": "UPSTREAM",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "RB-C2 then RB-C3 then qualified live suite PASS >=80%"
+    },
+    {
+      "id": "RB-H1",
+      "burnDownClass": "UPSTREAM",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "RB-C1 + host/package promotion evidence classes"
+    },
+    {
+      "id": "RB-H2",
+      "burnDownClass": "INFRASTRUCTURE",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "Data disk and/or IT reclaim to C: free >=50 GB; no unsafe deletes"
+    },
+    {
+      "id": "RB-H3",
+      "burnDownClass": "OPERATIONAL_WAIT",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "Train leaves running-do-not-interrupt; protect only until then"
+    },
+    {
+      "id": "RB-H4",
+      "burnDownClass": "OPERATIONAL_ACCESS",
+      "closed": false,
+      "reduced": true,
+      "reduction": "Prepare recovery schema mismatch fixed: sync requireSchemaVersion 1->2 to match recovery catalog schemaVersion 2; applyReady=true",
+      "remainingDependency": "Apply as Auricrux or grant Michael Modify on model-lab"
+    },
+    {
+      "id": "RB-M1",
+      "burnDownClass": "CONTENT_AUTHORING",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "Author real L3 for target tier (fabrication forbidden)"
+    },
+    {
+      "id": "RB-L1",
+      "burnDownClass": "INFRASTRUCTURE",
+      "closed": false,
+      "reduced": false,
+      "remainingDependency": "Non-C volume + Initialize-AuricruxWorkRoot so onPrimaryC=false"
+    },
+    {
+      "id": "RB-M2",
+      "burnDownClass": "CLOSED",
+      "closed": true,
+      "reduced": false,
+      "remainingDependency": null,
+      "note": "Closed prior pass; OPERATIONAL_DRIFT_OK"
+    }
+  ],
+  "actionsTaken": [
+    "Re-verified blockers via existing asserts",
+    "Aligned sync/auricrux_model_lab_sync_manifest_v1.json recoveryCatalog.requireSchemaVersion to 2",
+    "Re-ran Prepare-ModelLabSync.ps1 -> Errors 0 applyReady true"
+  ],
+  "nonActions": [
+    "No cutover dispatch",
+    "No live suite",
+    "No train touch",
+    "No disk attach",
+    "No model-lab Apply",
+    "No L3 authoring",
+    "No product model_manifest change",
+    "No Manifest/Release/Promotion elevation"
+  ],
+  "authorityElevated": false,
+  "cutoverExecuted": false,
+  "falsePassAvoided": true
+}

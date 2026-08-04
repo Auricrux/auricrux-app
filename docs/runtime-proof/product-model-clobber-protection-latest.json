@@ -1,0 +1,50 @@
+﻿{
+    "atUtc":  "2026-08-03T23:52:54.2211661Z",
+    "token":  "PRODUCT_MODEL_CLOBBER_PROTECTION_OK",
+    "passCount":  8,
+    "failCount":  0,
+    "productModelTag":  "auricrux-fca",
+    "policyPath":  "auricrux/system/product_model_clobber_policy.json",
+    "checks":  [
+                   {
+                       "id":  "PC-01-policy",
+                       "status":  "PASS",
+                       "detail":  "Clobber policy present for auricrux-fca"
+                   },
+                   {
+                       "id":  "PC-02-require-helper",
+                       "status":  "PASS",
+                       "detail":  "Authorization helper refuses without flag/reason and writes evidence"
+                   },
+                   {
+                       "id":  "PC-03-never-mutate-paths",
+                       "status":  "PASS",
+                       "detail":  "Checked 7 warm/compose/init/fallback/deploy paths - no product-tag mutate"
+                   },
+                   {
+                       "id":  "PC-04-fallback-tag",
+                       "status":  "PASS",
+                       "detail":  "dev-fallback creates auricrux-fca-dev-fallback only"
+                   },
+                   {
+                       "id":  "PC-05-authorized-cutover-gated",
+                       "status":  "PASS",
+                       "detail":  "GCS load cutover requires explicit auth input + reason + evidence"
+                   },
+                   {
+                       "id":  "PC-06-no-rogue-mutators",
+                       "status":  "PASS",
+                       "detail":  "No unauthorized scripts/workflows mutate auricrux-fca"
+                   },
+                   {
+                       "id":  "PC-07-docs",
+                       "status":  "PASS",
+                       "detail":  "Clobber protection documentation present"
+                   },
+                   {
+                       "id":  "PC-08-refuse-without-auth",
+                       "status":  "PASS",
+                       "detail":  "Require helper blocks when authorization env unset"
+                   }
+               ]
+}

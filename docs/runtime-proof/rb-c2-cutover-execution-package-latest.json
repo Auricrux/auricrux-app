@@ -1,0 +1,173 @@
+{
+    "packageDoc":  "docs/runtime-proof/RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md",
+    "phases":  {
+                   "preconditions":  {
+                                         "atUtc":  "2026-08-03T23:52:55.1523553Z",
+                                         "verdict":  "RB_C2_CUTOVER_PRECONDITIONS_GO",
+                                         "pass":  19,
+                                         "fail":  0,
+                                         "warn":  0,
+                                         "checks":  [
+                                                        {
+                                                            "id":  "A1-publish",
+                                                            "status":  "PASS",
+                                                            "detail":  "DLL + corpus + stamp present"
+                                                        },
+                                                        {
+                                                            "id":  "A4-stamp",
+                                                            "status":  "PASS",
+                                                            "detail":  "version=1.3.0 suite=construction_god_suite_v1 host=product-gce recipe=product_gguf_serve_v1"
+                                                        },
+                                                        {
+                                                            "id":  "A5-rollback-proc",
+                                                            "status":  "PASS",
+                                                            "detail":  "procedure + rollback markers"
+                                                        },
+                                                        {
+                                                            "id":  "A6-baseline",
+                                                            "status":  "PASS",
+                                                            "detail":  "precutover baseline present"
+                                                        },
+                                                        {
+                                                            "id":  "A7-workflow",
+                                                            "status":  "PASS",
+                                                            "detail":  "train protect + PrimaryModel + prev-rename; no product ollama mutate"
+                                                        },
+                                                        {
+                                                            "id":  "A3-offline-gate",
+                                                            "status":  "PASS",
+                                                            "detail":  "DEPLOYMENT_SAFETY_GATE_OK"
+                                                        },
+                                                        {
+                                                            "id":  "A8-drill",
+                                                            "status":  "PASS",
+                                                            "detail":  "CUTOVER_ROLLBACK_DRILL_OK_LIVE_BLOCKED"
+                                                        },
+                                                        {
+                                                            "id":  "A9-train",
+                                                            "status":  "PASS",
+                                                            "detail":  "LIVE_3B_TRAIN_PROTECTION_OK"
+                                                        },
+                                                        {
+                                                            "id":  "A10-clobber",
+                                                            "status":  "PASS",
+                                                            "detail":  "PRODUCT_MODEL_CLOBBER_PROTECTION_OK"
+                                                        },
+                                                        {
+                                                            "id":  "A11-fallback",
+                                                            "status":  "PASS",
+                                                            "detail":  "PRODUCT_FALLBACK_PROFILE_OK"
+                                                        },
+                                                        {
+                                                            "id":  "A13-evidence",
+                                                            "status":  "PASS",
+                                                            "detail":  "EVIDENCE_RULES_OK"
+                                                        },
+                                                        {
+                                                            "id":  "A15-authority",
+                                                            "status":  "PASS",
+                                                            "detail":  "AUTHORITY_MAP_OK"
+                                                        },
+                                                        {
+                                                            "id":  "A18-drift",
+                                                            "status":  "PASS",
+                                                            "detail":  "OPERATIONAL_DRIFT_WARN"
+                                                        },
+                                                        {
+                                                            "id":  "A18-drift-failcount",
+                                                            "status":  "PASS",
+                                                            "detail":  "drift FAIL count=0"
+                                                        },
+                                                        {
+                                                            "id":  "A12-health",
+                                                            "status":  "PASS",
+                                                            "detail":  "primaryModel=auricrux-fca ready mode=ollama-live status=healthy"
+                                                        },
+                                                        {
+                                                            "id":  "A14-ledger-manifest",
+                                                            "status":  "PASS",
+                                                            "detail":  "both FAIL @76.7% evalStatus=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80"
+                                                        },
+                                                        {
+                                                            "id":  "A16-proof-pack",
+                                                            "status":  "PASS",
+                                                            "detail":  "runtime-proof pack present"
+                                                        },
+                                                        {
+                                                            "id":  "A17-gh",
+                                                            "status":  "PASS",
+                                                            "detail":  "gh auth usable"
+                                                        },
+                                                        {
+                                                            "id":  "G-unpushed",
+                                                            "status":  "PASS",
+                                                            "detail":  "HEAD=81063ed8792c"
+                                                        }
+                                                    ],
+                                         "tokens":  {
+                                                        "PRODUCT_FALLBACK_PROFILE_OK":  true,
+                                                        "DEPLOYMENT_SAFETY_GATE_OK":  true,
+                                                        "preCutoverHealth":  {
+                                                                                 "status":  "healthy",
+                                                                                 "primaryModel":  "auricrux-fca",
+                                                                                 "primaryModelReady":  true,
+                                                                                 "runtimeMode":  "ollama-live"
+                                                                             },
+                                                        "EVIDENCE_RULES_OK":  true,
+                                                        "gitStatusShort":  "## main...origin/main\r\n M .github/workflows/gcp-cutover-build-auricrux.yml\r\n M .github/workflows/gcp-load-ckpt110000-gguf.yml\r\n M .github/workflows/gcp-warm-auricrux-fca.yml\r\n M Auricrux.Mobile/MainPage.xaml.cs\r\n M Auricrux.Tests/EnterpriseReadinessTests.cs\r\n M Auricrux.Web/Auricrux.Web.csproj\r\n M Auricrux.Web/Controllers/AuricruxApiController.cs\r\n M Auricrux.Web/Data/construction-corpus.json\r\n M Auricrux.Web/Program.cs\r\n M Auricrux.Web/Services/BackendHealthService.cs\r\n M Auricrux.Web/Services/CapabilitiesService.cs\r\n M Auricrux.Web/Services/ConstructionIntelligenceService.cs\r\n M Auricrux.Web/appsettings.json\r\n M CLAIMS_REGISTER.md\r\n M Dockerfile\r\n M README.md\r\n M auricrux/system/AURICRUX_3B_MODEL_CARD.md\r\n M auricrux/system/Modelfile.auricrux-fca\r\n M auricrux/system/auricrux-fca-ollama-show-proof.json\r\n M auricrux/system/model_manifest.json\r\n M docker-compose.yml\r\n M docs/AURICRUX_3B_PRODUCTION_READINESS.md\r\n M docs/GGUF_GENERATIVE_SUITE_FAILURE_ANALYSIS.md\r\n M docs/WEDGE_SCOPE.md\r\n M docs/runtime-proof/capabilities_matrix_2026-07-28.json\r\n M docs/runtime-proof/capabilities_matrix_live_2026-07-28.json\r\n M docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02_alias_rescore.json\r\n M docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-03.md\r\n M docs/runtime-proof/gguf-grounding-cutover-live-suite-2026-08-03.json\r\n M docs/runtime-proof/gguf-suite-live-cutover-procedure-2026-08-03.md\r\n M eval/keyword_aliases_v1.json\r\n M scripts/deploy_azure.ps1\r\n M scripts/rescore_gguf_report_aliases.py\r\n M scripts/run-gguf-construction-suite.ps1\r\n M scripts/stage-and-cpu-export-checkpoint.ps1\r\n?? Auricrux.Tests/OllamaInitSafetyTests.cs\r\n?? Auricrux.Tests/ProductModelClobberProtectionTests.cs\r\n?? Auricrux.Tests/RuntimeTruthServiceTests.cs\r\n?? Auricrux.Web/Services/PackageIdentityService.cs\r\n?? Auricrux.Web/Services/RuntimeTruthService.cs\r\n?? _publish/\r\n?? auricrux/system/auricrux_authority_chain_v1.json\r\n?? auricrux/system/auricrux_operational_drift_v1.json\r\n?? auricrux/system/live_3b_train_protection_policy.json\r\n?? auricrux/system/package_stamp.json\r\n?? auricrux/system/product_model_clobber_policy.json\r\n?? auricrux/system/promotion_evidence_policy_v1.json\r\n?? docs/DOC_TRUTH_AUDIT.md\r\n?? docs/FCA_MISSION_BENCHMARK_COVERAGE.md\r\n?? docs/runtime-proof/AURICRUX_AUTHORITY_MAP.md\r\n?? docs/runtime-proof/AURICRUX_EVIDENCE_LEDGER.md\r\n?? docs/runtime-proof/AURICRUX_EVIDENCE_LEDGER_AUDIT_2026-08-03.md\r\n?? docs/runtime-proof/AURICRUX_EVIDENCE_RULES.md\r\n?? docs/runtime-proof/AURICRUX_GOLDEN_PATH.md\r\n?? docs/runtime-proof/AURICRUX_L3_PROCESS_MAP.md\r\n?? docs/runtime-proof/AURICRUX_LONG_TRAIN_RECOVERY_PROCEDURE.md\r\n?? docs/runtime-proof/AURICRUX_OPERATIONAL_CLOSURE_2026-08-03.md\r\n?? docs/runtime-proof/AURICRUX_PACKAGE_IDENTITY.md\r\n?? docs/runtime-proof/AURICRUX_PRIORITY_OPS_PROCEDURE.md\r\n?? docs/runtime-proof/AURICRUX_REMAINING_BLOCKERS.md\r\n?? docs/runtime-proof/AURICRUX_STATUS_TRUTH_2026-08-03.md\r\n?? docs/runtime-proof/AURICRUX_TRAIN_SURVIVABILITY_AUDIT_2026-08-03.md\r\n?? docs/runtime-proof/AUTHORITATIVE_LIVE_GGUF_SUITE_RERUN_PACKAGE.md\r\n?? docs/runtime-proof/BACKGROUND_JOB_EXIT_REVIEW_2026-08-03.md\r\n?? docs/runtime-proof/BLOCKER_BURNDOWN_2026-08-03.md\r\n?? docs/runtime-proof/CUTOVER_GO_NO_GO_CHECKLIST.md\r\n?? docs/runtime-proof/CUTOVER_ROLLBACK_DRILL.md\r\n?? docs/runtime-proof/C_DRIVE_STORAGE_GROWTH_INVESTIGATION_2026-08-03.md\r\n?? docs/runtime-proof/C_DRIVE_STORAGE_RISK.md\r\n?? docs/runtime-proof/EXPAND_SEARCH_TERMS.md\r\n?? docs/runtime-proof/GGUF_DEPLOYMENT_SAFETY_GATE.md\r\n?? docs/runtime-proof/GGUF_SUITE_DIFFERENTIAL_ANALYSIS_2026-08-03.md\r\n?? docs/runtime-proof/GGUF_SUITE_FAILURE_REGRESSION.md\r\n?? docs/runtime-proof/L3_EMPTY_BEHAVIOR.md\r\n?? docs/runtime-proof/LIVE_3B_TRAIN_PROTECTION.md\r\n?? docs/runtime-proof/OLLAMA_INIT_SAFE_UNSAFE_PATHS.md\r\n?? docs/runtime-proof/OLLAMA_LOCAL_STORAGE_ANALYSIS.md\r\n?? docs/runtime-proof/ONEDRIVE_OCCUPANCY_RELOCATION_STRATEGY.md\r\n?? docs/runtime-proof/OPERATIONAL_DRIFT.md\r\n?? docs/runtime-proof/PACKAGE_HOST_CONSISTENCY.md\r\n?? docs/runtime-proof/PRODUCT_MODEL_CLOBBER_PROTECTION.md\r\n?? docs/runtime-proof/PROMOTION_EVIDENCE_GATE.md\r\n?? docs/runtime-proof/RB_C2_CUTOVER_DRYRUN_SIMULATION.md\r\n?? docs/runtime-proof/RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md\r\n?? docs/runtime-proof/RB_H2_C_DRIVE_FLOOR_REMEDIATION.md\r\n?? docs/runtime-proof/RB_H4_MODEL_LAB_WRITE_CLOSURE_PLAN.md\r\n?? docs/runtime-proof/RB_L1_WORK_ROOT_MIGRATION_PLAN.md\r\n?? docs/runtime-proof/README.md\r\n?? docs/runtime-proof/REMAINING_BLOCKERS_DEPENDENCY_GRAPH.md\r\n?? docs/runtime-proof/RUNTIME_TRUTH.md\r\n?? docs/runtime-proof/auricrux-evidence-rules-latest.json\r\n?? docs/runtime-proof/auricrux-operational-closure-latest.json\r\n?? docs/runtime-proof/auricrux-remaining-blockers-latest.json\r\n?? docs/runtime-proof/auricrux_evidence_ledger_v1.json\r\n?? docs/runtime-proof/auricrux_evidence_ledger_v1.jsonl\r\n?? docs/runtime-proof/authoritative-suite-rerun-package-2026-08-03.json\r\n?? docs/runtime-proof/authoritative-suite-rerun-package-latest.json\r\n?? docs/runtime-proof/authoritative-suite-rerun-prereqs-latest.json\r\n?? docs/runtime-proof/authority-map-latest.json\r\n?? docs/runtime-proof/blocker-burndown-latest.json\r\n?? docs/runtime-proof/c-drive-storage-growth-latest.json\r\n?? docs/runtime-proof/c-drive-storage-risk-latest.json\r\n?? docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-03T031635Z.json\r\n?? docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-03T031635Z.md\r\n?? docs/runtime-proof/cutover-go-no-go-latest.json\r\n?? docs/runtime-proof/cutover-rollback-drill-2026-08-03.json\r\n?? docs/runtime-proof/cutover-rollback-drill-latest.json\r\n?? docs/runtime-proof/cutover-rollback-drill_v1.jsonl\r\n?? docs/runtime-proof/evidence-ledger-audit-latest.json\r\n?? docs/runtime-proof/evidence-ledger-integrity-latest.json\r\n?? docs/runtime-proof/expand-search-terms-latest.json\r\n?? docs/runtime-proof/gguf-deployment-safety-gate-latest.json\r\n?? docs/runtime-proof/gguf-suite-failure-regression-latest.json\r\n?? docs/runtime-proof/golden-path-latest.json\r\n?? docs/runtime-proof/integrity-focus-pass-2026-08-03.md\r\n?? docs/runtime-proof/l3-empty-behavior-latest.json\r\n?? docs/runtime-proof/l3-process-map-latest.json\r\n?? docs/runtime-proof/live-3b-train-protection-latest.json\r\n?? docs/runtime-proof/ollama-init-safety-latest.json\r\n?? docs/runtime-proof/ollama-local-storage-analysis-latest.json\r\n?? docs/runtime-proof/onedrive-occupancy-relocation-latest.json\r\n?? docs/runtime-proof/operational-drift-latest.json\r\n?? docs/runtime-proof/package-host-consistency-latest.json\r\n?? docs/runtime-proof/package-prepared-2026-08-03.json\r\n?? docs/runtime-proof/package-prepared-latest.json\r\n?? docs/runtime-proof/package-prepared_v1.jsonl\r\n?? docs/runtime-proof/product-fallback-profile-latest.json\r\n?? docs/runtime-proof/product-model-clobber-protection-latest.json\r\n?? docs/runtime-proof/promotion-evidence-gate-latest.json\r\n?? docs/runtime-proof/rb-c2-cutover-dryrun-simulation-2026-08-03.json\r\n?? docs/runtime-proof/rb-c2-cutover-dryrun-simulation-latest.json\r\n?? docs/runtime-proof/rb-c2-cutover-execution-package-2026-08-03.json\r\n?? docs/runtime-proof/rb-c2-cutover-execution-package-latest.json\r\n?? docs/runtime-proof/rb-h2-c-drive-floor-remediation-latest.json\r\n?? docs/runtime-proof/rb-h4-model-lab-write-closure-latest.json\r\n?? docs/runtime-proof/rb-l1-work-root-migration-plan-latest.json\r\n?? docs/runtime-proof/remaining-blockers-dependency-graph-latest.json\r\n?? docs/runtime-proof/runtime-truth-latest.json\r\n?? docs/runtime-proof/train-survivability-audit-latest.json\r\n?? docs/runtime-proof/train-survivability-controls-latest.json\r\n?? eval/fca_mission_coverage_suite_v1.json\r\n?? eval/gguf_suite_failure_regression_v1.json\r\n?? scripts/Assert-AuricruxAuthorityMap.ps1\r\n?? scripts/Assert-AuricruxEvidenceRules.ps1\r\n?? scripts/Assert-EvidenceLedgerIntegrity.ps1\r\n?? scripts/Assert-ExpandSearchTermsCoverage.ps1\r\n?? scripts/Assert-GgufSuiteDeploymentSafetyGate.ps1\r\n?? scripts/Assert-GgufSuiteFailureRegression.ps1\r\n?? scripts/Assert-Live3bTrainProtection.ps1\r\n?? scripts/Assert-OllamaInitSafety.ps1\r\n?? scripts/Assert-OperationalDrift.ps1\r\n?? scripts/Assert-PackageHostConsistency.ps1\r\n?? scripts/Assert-ProductFallbackProfile.ps1\r\n?? scripts/Assert-ProductModelClobberProtection.ps1\r\n?? scripts/Assert-PromotionEvidenceGate.ps1\r\n?? scripts/Assert-RuntimeTruth.ps1\r\n?? scripts/Invoke-AuthoritativeSuiteRerunPackage.ps1\r\n?? scripts/Invoke-CutoverRollbackDryRun.ps1\r\n?? scripts/Invoke-RbC2CutoverDryRunSimulation.ps1\r\n?? scripts/Invoke-RbC2PackageWebCutoverPackage.ps1\r\n?? scripts/Require-ProductModelCutoverAuthorization.ps1\r\n?? scripts/Write-AuricruxPackageStamp.ps1\r\n?? scripts/Write-GgufSuiteEvidenceLedger.ps1",
+                                                        "gitHead":  "81063ed8792cb33a78e4d09620ee8edb2be42d81",
+                                                        "AUTHORITY_MAP_OK":  true,
+                                                        "OPERATIONAL_DRIFT_WARN":  true,
+                                                        "PRODUCT_MODEL_CLOBBER_PROTECTION_OK":  true,
+                                                        "LIVE_3B_TRAIN_PROTECTION_OK":  true,
+                                                        "CUTOVER_ROLLBACK_DRILL_OK_LIVE_BLOCKED":  true
+                                                    },
+                                         "stamp":  {
+                                                       "packageVersion":  "1.3.0",
+                                                       "buildTimestampUtc":  "2026-08-03T23:36:58.3607966Z",
+                                                       "suiteTarget":  "construction_god_suite_v1",
+                                                       "hostProfile":  "product-gce",
+                                                       "recipeProfile":  "product_gguf_serve_v1",
+                                                       "deploymentSource":  "gcp-cutover-dry-run"
+                                                   },
+                                         "publishDir":  "C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web"
+                                     },
+                   "captureBaseline":  {
+                                           "atUtc":  "2026-08-03T23:52:55.1864890Z",
+                                           "baseUrl":  "https://auricrux.futurecontractorsofamerica.com",
+                                           "health":  {
+                                                          "status":  "healthy",
+                                                          "primaryModel":  "auricrux-fca",
+                                                          "primaryModelReady":  true,
+                                                          "runtimeMode":  "ollama-live",
+                                                          "packageIdentity":  "absent"
+                                                      },
+                                           "runtimeTruthHttp":  404,
+                                           "packageIdentityPresent":  false,
+                                           "capabilitiesOk":  true,
+                                           "packageHostToken":  "PACKAGE_HOST_CONSISTENCY_BLOCKED",
+                                           "note":  "Pre-cutover: missing packageIdentity / runtime-truth 404 is expected for RB-C2"
+                                       }
+               },
+    "ghRunId":  null,
+    "blocker":  "RB-C2",
+    "purpose":  "rb-c2-package-web-cutover-execution-package",
+    "schemaVersion":  1,
+    "scope":  "package-web-cutover-only",
+    "cutoverExecuted":  false,
+    "nextOperatorAction":  "Check Section B in RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md; push SHA; then: gh workflow run gcp-cutover-build-auricrux.yml -f action=full; then PostVerify",
+    "cutoverDispatchedByThisScript":  false,
+    "updatedAtUtc":  "2026-08-03T23:52:55.8589020Z",
+    "outcome":  "PREPARED",
+    "recordAtUtc":  "2026-08-03T23:52:55.8589020Z",
+    "claimsForbidden":  [
+                            "Manifest PASS from cutover alone",
+                            "suite PASS from cutover alone",
+                            "Release PASS",
+                            "Promotion OK",
+                            "model-weight cutover",
+                            "train interrupt"
+                        ],
+    "recordNote":  "Blocker-elimination pass: preconditions+baseline refreshed; cutover NOT dispatched (awaits operator authorization).",
+    "sectionB_acknowledgementsRequired":  true
+}

@@ -7,11 +7,14 @@ namespace Auricrux.Web.Services;
 /// Each row is a capability area with honest shipped vs. planned status and per-peer comparison.
 /// Model-weight honesty is read from auricrux/system/model_manifest.json (in-place; no alternate stack).
 /// </summary>
-public sealed class CapabilitiesService(ConstructionIntelligenceService intelligence, IConfiguration config)
+public sealed class CapabilitiesService(
+    ConstructionIntelligenceService intelligence,
+    IConfiguration config,
+    PackageIdentityService packageIdentity)
 {
     private static readonly string[] CompetitorNames = ["ChatGPT", "Claude", "Gemini", "Copilot", "Grok"];
 
-    public CapabilitiesReport GetReport()
+    public CapabilitiesReport GetReport(string? requestHost = null)
     {
         var primaryModel = config["Auricrux:PrimaryModel"] ?? "auricrux-fca";
         var corpusStats = intelligence.GetCorpusStats();
@@ -22,22 +25,27 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
         var planned = features.Count(f => f.Status == "planned");
         var blocked = features.Count(f => f.Status == "blocked");
         var partial = features.Count(f => f.Status == "partial");
+        var pkg = packageIdentity.GetIdentity(requestHost);
 
         return new CapabilitiesReport
         {
             App = "Auricrux",
-            Version = "1.2.0",
+            Version = string.IsNullOrWhiteSpace(pkg.PackageVersion) ? "1.3.0" : pkg.PackageVersion,
             PrimaryModel = primaryModel,
             CorpusEntries = corpusStats.TotalEntries,
             CorpusStats = corpusStats,
+            PackageIdentity = pkg,
             ConstructionMoat = new ConstructionMoatSummary
             {
                 SpecialistModel = primaryModel,
                 CorpusGroundedSearch = true,
-                EvalSuite = "construction_god_suite_v1",
+                EvalSuite = pkg.SuiteTarget,
+                EvalSuiteVersion = pkg.SuiteVersion,
                 EvalSuiteLastResult = weightHonesty.EvalSuiteLastResult,
                 PromotedFineTuneLive = weightHonesty.FineTuneLive,
-                Notes = weightHonesty.Notes
+                Notes = weightHonesty.Notes,
+                EvidenceLedgerPath = pkg.EvidenceLedgerPath,
+                ManifestEvalStatus = pkg.ManifestEvalStatus
             },
             Platforms = ["Web (Blazor Server)", "Android (MAUI)", "Windows (MAUI)", "iOS (MAUI, macOS host)", "macOS (Mac Catalyst, macOS host)"],
             Features = features,
@@ -140,11 +148,12 @@ public sealed class CapabilitiesService(ConstructionIntelligenceService intellig
                     $"TRUE God final still open: {notTrueGod}".Trim(),
                 OverallAssessment:
                     "FORWARD — mid-train specialist GGUF is live in product Ollama (not llama3.2 alias); " +
-                    "TRUE God final still requires 297k finish + post-run suites + peer bar (AUX-018/027). GGUF generative ≥80% recorded when evalStatus says PASS.",
+                    "TRUE God final still requires 297k finish + post-run suites + peer bar (AUX-018/027). " +
+                    "GGUF generative live authority remains FAIL until evalStatus records PASS from a dated host rerun.",
                 FeatureDetail:
-                    $"Merged LoRA GGUF live ({gguf}); TRUE God final pending train finish (AUX-018)",
+                    $"Merged LoRA GGUF live ({gguf}); GGUF generative suite not green until dated live PASS; TRUE God final pending (AUX-018)",
                 MatrixNotes:
-                    $"Merged LoRA GGUF live in product ({gguf}); mid-train — not TRUE God final until train finish.");
+                    $"Merged LoRA GGUF live in product ({gguf}); mid-train — generative suite authority per evalStatus; not TRUE God final.");
         }
         catch
         {
@@ -274,6 +283,7 @@ public sealed class CapabilitiesReport
     public string PrimaryModel { get; set; } = string.Empty;
     public int CorpusEntries { get; set; }
     public CorpusStatsSnapshot CorpusStats { get; set; } = new();
+    public PackageIdentitySnapshot? PackageIdentity { get; set; }
     public ConstructionMoatSummary ConstructionMoat { get; set; } = new();
     public IReadOnlyList<string> Platforms { get; set; } = [];
     public IReadOnlyList<CapabilityFeature> Features { get; set; } = [];
@@ -295,9 +305,12 @@ public sealed class ConstructionMoatSummary
     public string SpecialistModel { get; set; } = string.Empty;
     public bool CorpusGroundedSearch { get; set; }
     public string EvalSuite { get; set; } = string.Empty;
+    public string EvalSuiteVersion { get; set; } = "v1";
     public string EvalSuiteLastResult { get; set; } = string.Empty;
     public bool PromotedFineTuneLive { get; set; }
     public string Notes { get; set; } = string.Empty;
+    public string EvidenceLedgerPath { get; set; } = "docs/runtime-proof/auricrux_evidence_ledger_v1.json";
+    public string ManifestEvalStatus { get; set; } = string.Empty;
 }
 
 public sealed class CapabilityFeature

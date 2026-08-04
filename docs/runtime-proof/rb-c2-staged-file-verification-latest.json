@@ -1,0 +1,432 @@
+{
+    "schemaVersion":  1,
+    "reportId":  "rb_c2_staged_file_verification",
+    "atUtc":  "2026-08-04T01:43:56.1509424Z",
+    "stagedCount":  100,
+    "allMapped":  true,
+    "LOCAL_READY":  true,
+    "REMOTE_READY":  false,
+    "note":  "Staged for commit to make Actions build intended package. Not pushed. Cutover not dispatched.",
+    "files":  [
+                  {
+                      "path":  ".github/workflows/gcp-cutover-build-auricrux.yml",
+                      "mapsTo":  "RB-C2 dispatch workflow"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Auricrux.Web.csproj",
+                      "mapsTo":  "RB-C2 image: stamp/manifest content include"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Controllers/AuricruxApiController.cs",
+                      "mapsTo":  "RB-C2 runtime-truth route"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Data/construction-corpus.json",
+                      "mapsTo":  "RB-C2 package corpus identity"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Program.cs",
+                      "mapsTo":  "RB-C2 DI PackageIdentity+RuntimeTruth"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Services/BackendHealthService.cs",
+                      "mapsTo":  "RB-C2 health packageIdentity signals"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Services/CapabilitiesService.cs",
+                      "mapsTo":  "RB-C2 capabilities packageIdentity"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Services/PackageIdentityService.cs",
+                      "mapsTo":  "RB-C2 packageIdentity service"
+                  },
+                  {
+                      "path":  "Auricrux.Web/Services/RuntimeTruthService.cs",
+                      "mapsTo":  "RB-C2 runtime-truth service"
+                  },
+                  {
+                      "path":  "Auricrux.Web/appsettings.json",
+                      "mapsTo":  "RB-C2 host/recipe PrimaryModel"
+                  },
+                  {
+                      "path":  "Dockerfile",
+                      "mapsTo":  "RB-C2 image COPY package_stamp"
+                  },
+                  {
+                      "path":  "auricrux/system/Modelfile.auricrux-fca",
+                      "mapsTo":  "RB-C3 OllamaInitSafety Modelfile"
+                  },
+                  {
+                      "path":  "auricrux/system/auricrux_authority_chain_v1.json",
+                      "mapsTo":  "evidence integrity authority policy"
+                  },
+                  {
+                      "path":  "auricrux/system/auricrux_operational_drift_v1.json",
+                      "mapsTo":  "RB-C2 Preconditions A18 drift policy"
+                  },
+                  {
+                      "path":  "auricrux/system/live_3b_train_protection_policy.json",
+                      "mapsTo":  "RB-C2 Preconditions A9"
+                  },
+                  {
+                      "path":  "auricrux/system/model_manifest.json",
+                      "mapsTo":  "manifest/status truth (Dockerfile+PH)"
+                  },
+                  {
+                      "path":  "auricrux/system/package_stamp.json",
+                      "mapsTo":  "RB-C2 package-prepared stamp"
+                  },
+                  {
+                      "path":  "auricrux/system/product_model_clobber_policy.json",
+                      "mapsTo":  "RB-C2 Preconditions A10 / PostVerify S6"
+                  },
+                  {
+                      "path":  "auricrux/system/promotion_evidence_policy_v1.json",
+                      "mapsTo":  "RB-C3 SG-23 promotion gate nested"
+                  },
+                  {
+                      "path":  "docker-compose.yml",
+                      "mapsTo":  "RB-C2/C3 clobber-safe ollama init (SG/OI)"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AURICRUX_AUTHORITY_MAP.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AURICRUX_EVIDENCE_LEDGER.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AURICRUX_EVIDENCE_RULES.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AURICRUX_PACKAGE_IDENTITY.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AURICRUX_PRIORITY_OPS_PROCEDURE.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AURICRUX_REMAINING_BLOCKERS.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AURICRUX_STATUS_TRUTH_2026-08-03.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/AUTHORITATIVE_LIVE_GGUF_SUITE_RERUN_PACKAGE.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/BLOCKER_BURNDOWN_2026-08-03.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/BLOCKER_ELIMINATION_2026-08-03.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/CUTOVER_GO_NO_GO_CHECKLIST.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/CUTOVER_ROLLBACK_DRILL.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/GGUF_DEPLOYMENT_SAFETY_GATE.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/GGUF_SUITE_FAILURE_REGRESSION.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/LIVE_3B_TRAIN_PROTECTION.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/OLLAMA_INIT_SAFE_UNSAFE_PATHS.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/OPERATIONAL_DRIFT.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/PACKAGE_HOST_CONSISTENCY.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/PRODUCT_MODEL_CLOBBER_PROTECTION.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/PROMOTION_EVIDENCE_GATE.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/RB_C2_CUTOVER_DRYRUN_SIMULATION.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/REMAINING_BLOCKERS_DEPENDENCY_GRAPH.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/RUNTIME_TRUTH.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/auricrux-evidence-rules-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/auricrux-remaining-blockers-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/auricrux_evidence_ledger_v1.json",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/auricrux_evidence_ledger_v1.jsonl",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/authoritative-suite-rerun-package-2026-08-03.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/authoritative-suite-rerun-package-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/authoritative-suite-rerun-prereqs-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/authoritative-suite-rerun-readiness-c2-gated-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/authority-map-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/blocker-burndown-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/cutover-go-no-go-latest.json",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/cutover-rollback-drill-2026-08-03.json",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/cutover-rollback-drill-latest.json",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/cutover-rollback-drill_v1.jsonl",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/evidence-ledger-integrity-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/gguf-deployment-safety-gate-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/gguf-suite-failure-regression-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/gguf-suite-live-cutover-procedure-2026-08-03.md",
+                      "mapsTo":  "RB-C2/C3 procedure or status-truth doc"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/live-3b-train-protection-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/ollama-init-safety-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/operational-drift-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/package-host-consistency-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/package-prepared-2026-08-03.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/package-prepared-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/package-prepared_v1.jsonl",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/product-fallback-profile-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/product-model-clobber-protection-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/promotion-evidence-gate-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/rb-c2-cutover-dryrun-simulation-2026-08-03.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/rb-c2-cutover-dryrun-simulation-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/rb-c2-cutover-execution-package-2026-08-03.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/rb-c2-cutover-execution-package-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/rb-c2-cutover-git-remote-readiness-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/remaining-blockers-dependency-graph-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "docs/runtime-proof/runtime-truth-latest.json",
+                      "mapsTo":  "RB-C2/C3/suite/evidence receipt"
+                  },
+                  {
+                      "path":  "eval/gguf_suite_failure_regression_v1.json",
+                      "mapsTo":  "RB-C3 SG-21 failure regression catalog"
+                  },
+                  {
+                      "path":  "scripts/Assert-AuricruxAuthorityMap.ps1",
+                      "mapsTo":  "evidence integrity A15"
+                  },
+                  {
+                      "path":  "scripts/Assert-AuricruxEvidenceRules.ps1",
+                      "mapsTo":  "evidence integrity A13"
+                  },
+                  {
+                      "path":  "scripts/Assert-EvidenceLedgerIntegrity.ps1",
+                      "mapsTo":  "evidence integrity SG-25"
+                  },
+                  {
+                      "path":  "scripts/Assert-GgufSuiteDeploymentSafetyGate.ps1",
+                      "mapsTo":  "RB-C3 live/offline safety gate"
+                  },
+                  {
+                      "path":  "scripts/Assert-GgufSuiteFailureRegression.ps1",
+                      "mapsTo":  "RB-C3 SG-21 nested"
+                  },
+                  {
+                      "path":  "scripts/Assert-Live3bTrainProtection.ps1",
+                      "mapsTo":  "RB-C2 PostVerify S7"
+                  },
+                  {
+                      "path":  "scripts/Assert-OllamaInitSafety.ps1",
+                      "mapsTo":  "RB-C3 SG-09b nested"
+                  },
+                  {
+                      "path":  "scripts/Assert-OperationalDrift.ps1",
+                      "mapsTo":  "RB-C2 PostVerify drift"
+                  },
+                  {
+                      "path":  "scripts/Assert-PackageHostConsistency.ps1",
+                      "mapsTo":  "RB-C2 PostVerify S3"
+                  },
+                  {
+                      "path":  "scripts/Assert-ProductFallbackProfile.ps1",
+                      "mapsTo":  "RB-C2 Preconditions A11"
+                  },
+                  {
+                      "path":  "scripts/Assert-ProductModelClobberProtection.ps1",
+                      "mapsTo":  "RB-C2 PostVerify S6"
+                  },
+                  {
+                      "path":  "scripts/Assert-PromotionEvidenceGate.ps1",
+                      "mapsTo":  "RB-C3 SG-23 nested"
+                  },
+                  {
+                      "path":  "scripts/Assert-RuntimeTruth.ps1",
+                      "mapsTo":  "RB-C3 SG-22 nested"
+                  },
+                  {
+                      "path":  "scripts/Invoke-AuthoritativeSuiteRerunPackage.ps1",
+                      "mapsTo":  "suite readiness (post C2/C3)"
+                  },
+                  {
+                      "path":  "scripts/Invoke-CutoverRollbackDryRun.ps1",
+                      "mapsTo":  "RB-C2 Preconditions A8"
+                  },
+                  {
+                      "path":  "scripts/Invoke-RbC2CutoverDryRunSimulation.ps1",
+                      "mapsTo":  "RB-C2 precondition dry-run"
+                  },
+                  {
+                      "path":  "scripts/Invoke-RbC2PackageWebCutoverPackage.ps1",
+                      "mapsTo":  "RB-C2 dispatch/PostVerify orchestrator"
+                  },
+                  {
+                      "path":  "scripts/Require-ProductModelCutoverAuthorization.ps1",
+                      "mapsTo":  "RB-C2 clobber gate helper"
+                  },
+                  {
+                      "path":  "scripts/Write-AuricruxPackageStamp.ps1",
+                      "mapsTo":  "RB-C2 stamp writer"
+                  },
+                  {
+                      "path":  "scripts/Write-GgufSuiteEvidenceLedger.ps1",
+                      "mapsTo":  "evidence integrity ledger writer"
+                  }
+              ],
+    "explicitlyUnstaged":  [
+                               "Auricrux.Web/Services/ConstructionIntelligenceService.cs",
+                               "Auricrux.Mobile/MainPage.xaml.cs",
+                               ".github/workflows/gcp-load-ckpt110000-gguf.yml",
+                               ".github/workflows/gcp-warm-auricrux-fca.yml",
+                               "_publish/",
+                               "RB-H2/H4/L1 plans and receipts",
+                               "eval/keyword_aliases_v1.json",
+                               "scripts/run-gguf-construction-suite.ps1",
+                               "tests",
+                               "CLAIMS_REGISTER.md",
+                               "README.md",
+                               "docs/WEDGE_SCOPE.md"
+                           ],
+    "claimsForbidden":  [
+                            "Manifest PASS",
+                            "suite PASS",
+                            "cutover executed",
+                            "REMOTE_READY"
+                        ]
+}

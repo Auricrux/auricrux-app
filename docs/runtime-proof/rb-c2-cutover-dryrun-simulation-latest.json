@@ -1,0 +1,227 @@
+{
+    "schemaVersion":  1,
+    "simId":  "rb-c2-cutover-dryrun-sim-20260803T233446Z",
+    "purpose":  "rb-c2-package-web-cutover-dryrun-simulation",
+    "atUtc":  "2026-08-03T23:34:46.2616366Z",
+    "token":  "RB_C2_CUTOVER_DRYRUN_SIM_OK",
+    "cutoverExecuted":  false,
+    "liveServicesContacted":  false,
+    "activeModelModified":  false,
+    "trainTouched":  false,
+    "pass":  29,
+    "fail":  0,
+    "warn":  0,
+    "areas":  [
+                  "deployment-package-path",
+                  "rollback-package-path",
+                  "manifest-preservation",
+                  "ledger-preservation",
+                  "package-stamps",
+                  "runtime-proof-artifacts"
+              ],
+    "hashesBefore":  {
+                         "manifestRepo":  "b61f564ab47dc4df2e668687502a5c50cff6b951306406b997b224fd3be28a73",
+                         "manifestPub":  "b61f564ab47dc4df2e668687502a5c50cff6b951306406b997b224fd3be28a73",
+                         "ledgerJson":  "f23c76f9613b35c43a04614ead7d4260ccb564944e7ac67a3de406fd274cb943",
+                         "ledgerJsonl":  "b1c1594c5e3b227b3b3c71f0c6a2a569ff19ede4ae4f79183fadcdd6d1f33e88",
+                         "stampRepo":  "c7d45cf36f49af67c5cb18447a88a814c06a6f0e5294d51849bf68d294624f91",
+                         "stampPub":  "c7d45cf36f49af67c5cb18447a88a814c06a6f0e5294d51849bf68d294624f91",
+                         "stampPubData":  "c7d45cf36f49af67c5cb18447a88a814c06a6f0e5294d51849bf68d294624f91"
+                     },
+    "hashesAfter":  {
+                        "manifestRepo":  "b61f564ab47dc4df2e668687502a5c50cff6b951306406b997b224fd3be28a73",
+                        "manifestPub":  "b61f564ab47dc4df2e668687502a5c50cff6b951306406b997b224fd3be28a73",
+                        "ledgerJson":  "f23c76f9613b35c43a04614ead7d4260ccb564944e7ac67a3de406fd274cb943",
+                        "ledgerJsonl":  "b1c1594c5e3b227b3b3c71f0c6a2a569ff19ede4ae4f79183fadcdd6d1f33e88",
+                        "stampRepo":  "c7d45cf36f49af67c5cb18447a88a814c06a6f0e5294d51849bf68d294624f91",
+                        "stampPub":  "c7d45cf36f49af67c5cb18447a88a814c06a6f0e5294d51849bf68d294624f91"
+                    },
+    "checks":  [
+                   {
+                       "id":  "SIM-00-mode",
+                       "area":  "guard",
+                       "status":  "PASS",
+                       "detail":  "Offline dry-run simulation; no live services contacted by this script"
+                   },
+                   {
+                       "id":  "SIM-10-publish-complete",
+                       "area":  "deployment-package-path",
+                       "status":  "PASS",
+                       "detail":  "_publish/web complete at C:\\Users\\MichaelBartholomew\\source\\fca-real-product\\auricrux-app\\_publish\\web"
+                   },
+                   {
+                       "id":  "SIM-11-workflow-deploy-path",
+                       "area":  "deployment-package-path",
+                       "status":  "PASS",
+                       "detail":  "Workflow packs source + docker build (not _publish zip upload)"
+                   },
+                   {
+                       "id":  "SIM-12-publish-excluded-from-scp",
+                       "area":  "deployment-package-path",
+                       "status":  "PASS",
+                       "detail":  "Workflow tar excludes _publish (source build path)"
+                   },
+                   {
+                       "id":  "SIM-13-dockerfile-identity-files",
+                       "area":  "deployment-package-path",
+                       "status":  "PASS",
+                       "detail":  "Dockerfile copies package_stamp + model_manifest into image"
+                   },
+                   {
+                       "id":  "SIM-14-local-publish-role",
+                       "area":  "deployment-package-path",
+                       "status":  "PASS",
+                       "detail":  "Local _publish/web is post-cutover compare baseline (PH assert), not the SCP artifact"
+                   },
+                   {
+                       "id":  "SIM-20-rollback-procedure",
+                       "area":  "rollback-package-path",
+                       "status":  "PASS",
+                       "detail":  "Procedure documents prev-* rename restore + health verify"
+                   },
+                   {
+                       "id":  "SIM-21-workflow-prev-rename",
+                       "area":  "rollback-package-path",
+                       "status":  "PASS",
+                       "detail":  "Workflow renames running containers to *-prev-\u003cunix\u003e before swap"
+                   },
+                   {
+                       "id":  "SIM-22-rollback-model-untouched",
+                       "area":  "rollback-package-path",
+                       "status":  "PASS",
+                       "detail":  "Cutover path keeps PrimaryModel=auricrux-fca; no product ollama mutate"
+                   },
+                   {
+                       "id":  "SIM-23-train-isolated",
+                       "area":  "rollback-package-path",
+                       "status":  "PASS",
+                       "detail":  "Workflow declares LIVE 3B TRAIN PROTECTION (product GCE only)"
+                   },
+                   {
+                       "id":  "SIM-24-precutover-baseline",
+                       "area":  "rollback-package-path",
+                       "status":  "PASS",
+                       "detail":  "Precutover baseline receipt present for compare/rollback evidence"
+                   },
+                   {
+                       "id":  "SIM-25-exec-pkg-rollback",
+                       "area":  "rollback-package-path",
+                       "status":  "PASS",
+                       "detail":  "RB-C2 execution package includes rollback section"
+                   },
+                   {
+                       "id":  "SIM-30-manifest-honest-fail",
+                       "area":  "manifest-preservation",
+                       "status":  "PASS",
+                       "detail":  "evalStatus=PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80 rate=76.7 suitePassed=False"
+                   },
+                   {
+                       "id":  "SIM-31-manifest-train-marker",
+                       "area":  "manifest-preservation",
+                       "status":  "PASS",
+                       "detail":  "Manifest retains running-do-not-interrupt train marker (read-only check)"
+                   },
+                   {
+                       "id":  "SIM-32-manifest-repo-pub-match",
+                       "area":  "manifest-preservation",
+                       "status":  "PASS",
+                       "detail":  "Repo and publish model_manifest.json SHA256 match"
+                   },
+                   {
+                       "id":  "SIM-33-manifest-not-mutated-by-sim",
+                       "area":  "manifest-preservation",
+                       "status":  "PASS",
+                       "detail":  "Simulation does not write model_manifest.json (preservation by non-action)"
+                   },
+                   {
+                       "id":  "SIM-40-ledger-authority",
+                       "area":  "ledger-preservation",
+                       "status":  "PASS",
+                       "detail":  "currentLiveAuthority FAIL @76.7% entries~=5"
+                   },
+                   {
+                       "id":  "SIM-41-ledger-jsonl",
+                       "area":  "ledger-preservation",
+                       "status":  "PASS",
+                       "detail":  "jsonl lines=5"
+                   },
+                   {
+                       "id":  "SIM-42-ledger-not-mutated-by-sim",
+                       "area":  "ledger-preservation",
+                       "status":  "PASS",
+                       "detail":  "Simulation does not append/rewrite ledger (preservation by non-action)"
+                   },
+                   {
+                       "id":  "SIM-43-ledger-integrity-assert",
+                       "area":  "ledger-preservation",
+                       "status":  "PASS",
+                       "detail":  "EVIDENCE_LEDGER_INTEGRITY_OK"
+                   },
+                   {
+                       "id":  "SIM-50-stamp-repo",
+                       "area":  "package-stamps",
+                       "status":  "PASS",
+                       "detail":  "version=1.3.0 suite=construction_god_suite_v1 host=product-gce recipe=product_gguf_serve_v1 source=gcp-cutover-dry-run"
+                   },
+                   {
+                       "id":  "SIM-51-stamp-publish",
+                       "area":  "package-stamps",
+                       "status":  "PASS",
+                       "detail":  "version=1.3.0 suite=construction_god_suite_v1 host=product-gce recipe=product_gguf_serve_v1 source=gcp-cutover-dry-run"
+                   },
+                   {
+                       "id":  "SIM-52-stamp-publish-data-dup",
+                       "area":  "package-stamps",
+                       "status":  "PASS",
+                       "detail":  "Data/package_stamp.json matches auricrux/system stamp"
+                   },
+                   {
+                       "id":  "SIM-53-stamp-repo-pub-align",
+                       "area":  "package-stamps",
+                       "status":  "PASS",
+                       "detail":  "Repo and publish stamps align (version + buildTimestampUtc)"
+                   },
+                   {
+                       "id":  "SIM-60-proof-pack",
+                       "area":  "runtime-proof-artifacts",
+                       "status":  "PASS",
+                       "detail":  "required proof artifacts present count=14"
+                   },
+                   {
+                       "id":  "SIM-61-orchestrators",
+                       "area":  "runtime-proof-artifacts",
+                       "status":  "PASS",
+                       "detail":  "Cutover orchestrator + dry-run + assert scripts present"
+                   },
+                   {
+                       "id":  "SIM-70-hashes-unchanged",
+                       "area":  "preservation",
+                       "status":  "PASS",
+                       "detail":  "Manifest/ledger/stamp SHA256 unchanged during simulation"
+                   },
+                   {
+                       "id":  "SIM-71-no-dispatch",
+                       "area":  "guard",
+                       "status":  "PASS",
+                       "detail":  "No gh workflow run / gcloud / ollama / train contact invoked"
+                   },
+                   {
+                       "id":  "SIM-72-no-model-cutover-auth",
+                       "area":  "guard",
+                       "status":  "PASS",
+                       "detail":  "AURICRUX_PRODUCT_MODEL_CUTOVER_AUTHORIZED=(unset) (must not be 1 for package-web)"
+                   }
+               ],
+    "failures":  [
+
+                 ],
+    "remediation":  [
+
+                    ],
+    "nextOperatorAction":  "Dry-run simulation OK. Live cutover still requires Section B + manual gh workflow run (not performed here).",
+    "related":  {
+                    "executionPackage":  "docs/runtime-proof/RB_C2_PACKAGE_WEB_CUTOVER_EXECUTION_PACKAGE.md",
+                    "goNoGo":  "docs/runtime-proof/CUTOVER_GO_NO_GO_CHECKLIST.md",
+                    "orchestrator":  "scripts/Invoke-RbC2PackageWebCutoverPackage.ps1"
+                }
+}

@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "policyId": "auricrux_authority_chain_v1",
+  "purpose": "Definitive Auricrux authority map. Every transition is evidence-based. No PASS without qualifying evidence. Missing evidence = no authority change.",
+  "productHost": "https://auricrux.futurecontractorsofamerica.com",
+  "passThresholdPercent": 80,
+  "currentSnapshotAtDoc": "2026-08-03",
+  "currentAuthorities": {
+    "liveSuite": {
+      "status": "FAIL",
+      "passRatePercent": 76.7,
+      "report": "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json",
+      "ledgerPointer": "currentLiveAuthority"
+    },
+    "manifest": {
+      "evalStatus": "PRODUCT-LOADED-GGUF-GENERATIVE-76.7-FAIL-THRESHOLD-80",
+      "ggufGenerativeSuitePassed": false,
+      "claimsPass": false
+    },
+    "promotion": {
+      "token": "PROMOTION_EVIDENCE_BLOCKED",
+      "claimsOk": false
+    },
+    "deployment": {
+      "packagePrepared": true,
+      "packageHostConsistent": false,
+      "liveCutoverExecuted": false,
+      "modelWeightCutoverAuthorized": false
+    }
+  },
+  "nonAuthorities": [
+    "offline package validation",
+    "offline alias rescore",
+    "local/dev suite (non-product baseUrl)",
+    "suite reports with corpus-fallback / no-live-model excerpts (historical only)",
+    "assumption / expected improvement / manual excerpt edit"
+  ],
+  "transitions": {
+    "liveSuiteAuthority": {
+      "id": "AUTH-LIVE-SUITE",
+      "pointer": "docs/runtime-proof/auricrux_evidence_ledger_v1.json -> currentLiveAuthority",
+      "mayBecomeFailWhen": [
+        "Dated report mode=gguf-generative-product-chat",
+        "baseUrl is product host",
+        "Report file unique UTC path on disk",
+        "Ledger append succeeded",
+        "suitePassed=false OR passRatePercent < 80"
+      ],
+      "mayBecomePassWhen_ALL_REQUIRED": [
+        "Dated report mode=gguf-generative-product-chat",
+        "baseUrl is product host",
+        "Report file unique UTC path on disk",
+        "suitePassed=true",
+        "passRatePercent >= 80",
+        "Safety gate DEPLOYMENT_SAFETY_GATE_OK for that run (or documented emergency SkipSafetyGate with reason)",
+        "Zero case excerpts contain 'no live model reachable' or corpus-fallback marker",
+        "Live packageIdentity present on report (or host capabilities at run time)",
+        "Ledger append records authority=live-dated-host-validation-qualified",
+        "Ledger currentLiveAuthority updated to that report"
+      ],
+      "disqualifiesPassAuthority": [
+        "Any excerpt: no live model reachable",
+        "Any excerpt / runtimeMode: corpus-fallback",
+        "Missing packageIdentity on host at run",
+        "Offline / alias-rescore mode",
+        "baseUrl not product host",
+        "Overwriting prior FAIL report file"
+      ],
+      "assert": "scripts/Assert-AuricruxAuthorityMap.ps1 + Assert-AuricruxEvidenceRules.ps1"
+    },
+    "manifestAuthority": {
+      "id": "AUTH-MANIFEST",
+      "pointer": "auricrux/system/model_manifest.json adapter.ggufGenerative* / evalStatus",
+      "mayClaimPassWhen_ALL_REQUIRED": [
+        "currentLiveAuthority.status == PASS",
+        "currentLiveAuthority.passRatePercent >= 80",
+        "Manifest ggufGenerativeReport points to that exact authority report path (exists on disk)",
+        "Manifest ggufGenerativePassRatePercent matches report within 0.1",
+        "Manifest ggufGenerativeSuitePassed == true",
+        "Manifest ggufGenerativeValidatedAtUtc set from report runAtUtc",
+        "Cited report passes liveSuite PASS qualification (no fallback contamination)",
+        "productHostDeployRequired == false OR packageIdentity proves current package"
+      ],
+      "mustRemainFailWhen": [
+        "currentLiveAuthority.status == FAIL",
+        "Cited PASS report is disqualified",
+        "Offline alias rescore is the only higher score",
+        "productHostDeployRequired == true without host identity proof"
+      ],
+      "forbidden": [
+        "Promote evalStatus to PASS from offline 80%",
+        "Promote from disqualified 86.7/93.3 historical reports",
+        "Rewrite prior FAIL report content to PASS"
+      ],
+      "assert": "Assert-AuricruxEvidenceRules.ps1 ER-08"
+    },
+    "promotionAuthority": {
+      "id": "AUTH-PROMOTION",
+      "pointer": "Assert-PromotionEvidenceGate.ps1 -> PROMOTION_EVIDENCE_OK",
+      "mayBecomeOkWhen_ALL_REQUIRED": [
+        "correct_host (runtime-truth / health on product host)",
+        "correct_package (PACKAGE_HOST_CONSISTENCY_OK)",
+        "correct_model (activeModel=auricrux-fca ready)",
+        "suite_score_met (currentLiveAuthority PASS >= 80 qualified)",
+        "no_unsafe_fallback (fallbackModeActive=false)",
+        "no_clobber_event (PRODUCT_MODEL_CLOBBER_PROTECTION_OK)",
+        "rollback_exists",
+        "manifest_truthful (does not claim PASS without qualified live authority; productHostDeployRequired cleared)",
+        "evidence_ledger_updated"
+      ],
+      "neverAssume": true,
+      "assert": "Assert-PromotionEvidenceGate.ps1; Assert-PromotionAllowed"
+    },
+    "deploymentAuthority": {
+      "id": "AUTH-DEPLOY",
+      "kinds": {
+        "packageWebCutover": {
+          "description": "Swap auricrux-web/api containers; does NOT replace Ollama product weights",
+          "mayExecuteWhen_ALL_REQUIRED": [
+            "LIVE_3B_TRAIN_PROTECTION_OK (static)",
+            "PRODUCT_MODEL_CLOBBER_PROTECTION_OK",
+            "Offline DEPLOYMENT_SAFETY_GATE_OK on intended publish package",
+            "Rollback procedure + prev-rename present",
+            "Cutover workflow does not ollama mutate auricrux-fca",
+            "Operator explicit: gh workflow run gcp-cutover-build-auricrux.yml -f action=full"
+          ],
+          "doesNotGrant": [
+            "liveSuiteAuthority PASS",
+            "manifest PASS",
+            "promotion OK",
+            "model weight replace"
+          ],
+          "postDeployMustProve": [
+            "PACKAGE_HOST_CONSISTENCY_OK",
+            "/api/runtime-truth 200 (when package includes endpoint)"
+          ]
+        },
+        "modelWeightCutover": {
+          "description": "Replace Ollama tag auricrux-fca weights",
+          "mayExecuteWhen_ALL_REQUIRED": [
+            "Require-ProductModelCutoverAuthorization (AURICRUX_PRODUCT_MODEL_CUTOVER_AUTHORIZED=1 + reason)",
+            "Authorized workflow path only (gcp-load GGUF)",
+            "Cutover evidence written under product-model-cutover-evidence/",
+            "PROMOTION_EVIDENCE_OK recommended before PrimaryModel switch to non-fca tier tags"
+          ],
+          "forbiddenWithoutAuth": [
+            "ollama create/rm/cp onto auricrux-fca",
+            "warm/compose/default init recreate"
+          ]
+        }
+      }
+    }
+  },
+  "dependencyOrder": [
+    "packageWebCutover (optional enabler)",
+    "qualified liveSuiteAuthority PASS|FAIL update",
+    "manifestAuthority may cite liveSuiteAuthority",
+    "promotionAuthority requires qualified PASS + host/package/model/fallback/clobber/rollback/ledger",
+    "modelWeightCutover / PrimaryModel switch requires promotion + clobber auth as applicable"
+  ],
+  "tokens": {
+    "evidenceRulesOk": "EVIDENCE_RULES_OK",
+    "promotionOk": "PROMOTION_EVIDENCE_OK",
+    "packageHostOk": "PACKAGE_HOST_CONSISTENCY_OK",
+    "safetyGateOk": "DEPLOYMENT_SAFETY_GATE_OK",
+    "authorityMapOk": "AUTHORITY_MAP_OK"
+  }
+}

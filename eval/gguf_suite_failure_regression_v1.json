@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "suiteId": "gguf_suite_failure_regression_v1",
+  "purpose": "Regression coverage for known GGUF construction_god generative failures and near-failures. Prevent silent return of the same defects. Does not weaken construction_god_suite_v1. Does not train to the test. Does not remove difficult cases.",
+  "authorityReport": "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json",
+  "authorityAnalysis": "docs/GGUF_GENERATIVE_SUITE_FAILURE_ANALYSIS.md",
+  "canonicalSuite": "eval/construction_god_suite_v1.json",
+  "keywordAliases": "eval/keyword_aliases_v1.json",
+  "passThresholdPercent": 80,
+  "scoringRuleUnchanged": "HTTP/content OK AND >=50% expectedKeywords matched (aliases may credit equivalent field language; never invent content). Floor 80% suite.",
+  "forbidden": [
+    "Deleting or softening failure-case expectedKeywords to game the bar",
+    "Removing difficult cases from construction_god_suite_v1",
+    "Claiming live PASS from offline alias rescore alone",
+    "Training solely to these regression prompts"
+  ],
+  "correctionsGlobal": [
+    {
+      "id": "COR-01-grounding-excerpts",
+      "applied": "BuildSystemPrompt injects truncated corpus excerpts + tags (not titles only)",
+      "verify": "Auricrux.Web/Services/ConstructionIntelligenceService.cs contains 'Grounding excerpts' / Prefer facts from the grounding"
+    },
+    {
+      "id": "COR-02-keyword-aliases",
+      "applied": "eval/keyword_aliases_v1.json + suite/rescore runners",
+      "verify": "alias file present with payapp/rcsc/manual/respiratory/atmospheric/attendant/fragnet/silica/bolt/hvac/proctor/compaction/density"
+    },
+    {
+      "id": "COR-03-expand-search-terms",
+      "applied": "ExpandSearchTerms maps field phrasing (e.g. concrete cutting dust -> silica)",
+      "verify": "ExpandSearchTerms present in ConstructionIntelligenceService.cs and publish DLL"
+    },
+    {
+      "id": "COR-04-silica-corpus",
+      "applied": "Corpus entry uses respirable crystalline silica + respiratory tags",
+      "verify": "Data/construction-corpus.json contains respirable crystalline silica and respiratory tag"
+    },
+    {
+      "id": "COR-05-offline-rescore",
+      "applied": "scripts/rescore_gguf_report_aliases.py support-only 24/30",
+      "verify": "rescore script + alias_rescore receipt exist; authority remains live 76.7% until host rerun"
+    }
+  ],
+  "failures": [
+    {
+      "id": "billing-payapp",
+      "severityClass": "failure",
+      "category": "commercial",
+      "originalFailedPrompt": "How do I fill out an AIA style pay application schedule of values?",
+      "expectedKeywords": ["payapp", "retainage", "sov"],
+      "authorityResult": {
+        "passed": false,
+        "keywordsMatched": 1,
+        "keywordsTotal": 3,
+        "matched": ["sov"],
+        "missing": ["payapp", "retainage"]
+      },
+      "expectedRetrievalBehavior": "Retrieve billing/payapp/SOV corpus rows for AIA pay application queries.",
+      "expectedGroundingBehavior": "Inject pay-application / SOV / retainage excerpts into the chat system prompt so the model does not freestyle CSI structure only.",
+      "expectedAliasExpansionBehavior": "Scoring aliases: payapp <- pay app|pay application|g702|g703; retainage <- retention|retainage release.",
+      "expectedScoringBehavior": "PASS only if >=2 of 3 keywords matched after aliases. Literal 'Pay Application' must credit payapp via alias; do not drop payapp from expectedKeywords.",
+      "reasonForPriorFailure": "Scoring: answer said 'Pay Application SOV' but scorer required literal token payapp; retainage also missing.",
+      "correctionsApplied": ["COR-02-keyword-aliases", "COR-01-grounding-excerpts"],
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "csi-05-steel",
+      "severityClass": "failure",
+      "category": "csi-division",
+      "originalFailedPrompt": "How do I torque a slip-critical structural steel bolt?",
+      "expectedKeywords": ["steel", "bolt", "rcsc"],
+      "authorityResult": {
+        "passed": false,
+        "keywordsMatched": 1,
+        "keywordsTotal": 3,
+        "matched": ["steel"],
+        "missing": ["bolt", "rcsc"]
+      },
+      "expectedRetrievalBehavior": "Retrieve steel/bolt/RCSC corpus content for slip-critical torque queries.",
+      "expectedGroundingBehavior": "Inject RCSC / bolt torque excerpts (content, not title-only) into generation.",
+      "expectedAliasExpansionBehavior": "rcsc <- research council on structural connections; bolt <- bolts|bolting.",
+      "expectedScoringBehavior": "PASS if >=2/3 keywords after aliases. Keep steel, bolt, rcsc — do not remove rcsc.",
+      "reasonForPriorFailure": "Prompt/eval + model: corpus had RCSC/bolt text but chat injected titles only; model freelanced without bolt/rcsc terms.",
+      "correctionsApplied": ["COR-01-grounding-excerpts", "COR-02-keyword-aliases"],
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "csi-23-hvac",
+      "severityClass": "failure",
+      "category": "csi-division",
+      "originalFailedPrompt": "How do I size HVAC ductwork for a building?",
+      "expectedKeywords": ["hvac", "duct", "manual"],
+      "authorityResult": {
+        "passed": false,
+        "keywordsMatched": 1,
+        "keywordsTotal": 3,
+        "matched": ["duct"],
+        "missing": ["hvac", "manual"]
+      },
+      "expectedRetrievalBehavior": "Retrieve HVAC / Manual D sizing corpus for ductwork sizing queries.",
+      "expectedGroundingBehavior": "Inject Manual D / HVAC sizing excerpts into the system prompt.",
+      "expectedAliasExpansionBehavior": "manual <- manual d|manual j|acca manual; hvac <- heating ventilating|heating and cooling.",
+      "expectedScoringBehavior": "PASS if >=2/3 after aliases. Keep all three keywords.",
+      "reasonForPriorFailure": "Prompt/eval + variance: Manual D in corpus but title-only grounding; live variance later matched duct+manual.",
+      "correctionsApplied": ["COR-01-grounding-excerpts", "COR-02-keyword-aliases"],
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "osha-confined-space",
+      "severityClass": "failure",
+      "category": "safety",
+      "originalFailedPrompt": "What must happen before entering a permit-required confined space?",
+      "expectedKeywords": ["confined space", "atmospheric", "attendant"],
+      "authorityResult": {
+        "passed": false,
+        "keywordsMatched": 1,
+        "keywordsTotal": 3,
+        "matched": ["confined space"],
+        "missing": ["atmospheric", "attendant"]
+      },
+      "expectedRetrievalBehavior": "Retrieve permit-required confined space entry corpus (atmospheric testing, attendant).",
+      "expectedGroundingBehavior": "Inject atmospheric testing / attendant excerpts into generation.",
+      "expectedAliasExpansionBehavior": "atmospheric <- atmosphere|air monitoring|atm testing|atmospheric testing; attendant <- entry attendant|hole watch.",
+      "expectedScoringBehavior": "PASS if >=2/3 after aliases. Do not remove atmospheric or attendant.",
+      "reasonForPriorFailure": "Prompt/eval + model: corpus had terms but they were not injected into generation.",
+      "correctionsApplied": ["COR-01-grounding-excerpts", "COR-02-keyword-aliases", "COR-03-expand-search-terms"],
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "osha-silica",
+      "severityClass": "failure",
+      "category": "safety",
+      "originalFailedPrompt": "What controls does OSHA require for concrete cutting dust?",
+      "expectedKeywords": ["silica", "dust", "respiratory"],
+      "authorityResult": {
+        "passed": false,
+        "keywordsMatched": 1,
+        "keywordsTotal": 3,
+        "matched": ["dust"],
+        "missing": ["silica", "respiratory"]
+      },
+      "expectedRetrievalBehavior": "ExpandSearchTerms must map concrete cutting/grinding dust phrasing to silica/respirable/respiratory so silica corpus rows are retrieved.",
+      "expectedGroundingBehavior": "Inject respirable crystalline silica / respiratory protection excerpts into the chat prompt.",
+      "expectedAliasExpansionBehavior": "respiratory <- respirator|respirable|respiratory protection; silica <- crystalline silica|respirable crystalline silica.",
+      "expectedScoringBehavior": "PASS if >=2/3 after aliases. Keep silica + respiratory; do not replace query with 'silica' to make retrieval trivial.",
+      "reasonForPriorFailure": "Prompt/eval + benchmark/scoring: query used field language 'concrete cutting dust'; corpus title retrieved but content unused; keyword respiratory vs corpus respirable.",
+      "correctionsApplied": ["COR-01-grounding-excerpts", "COR-02-keyword-aliases", "COR-03-expand-search-terms", "COR-04-silica-corpus"],
+      "mustRemainInSuite": true,
+      "retrievalProbeQuery": "concrete cutting dust respiratory hazard",
+      "retrievalProbeMustMatch": ["silica", "respirable", "respiratory"]
+    },
+    {
+      "id": "scheduling-delay",
+      "severityClass": "failure",
+      "category": "scheduling",
+      "originalFailedPrompt": "What is a time impact analysis used for?",
+      "expectedKeywords": ["delay", "fragnet", "critical path"],
+      "authorityResult": {
+        "passed": false,
+        "keywordsMatched": 0,
+        "keywordsTotal": 3,
+        "matched": [],
+        "missing": ["delay", "fragnet", "critical path"]
+      },
+      "expectedRetrievalBehavior": "Retrieve TIA / delay / fragnet scheduling corpus for time-impact queries.",
+      "expectedGroundingBehavior": "Inject TIA/fragnet/critical-path excerpts; discourage invented formulas when grounding is present.",
+      "expectedAliasExpansionBehavior": "fragnet <- fragmentary network|delay fragnet; critical path <- critical-path|cpm path.",
+      "expectedScoringBehavior": "PASS if >=2/3 after aliases. Keep all three keywords — model limitation is not fixed by deleting keywords.",
+      "reasonForPriorFailure": "Model (+ prompt): invented Delta-T formula; ignored TIA/fragnet. Later live variance PASSed — still retain regression.",
+      "correctionsApplied": ["COR-01-grounding-excerpts", "COR-02-keyword-aliases"],
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "earthwork-compaction",
+      "severityClass": "failure",
+      "category": "sitework",
+      "originalFailedPrompt": "How do I verify soil compaction before placing a footing?",
+      "expectedKeywords": ["compaction", "proctor", "density"],
+      "authorityResult": {
+        "passed": false,
+        "keywordsMatched": 0,
+        "keywordsTotal": 3,
+        "matched": [],
+        "missing": ["compaction", "proctor", "density"]
+      },
+      "expectedRetrievalBehavior": "Retrieve compaction / Proctor / density test corpus for footing subgrade verification.",
+      "expectedGroundingBehavior": "Inject Proctor/density/compaction excerpts; prevent off-topic CSI MasterFormat rant when grounding exists.",
+      "expectedAliasExpansionBehavior": "proctor <- standard proctor|modified proctor; compaction <- compact|compacted; density <- nuclear density|relative density.",
+      "expectedScoringBehavior": "PASS if >=2/3 after aliases. Do not remove proctor/density.",
+      "reasonForPriorFailure": "Model (+ prompt): off-topic CSI rant despite correct retrieval title; zero keyword hits.",
+      "correctionsApplied": ["COR-01-grounding-excerpts", "COR-02-keyword-aliases"],
+      "mustRemainInSuite": true
+    }
+  ],
+  "nearFailures": [
+    {
+      "id": "csi-03-concrete",
+      "severityClass": "near-failure",
+      "note": "Authority PASS at 2/3 keywords — monitor regression to <50%.",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "expectedScoringBehavior": "Must remain >=50% keyword hit rate; do not lower expectedKeywords.",
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "csi-07-roofing",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "csi-26-electrical",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "osha-fall-protection",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "osha-trenching",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "osha-scaffold",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "estimating-takeoff",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "estimating-bid-leveling",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "jobcost-variance",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "change-order",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "code-egress",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "insurance-bonding",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    },
+    {
+      "id": "sitework-erosion",
+      "severityClass": "near-failure",
+      "authorityKeywordsMatched": 2,
+      "authorityKeywordsTotal": 3,
+      "mustRemainInSuite": true
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "policyId": "auricrux_operational_drift_v1",
+  "purpose": "Immediate detection of divergence among intended local package, evidence, and (optional) live host. Minimize false positives: FAIL only on hard identity mismatches; WARN for expected pre-cutover / age soft signals.",
+  "okToken": "OPERATIONAL_DRIFT_OK",
+  "warnToken": "OPERATIONAL_DRIFT_WARN",
+  "blockToken": "OPERATIONAL_DRIFT_BLOCKED",
+  "assertScript": "scripts/Assert-OperationalDrift.ps1",
+  "doc": "docs/runtime-proof/OPERATIONAL_DRIFT.md",
+  "productHost": "https://auricrux.futurecontractorsofamerica.com",
+  "falsePositiveControls": [
+    "Do not FAIL solely because live host lacks packageIdentity when package-prepared.liveCutoverExecuted=false (expected pre-cutover)",
+    "Do not FAIL solely on absolute artifact age unless -StrictAge",
+    "Do not FAIL when ledger FAIL@76.7 aligns with manifest FAIL (honest debt)",
+    "DLL SHA Windows-publish vs Linux-container may differ - compare corpus+stamp+version first; DLL mismatch alone is WARN unless versions also diverge",
+    "Skip live probes by default (-ProbeLive to enable)"
+  ],
+  "classes": {
+    "stale_publish_package": {
+      "compare": ["repo stamp/manifest vs _publish/web", "package-prepared dll/corpus sha vs publish"],
+      "failWhen": ["stamp packageVersion mismatch repo vs publish", "prepared dllSha256 != publish dll when prepared present"],
+      "warnWhen": ["prepared buildTimestamp older than publish stamp after re-stamp", "deploymentSource differs across stamps"]
+    },
+    "stale_corpora": {
+      "compare": ["Auricrux.Web/Data/construction-corpus.json vs _publish/web/Data/construction-corpus.json"],
+      "failWhen": ["both exist and SHA256 differ"],
+      "warnWhen": ["source corpus missing but publish present"]
+    },
+    "stale_manifests": {
+      "compare": ["auricrux/system/model_manifest.json vs publish copy", "manifest vs ledger currentLiveAuthority"],
+      "failWhen": ["repo vs publish evalStatus or pass rate diverge", "manifest claims PASS while ledger authority is FAIL"],
+      "warnWhen": ["manifest report path leaf differs from ledger authority report leaf but both FAIL same rate"]
+    },
+    "stale_ledgers": {
+      "compare": ["ledger JSON vs JSONL evidenceIds", "authority report on disk", "supersededEvidence vs disqualified PASS"],
+      "failWhen": ["JSON entry ids missing from JSONL", "authority report file missing"],
+      "warnWhen": ["ledger updatedAt older than newest suite report on disk by > maxLedgerLagHours (soft)"]
+    },
+    "stale_runtime_versions": {
+      "compare": ["package_stamp packageVersion/suiteTarget/hostProfile/recipeProfile repo vs publish", "optional live packageIdentity"],
+      "failWhen": ["suiteTarget mismatch repo vs publish"],
+      "warnWhen": ["live packageVersion behind publish when ProbeLive and identity present"]
+    },
+    "stale_deployment_artifacts": {
+      "compare": ["package-prepared-latest.json", "cutover go/no-go receipt", "publish stamp deploymentSource"],
+      "failWhen": ["prepared claims liveCutoverExecuted=true but host identity missing/mismatched (ProbeLive)"],
+      "warnWhen": ["prepared.liveCutoverExecuted=false and host lacks identity (expected)", "go/no-go cutoverExecuted=false"]
+    }
+  },
+  "softAge": {
+    "enabledDefault": true,
+    "strictAgeDefault": false,
+    "maxPreparedAgeHours": 168,
+    "maxLedgerLagHours": 72,
+    "note": "Age alone never FAILs unless -StrictAge"
+  }
+}
