@@ -1,0 +1,3 @@
+# Normalize corpus JSON to LF so Linux image SHA matches Windows working tree / publish.
+Auricrux.Web/Data/construction-corpus.json text eol=lf
+**/Data/construction-corpus.json text eol=lf

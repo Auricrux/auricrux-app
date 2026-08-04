@@ -97,6 +97,9 @@ jobs:
             ENV_ARGS+=(-e "Auricrux__OllamaUrl=http://auricrux-ollama:11434")
             ENV_ARGS+=(-e "Auricrux__PrimaryModel=auricrux-fca")
             ENV_ARGS+=(-e "Auricrux__VisionModel=llava")
+            # Public host for packageIdentity/runtime-truth (Caddy proxies to 127.0.0.1:4000/5001).
+            ENV_ARGS+=(-e "AURICRUX_PUBLIC_HOST=auricrux.futurecontractorsofamerica.com")
+            ENV_ARGS+=(-e "Auricrux__PublicHost=auricrux.futurecontractorsofamerica.com")
 
             PUBLISH="127.0.0.1:${HOSTPORT}:${CONTAINERPORT}"
             if [ -n "$NETWORK" ]; then

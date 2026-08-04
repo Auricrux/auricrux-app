@@ -1,7 +1,7 @@
 ﻿{
     "schemaVersion":  1,
     "packageVersion":  "1.3.0",
-    "buildTimestampUtc":  "2026-08-03T23:52:53.4912411Z",
+    "buildTimestampUtc":  "2026-08-04T02:04:46.7150509Z",
     "suiteTarget":  "construction_god_suite_v1",
     "suiteVersion":  "v1",
     "suitePath":  "eval/construction_god_suite_v1.json",
@@ -9,6 +9,7 @@
     "evidenceLedgerJsonlPath":  "docs/runtime-proof/auricrux_evidence_ledger_v1.jsonl",
     "hostProfile":  "product-gce",
     "recipeProfile":  "product_gguf_serve_v1",
-    "deploymentSource":  "gcp-cutover-dry-run",
-    "note":  "Generated at build/publish. Runtime PackageIdentityService + RuntimeTruthService add DLL/corpus SHA256. No secrets in stamp."
+    "deploymentSource":  "package_stamp",
+    "corpusSha256":  "f7dc9b230c8aa676cb4c4a07a2d6b24716e8c7c41cb861eed7e2e75f7f585d5b",
+    "note":  "Generated at build/publish. Runtime PackageIdentityService + RuntimeTruthService add DLL/corpus SHA256. Stamp corpusSha256 anchors Linux image builds vs Windows CRLF publish false-STALE."
 }

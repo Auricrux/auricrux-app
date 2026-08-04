@@ -1,6 +1,8 @@
 using Auricrux.Shared.Models;
 using Auricrux.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Auricrux.Web.Controllers;
 
@@ -38,7 +40,7 @@ public sealed class AuricruxApiController(
     [HttpGet("truth")]
     public async Task<ActionResult<RuntimeTruthReport>> GetRuntimeTruth(CancellationToken cancellationToken)
     {
-        var host = Request.Host.Host;
+        var host = ResolveInboundHost();
         var report = await runtimeTruth.GetAsync(host, cancellationToken);
         return Ok(report);
     }
@@ -49,7 +51,7 @@ public sealed class AuricruxApiController(
     [HttpGet("capabilities")]
     public ActionResult<CapabilitiesReport> GetCapabilities()
     {
-        var host = $"{Request.Scheme}://{Request.Host}";
+        var host = ResolveInboundHost();
         return Ok(capabilities.GetReport(host));
     }
 
@@ -239,5 +241,32 @@ public sealed class AuricruxApiController(
         }
 
         return selected;
+    }
+
+    /// <summary>
+    /// Prefer X-Forwarded-Host / configured public host over loopback Request.Host
+    /// (Caddy terminates TLS and proxies to 127.0.0.1:4000/5001).
+    /// </summary>
+    private string ResolveInboundHost()
+    {
+        var forwarded = Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(forwarded))
+        {
+            return forwarded.Split(',')[0].Trim();
+        }
+
+        var configured = HttpContext.RequestServices.GetService<IConfiguration>();
+        var pub = configured?["Auricrux:PublicHost"]
+                  ?? Environment.GetEnvironmentVariable("AURICRUX_PUBLIC_HOST")
+                  ?? Environment.GetEnvironmentVariable("Auricrux__PublicHost");
+        var inbound = Request.Host.Value ?? "";
+        if (!string.IsNullOrWhiteSpace(pub) &&
+            (inbound.StartsWith("127.", StringComparison.Ordinal) ||
+             inbound.StartsWith("localhost", StringComparison.OrdinalIgnoreCase)))
+        {
+            return pub;
+        }
+
+        return inbound;
     }
 }

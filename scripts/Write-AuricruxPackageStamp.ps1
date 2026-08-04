@@ -21,6 +21,15 @@ if ([string]::IsNullOrWhiteSpace($PublishDir)) {
 }
 
 $buildUtc = (Get-Date).ToUniversalTime().ToString('o')
+$corpusPath = Join-Path $RepoRoot 'Auricrux.Web\Data\construction-corpus.json'
+if (-not (Test-Path -LiteralPath $corpusPath) -and (Test-Path -LiteralPath (Join-Path $PublishDir 'Data\construction-corpus.json'))) {
+    $corpusPath = Join-Path $PublishDir 'Data\construction-corpus.json'
+}
+$corpusSha = ''
+if (Test-Path -LiteralPath $corpusPath) {
+    $corpusSha = (Get-FileHash -LiteralPath $corpusPath -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
 $stamp = [ordered]@{
     schemaVersion = 1
     packageVersion = $PackageVersion
@@ -33,7 +42,8 @@ $stamp = [ordered]@{
     hostProfile = $HostProfile
     recipeProfile = $RecipeProfile
     deploymentSource = $DeploymentSource
-    note = 'Generated at build/publish. Runtime PackageIdentityService + RuntimeTruthService add DLL/corpus SHA256. No secrets in stamp.'
+    corpusSha256 = $corpusSha
+    note = 'Generated at build/publish. Runtime PackageIdentityService + RuntimeTruthService add DLL/corpus SHA256. Stamp corpusSha256 anchors Linux image builds vs Windows CRLF publish false-STALE.'
 }
 
 $systemDir = Join-Path $RepoRoot 'auricrux\system'

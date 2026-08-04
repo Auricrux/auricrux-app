@@ -26,7 +26,7 @@ The gap is **+1 case**. Failures are a mix of **scoring**, **prompt/eval groundi
 2. **Keyword aliases** — `eval/keyword_aliases_v1.json` + suite runners.
 3. **Offline rescore** — `scripts/rescore_gguf_report_aliases.py` → `eval/reports/construction_god_suite_gguf_generative_2026-08-02_alias_rescore.json` (**24/30 = 80%** offline).
 4. **Corpus silica** — explicit `respiratory` language/tags.
-5. **Retrieval synonyms** — `ExpandSearchTerms` maps field phrasing (e.g. concrete cutting dust → silica) so the right rows are retrieved for grounding.
+5. **Retrieval synonyms** — `ExpandSearchTerms` maps field phrasing across **multiple corpus domains** (not silica-only) so the right rows are retrieved for grounding. See `docs/runtime-proof/EXPAND_SEARCH_TERMS.md`.
 6. **Publish refresh** — `_publish/web` rebuilt 2026-08-02 with grounding + synonyms + corpus (prior DLL was 2026-07-30).
 7. **Deploy safety** — `docker-compose` `ollama-model-init` gated to profile `dev-fallback`; GCP warm workflow no longer Modelfile/llama3.2-recreates product tag (UNSAFE-06).
 
@@ -34,12 +34,26 @@ The gap is **+1 case**. Failures are a mix of **scoring**, **prompt/eval groundi
 
 | Measurement | Pass | Rate | Notes |
 |-------------|------|------|-------|
-| Live baseline 2026-08-02 | 23/30 | 76.7% | FAIL (retained) |
+| Live baseline 2026-08-02 | 23/30 | 76.7% | **FAIL — current live authority** (retained) |
 | Offline alias rescore | 24/30 | 80.0% | Support-only; not live authority |
-| **Live after cutover 2026-08-03** | **26/30** | **86.7%** | **PASS** — `eval/reports/construction_god_suite_gguf_generative_2026-08-03.json` |
+| 2026-08-03 report files | — | 86.7% / 93.3% claimed | Historical only; **not** Manifest PASS until clean dated host rerun after package deploy |
 
-Remaining live fails (not blocking ≥80%): `csi-07-roofing`, `osha-silica` (variance), `estimating-takeoff`, `earthwork-compaction`.
+**Live suite status remains 76.7% FAIL** until a dated product-host generative rerun proves otherwise. Product host deployment of package fixes is still required.
 
+### Comparison (2026-08-04 analysis — no new authoritative live run)
+
+| Measurement | Rate | Authority |
+|-------------|------|-----------|
+| Prior / current live | **76.7% FAIL** (23/30) | **currentLiveAuthority** |
+| Historical-only | 86.7% / 93.3% | Disqualified; not authority |
+| New authoritative live | **UNCHANGED 76.7% FAIL** | Suite not rerun: RB-C2 PostVerify still open (PH-14/PH-19) |
+
+Receipt: `docs/runtime-proof/authoritative-live-failure-analysis-latest.json`.
+
+See `docs/runtime-proof/AURICRUX_STATUS_TRUTH_2026-08-03.md`.
+
+
+See [GGUF_SUITE_FAILURE_REGRESSION.md](./runtime-proof/GGUF_SUITE_FAILURE_REGRESSION.md) for locked regression coverage (prompts, retrieval/grounding/alias/scoring expectations, prior failure reasons, corrections). Assert: `scripts/Assert-GgufSuiteFailureRegression.ps1`.
 
 ## What was not done (intentionally)
 

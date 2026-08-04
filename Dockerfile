@@ -18,8 +18,14 @@ COPY auricrux/system/model_manifest.json auricrux/system/model_manifest.json
 
 WORKDIR /src/Auricrux.Web
 RUN BUILD_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+ && CORPUS_SHA="$(sha256sum /src/Auricrux.Web/Data/construction-corpus.json | awk '{print $1}')" \
  && sed -i "s/\"buildTimestampUtc\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"buildTimestampUtc\": \"${BUILD_UTC}\"/" \
       /src/auricrux/system/package_stamp.json \
+ && if grep -q '"corpusSha256"' /src/auricrux/system/package_stamp.json; then \
+      sed -i "s/\"corpusSha256\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"corpusSha256\": \"${CORPUS_SHA}\"/" /src/auricrux/system/package_stamp.json; \
+    else \
+      sed -i "s/\"deploymentSource\"/\"corpusSha256\": \"${CORPUS_SHA}\",\"deploymentSource\"/" /src/auricrux/system/package_stamp.json; \
+    fi \
  && dotnet publish "Auricrux.Web.csproj" -c Release -o /app/publish --no-restore
 
 # Stage 2: Runtime (Alpine, minimal image size)
@@ -37,8 +43,14 @@ COPY auricrux/system/package_stamp.json /app/auricrux/system/package_stamp.json
 # Refresh build timestamp so operators can tell which image build is live.
 RUN mkdir -p /app/auricrux/system /app/Data \
  && BUILD_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+ && CORPUS_SHA="$(sha256sum /app/Data/construction-corpus.json | awk '{print $1}')" \
  && sed -i "s/\"buildTimestampUtc\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"buildTimestampUtc\": \"${BUILD_UTC}\"/" \
       /app/auricrux/system/package_stamp.json \
+ && if grep -q '"corpusSha256"' /app/auricrux/system/package_stamp.json; then \
+      sed -i "s/\"corpusSha256\"[[:space:]]*:[[:space:]]*\"[^\"]*\"/\"corpusSha256\": \"${CORPUS_SHA}\"/" /app/auricrux/system/package_stamp.json; \
+    else \
+      sed -i "s/\"deploymentSource\"/\"corpusSha256\": \"${CORPUS_SHA}\",\"deploymentSource\"/" /app/auricrux/system/package_stamp.json; \
+    fi \
  && cp /app/auricrux/system/package_stamp.json /app/Data/package_stamp.json
 
 RUN addgroup -S appgroup \

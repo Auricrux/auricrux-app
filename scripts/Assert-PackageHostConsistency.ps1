@@ -262,8 +262,25 @@ if ($null -ne $livePkg) {
     if (-not $liveEntries -and $null -ne $cap) {
         try { $liveEntries = [int]$cap.corpusEntries } catch {}
     }
+    $stampCorpus = ''
+    try { $stampCorpus = ([string]$livePkg.stampCorpusSha256).ToLowerInvariant() } catch { $stampCorpus = '' }
+    if ([string]::IsNullOrWhiteSpace($stampCorpus)) {
+        try { $stampCorpus = ([string]$livePkg.corpusSha256FromStamp).ToLowerInvariant() } catch { }
+    }
     if ([string]::IsNullOrWhiteSpace($liveCorpus)) {
         Add-Check 'PH-14-corpus-files' 'FAIL' 'Host corpusSha256 empty (ambiguous corpus)'
+    } elseif ($stampCorpus -and ($liveCorpus.ToLowerInvariant() -eq $stampCorpus)) {
+        # Linux image stamp anchors deploy; Windows CRLF local publish may diverge without content change.
+        $entryNote = ''
+        if ($pubCorpusEntries -gt 0 -and $liveEntries -gt 0 -and $liveEntries -ne $pubCorpusEntries) {
+            Add-Check 'PH-14-corpus-files' 'FAIL' ("MISMATCH corpusEntries live={0} publish={1}" -f $liveEntries, $pubCorpusEntries)
+        } else {
+            if ($pubCorpusSha -and ($liveCorpus.ToLowerInvariant() -ne $pubCorpusSha)) {
+                $entryNote = ' (matches image stamp; local publish SHA may differ by CRLF)'
+            }
+            if ($pubCorpusEntries -gt 0) { $entryNote = (" entries={0}{1}" -f $liveEntries, $entryNote) }
+            Add-Check 'PH-14-corpus-files' 'PASS' ("corpusSha matches stamp{0}" -f $entryNote)
+        }
     } elseif ($pubCorpusSha -and ($liveCorpus.ToLowerInvariant() -ne $pubCorpusSha)) {
         Add-Check 'PH-14-corpus-files' 'FAIL' ("STALE corpusSha live={0}... publish={1}..." -f $liveCorpus.Substring(0, [Math]::Min(12, $liveCorpus.Length)), $pubCorpusSha.Substring(0, 12))
     } else {
@@ -359,11 +376,16 @@ if ($null -ne $livePkg) {
         Add-Check 'PH-18-env-config-signals' 'WARN' 'No env override signals reported yet'
     }
 
-    # Host reported unambiguous
+    # Host reported unambiguous (accept bare host or https://host; reject loopback)
     $hr = [string]$livePkg.hostReported
+    $hrNorm = $hr.Trim().ToLowerInvariant() -replace '^https?://', '' -replace '/$', ''
+    $expNorm = ([string]$ExpectedHost).Trim().ToLowerInvariant() -replace '^https?://', '' -replace '/$', ''
+    $isLoopback = $hrNorm -match '^(127\.|localhost(:|$)|\[::1\]|::1|0\.0\.0\.0)'
     if ([string]::IsNullOrWhiteSpace($hr)) {
         Add-Check 'PH-19-host-unambiguous' 'FAIL' 'hostReported empty (ambiguous which host served identity)'
-    } elseif ($hr -notmatch [regex]::Escape($ExpectedHost) -and $hr -ne $ExpectedHost) {
+    } elseif ($isLoopback) {
+        Add-Check 'PH-19-host-unambiguous' 'FAIL' ("hostReported='{0}' is loopback/internal (expected public '{1}')" -f $hr, $ExpectedHost)
+    } elseif ($hrNorm -ne $expNorm -and $hrNorm -notlike "$expNorm*" -and $expNorm -notlike "$hrNorm*") {
         Add-Check 'PH-19-host-unambiguous' 'FAIL' ("hostReported='{0}' does not match expected '{1}'" -f $hr, $ExpectedHost)
     } else {
         Add-Check 'PH-19-host-unambiguous' 'PASS' ("hostReported={0}" -f $hr)

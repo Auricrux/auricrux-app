@@ -1,0 +1,259 @@
+﻿{
+    "atUtc":  "2026-08-04T02:05:00Z",
+    "token":  "AUTHORITATIVE_LIVE_FAILURE_ANALYSIS_ONLY",
+    "suitePassed":  false,
+    "passClaimed":  false,
+    "thresholdUnchanged":  80,
+    "suiteWeakened":  false,
+    "authoritativeSuiteRerunThisSession":  false,
+    "reasonSuiteNotRerun":  "RB-C2 PostVerify FAIL (PH-14, PH-19); AUTHORITATIVE_SUITE_NOT_RUN gate holds; analysis uses retained live authority only.",
+    "comparison":  {
+                       "priorAuthoritativeFail":  {
+                                                      "status":  "FAIL",
+                                                      "passRatePercent":  76.7,
+                                                      "passedCases":  23,
+                                                      "totalCases":  30,
+                                                      "report":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-02.json",
+                                                      "isCurrentLiveAuthority":  true,
+                                                      "newAuthoritativeLiveResult":  "UNCHANGED - still 76.7 FAIL (no qualifying live rerun)"
+                                                  },
+                       "historicalOnlyNonAuthoritative":  [
+                                                              {
+                                                                  "passRatePercent":  86.7,
+                                                                  "passedCases":  26,
+                                                                  "totalCases":  30,
+                                                                  "report":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-03T0301Z.json",
+                                                                  "authority":  "historical-only / disqualified via authority-supersession",
+                                                                  "failCaseIds":  [
+                                                                                      "csi-07-roofing",
+                                                                                      "osha-silica",
+                                                                                      "estimating-takeoff",
+                                                                                      "earthwork-compaction"
+                                                                                  ]
+                                                              },
+                                                              {
+                                                                  "passRatePercent":  93.3,
+                                                                  "passedCases":  28,
+                                                                  "totalCases":  30,
+                                                                  "report":  "docs/runtime-proof/construction_god_suite_gguf_generative_2026-08-03T031635Z.json",
+                                                                  "authority":  "historical-only / disqualified via authority-supersession",
+                                                                  "failCaseIds":  [
+                                                                                      "csi-05-steel",
+                                                                                      "earthwork-compaction"
+                                                                                  ]
+                                                              }
+                                                          ],
+                       "overlapNote":  "Historical 86.7/93.3 share persistent pressure on osha-silica, earthwork-compaction, and csi-05-steel with the authoritative FAIL set, but cannot elevate currentLiveAuthority."
+                   },
+    "authoritativeFailures":  [
+                                  {
+                                      "id":  "csi-05-steel",
+                                      "kw":  "1/3",
+                                      "matched":  [
+                                                      "steel"
+                                                  ],
+                                      "missing":  [
+                                                      "bolt",
+                                                      "rcsc"
+                                                  ],
+                                      "classes":  [
+                                                      "grounding",
+                                                      "model response"
+                                                  ],
+                                      "primaryClass":  "grounding",
+                                      "detail":  "Torque/load path without bolt/RCSC; corpus content not evidently used."
+                                  },
+                                  {
+                                      "id":  "csi-23-hvac",
+                                      "kw":  "1/3",
+                                      "matched":  [
+                                                      "duct"
+                                                  ],
+                                      "missing":  [
+                                                      "hvac",
+                                                      "manual"
+                                                  ],
+                                      "classes":  [
+                                                      "grounding",
+                                                      "model response"
+                                                  ],
+                                      "primaryClass":  "grounding",
+                                      "detail":  "Generic sizing; Manual D / HVAC keywords absent."
+                                  },
+                                  {
+                                      "id":  "osha-confined-space",
+                                      "kw":  "1/3",
+                                      "matched":  [
+                                                      "confined space"
+                                                  ],
+                                      "missing":  [
+                                                      "atmospheric",
+                                                      "attendant"
+                                                  ],
+                                      "classes":  [
+                                                      "grounding",
+                                                      "model response"
+                                                  ],
+                                      "primaryClass":  "grounding",
+                                      "detail":  "No atmospheric testing / attendant terms."
+                                  },
+                                  {
+                                      "id":  "osha-silica",
+                                      "kw":  "1/3",
+                                      "matched":  [
+                                                      "dust"
+                                                  ],
+                                      "missing":  [
+                                                      "silica",
+                                                      "respiratory"
+                                                  ],
+                                      "classes":  [
+                                                      "retrieval",
+                                                      "alias expansion",
+                                                      "grounding",
+                                                      "scoring"
+                                                  ],
+                                      "primaryClass":  "retrieval",
+                                      "detail":  "Field phrasing needs ExpandSearchTerms + silica grounding; respiratory vs respirable scoring/alias adjacent."
+                                  },
+                                  {
+                                      "id":  "billing-payapp",
+                                      "kw":  "1/3",
+                                      "matched":  [
+                                                      "sov"
+                                                  ],
+                                      "missing":  [
+                                                      "payapp",
+                                                      "retainage"
+                                                  ],
+                                      "classes":  [
+                                                      "scoring",
+                                                      "model response"
+                                                  ],
+                                      "primaryClass":  "scoring",
+                                      "detail":  "Says \u0027Pay Application SOV\u0027 but payapp/retainage not credited without live aliases."
+                                  },
+                                  {
+                                      "id":  "scheduling-delay",
+                                      "kw":  "0/3",
+                                      "matched":  [
+
+                                                  ],
+                                      "missing":  [
+                                                      "delay",
+                                                      "fragnet",
+                                                      "critical path"
+                                                  ],
+                                      "classes":  [
+                                                      "model response",
+                                                      "grounding"
+                                                  ],
+                                      "primaryClass":  "model response",
+                                      "detail":  "Invented Delta-T formula; missing fragnet/critical path/delay."
+                                  },
+                                  {
+                                      "id":  "earthwork-compaction",
+                                      "kw":  "0/3",
+                                      "matched":  [
+
+                                                  ],
+                                      "missing":  [
+                                                      "compaction",
+                                                      "proctor",
+                                                      "density"
+                                                  ],
+                                      "classes":  [
+                                                      "model response",
+                                                      "grounding"
+                                                  ],
+                                      "primaryClass":  "model response",
+                                      "detail":  "Off-topic CSI rant; zero keyword hits."
+                                  }
+                              ],
+    "classificationSummary":  {
+                                  "retrieval":  [
+                                                    "osha-silica"
+                                                ],
+                                  "aliasExpansion":  [
+                                                         "osha-silica"
+                                                     ],
+                                  "corpus":  [
+
+                                             ],
+                                  "grounding":  [
+                                                    "csi-05-steel",
+                                                    "csi-23-hvac",
+                                                    "osha-confined-space",
+                                                    "osha-silica",
+                                                    "scheduling-delay",
+                                                    "earthwork-compaction"
+                                                ],
+                                  "runtimeDeployment":  [
+
+                                                        ],
+                                  "modelResponse":  [
+                                                        "csi-05-steel",
+                                                        "csi-23-hvac",
+                                                        "osha-confined-space",
+                                                        "scheduling-delay",
+                                                        "earthwork-compaction",
+                                                        "billing-payapp"
+                                                    ],
+                                  "scoring":  [
+                                                  "billing-payapp",
+                                                  "osha-silica"
+                                              ],
+                                  "hostMismatch":  [
+
+                                                   ]
+                              },
+    "runtimeDeploymentSeparateFromSuiteCases":  {
+                                                    "note":  "PH-14/PH-19 are packaging/host defects blocking RB-C2 PostVerify â€” not suite case failures. Fixes staged locally; not yet re-cutover.",
+                                                    "classes":  [
+                                                                    "runtime deployment",
+                                                                    "host mismatch"
+                                                                ],
+                                                    "defects":  [
+                                                                    {
+                                                                        "id":  "PH-19",
+                                                                        "class":  "host mismatch",
+                                                                        "verified":  true,
+                                                                        "fix":  "Prefer public host when Request.Host is loopback; cutover ENV sets AURICRUX_PUBLIC_HOST."
+                                                                    },
+                                                                    {
+                                                                        "id":  "PH-14",
+                                                                        "class":  "runtime deployment",
+                                                                        "verified":  true,
+                                                                        "fix":  "Embed stamp corpusSha256 at Linux build; assert against stamp; .gitattributes LF for corpus."
+                                                                    }
+                                                                ]
+                                                },
+    "fixesAppliedThisSession":  {
+                                    "suiteChanges":  false,
+                                    "thresholdChanges":  false,
+                                    "implementationConfigurationOnly":  [
+                                                                            "Auricrux.Web/Services/PackageIdentityService.cs",
+                                                                            "Auricrux.Web/Controllers/AuricruxApiController.cs",
+                                                                            "scripts/Write-AuricruxPackageStamp.ps1",
+                                                                            "scripts/Assert-PackageHostConsistency.ps1",
+                                                                            "Dockerfile",
+                                                                            ".github/workflows/gcp-cutover-build-auricrux.yml",
+                                                                            ".gitattributes",
+                                                                            "auricrux/system/package_stamp.json"
+                                                                        ]
+                                },
+    "gatesStillOpen":  {
+                           "RB-C2":  "OPEN â€” prior PostVerify FAIL; fixes not yet authorized re-cutover",
+                           "RB-C3":  "BLOCKED on C2",
+                           "authoritativeSuite":  "AUTHORITATIVE_SUITE_NOT_RUN",
+                           "manifestAuthority":  "FAIL@76.7 unchanged",
+                           "ledgerAuthority":  "FAIL@76.7 unchanged"
+                       },
+    "forbiddenActionsNotTaken":  [
+                                     "No suite keyword weakening",
+                                     "No threshold change",
+                                     "No PASS mark",
+                                     "No live suite rerun while C2 open",
+                                     "No promotion of 86.7/93.3 to authority"
+                                 ]
+}

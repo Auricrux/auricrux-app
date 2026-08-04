@@ -23,10 +23,16 @@ public sealed class PackageIdentityService(
         lock (_gate)
         {
             _cached ??= BuildIdentity(requestHost);
-            if (!string.IsNullOrWhiteSpace(requestHost) &&
-                string.IsNullOrWhiteSpace(_cached.HostReported))
+            // Refresh host when a better (non-loopback) public host becomes known.
+            if (!string.IsNullOrWhiteSpace(requestHost))
             {
-                _cached.HostReported = requestHost;
+                var resolved = ResolvePublicHost(requestHost);
+                if (!string.IsNullOrWhiteSpace(resolved) &&
+                    (string.IsNullOrWhiteSpace(_cached.HostReported) ||
+                     IsLoopbackOrInternalHost(_cached.HostReported)))
+                {
+                    _cached.HostReported = resolved;
+                }
             }
 
             return _cached;
@@ -70,10 +76,8 @@ public sealed class PackageIdentityService(
                 ? File.GetLastWriteTimeUtc(dllPath).ToString("o")
                 : DateTime.UtcNow.ToString("o"));
 
-        var host = requestHost
-                   ?? config["Auricrux:PublicHost"]
-                   ?? Environment.GetEnvironmentVariable("AURICRUX_PUBLIC_HOST")
-                   ?? "";
+        // Prefer configured public host over loopback Request.Host (Caddy → 127.0.0.1:4000/5001).
+        var host = ResolvePublicHost(requestHost);
 
         var primaryModel = config["Auricrux:PrimaryModel"] ?? "auricrux-fca";
         var ollamaRaw = (config["Auricrux:OllamaUrl"] ?? "http://127.0.0.1:11434").TrimEnd('/');
@@ -87,6 +91,7 @@ public sealed class PackageIdentityService(
             DllInformationalVersion = infoVer,
             DllSha256 = dllSha,
             CorpusSha256 = corpusSha,
+            StampCorpusSha256 = stamp?.CorpusSha256,
             CorpusEntries = corpusEntries,
             CorpusPath = Relativize(corpusPath),
             SuiteTarget = stamp?.SuiteTarget ?? "construction_god_suite_v1",
@@ -110,7 +115,8 @@ public sealed class PackageIdentityService(
                                  || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AURICRUX_PRIMARY_MODEL")),
             EnvOllamaUrlSet = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Auricrux__OllamaUrl"))
                               || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AURICRUX_OLLAMA_URL")),
-            EnvPublicHostSet = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AURICRUX_PUBLIC_HOST")),
+            EnvPublicHostSet = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("AURICRUX_PUBLIC_HOST"))
+                               || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Auricrux__PublicHost")),
             HostProfile = stamp?.HostProfile,
             RecipeProfile = stamp?.RecipeProfile,
             DeploymentSource = stamp?.DeploymentSource
@@ -269,6 +275,82 @@ public sealed class PackageIdentityService(
 
         return url;
     }
+
+    /// <summary>
+    /// Prefer configured public host when the inbound host is loopback/docker-internal
+    /// (Caddy terminates TLS and proxies to 127.0.0.1:4000/5001).
+    /// </summary>
+    private string ResolvePublicHost(string? requestHost)
+    {
+        var configured = FirstNonEmpty(
+            config["Auricrux:PublicHost"],
+            Environment.GetEnvironmentVariable("AURICRUX_PUBLIC_HOST"),
+            Environment.GetEnvironmentVariable("Auricrux__PublicHost"));
+
+        var inbound = (requestHost ?? "").Trim();
+        if (IsLoopbackOrInternalHost(inbound))
+        {
+            return FirstNonEmpty(configured, StripScheme(inbound));
+        }
+
+        if (!string.IsNullOrWhiteSpace(inbound))
+        {
+            return StripScheme(inbound);
+        }
+
+        return configured ?? "";
+    }
+
+    private static bool IsLoopbackOrInternalHost(string host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return true;
+        }
+
+        var h = StripScheme(host).ToLowerInvariant();
+        if (h.StartsWith("127.") || h == "localhost" || h.StartsWith("localhost:") ||
+            h.StartsWith("[::1]") || h == "::1" || h.StartsWith("0.0.0.0"))
+        {
+            return true;
+        }
+
+        // Bare docker publish targets sometimes appear without scheme.
+        if (h is "127.0.0.1:4000" or "127.0.0.1:5001" or "127.0.0.1:80")
+        {
+            return true;
+        }
+
+        return h.StartsWith("127.0.0.1:");
+    }
+
+    private static string StripScheme(string host)
+    {
+        var h = host.Trim();
+        if (h.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            h = h["https://".Length..];
+        }
+        else if (h.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+        {
+            h = h["http://".Length..];
+        }
+
+        return h.TrimEnd('/');
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        foreach (var v in values)
+        {
+            if (!string.IsNullOrWhiteSpace(v))
+            {
+                return v.Trim();
+            }
+        }
+
+        return "";
+    }
 }
 
 public sealed class PackageStampFile
@@ -282,6 +364,7 @@ public sealed class PackageStampFile
     public string? HostProfile { get; set; }
     public string? RecipeProfile { get; set; }
     public string? DeploymentSource { get; set; }
+    public string? CorpusSha256 { get; set; }
 }
 
 public sealed class PackageIdentitySnapshot
@@ -292,6 +375,8 @@ public sealed class PackageIdentitySnapshot
     public string DllInformationalVersion { get; set; } = "";
     public string DllSha256 { get; set; } = "";
     public string CorpusSha256 { get; set; } = "";
+    /// <summary>Corpus SHA recorded in package_stamp.json at image build (Linux). Used to avoid Windows CRLF publish false STALE.</summary>
+    public string? StampCorpusSha256 { get; set; }
     public int CorpusEntries { get; set; }
     public string? CorpusPath { get; set; }
     public string SuiteTarget { get; set; } = "construction_god_suite_v1";
