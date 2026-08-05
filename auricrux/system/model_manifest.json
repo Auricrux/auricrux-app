@@ -32,7 +32,7 @@
                     "productHostDeployRequired":  true,
                     "priorCandidateOnDisk":  "checkpoint-115000",
                     "stagedExportPath":  "/mnt/auricrux-eod/export-staging/checkpoint-120000",
-                    "trainProgressNote":  "120000 / 297000 (~40.4%); train PID alive - do not merge on train GPU",
+                    "trainProgressNote":  "140000 / 297000 checkpoint tip (~47.1%); live tqdm ~143900 (~48.5%) probed 2026-08-05 — do not merge on train GPU",
                     "productLoadedAtUtc":  "2026-08-02T21:55:00Z",
                     "sessionNotes":  {
                                         "modelLabWritable":  false,
@@ -54,9 +54,10 @@
                        "resourceGroup":  "AURICRUX-TRAINING-NCAST4",
                        "trainPid":  1019003,
                        "config":  "config/auricrux_training_config_3b_true_god_1b5.json",
-                       "lastObservedCheckpointOnDisk":  120000,
+                       "lastObservedCheckpointOnDisk":  140000,
+                       "lastProbedAtUtc":  "2026-08-05T22:33:36Z",
                        "gcpL4Spot":  "TERMINATED",
-                       "note":  "checkpoint-120000 CPU-exported and product-loaded; live PID still on 1b5 mix only"
+                       "note":  "Live probe 2026-08-05: PID 1019003 alive, GPU 100%, checkpoint tip 140000 (in-flight ~143900). Product still on prior ckpt-120000 Q8 GGUF until next CPU export."
                    },
     "productRuntime":  {
                            "gceHost":  "instance-20260715-113528",

@@ -1,0 +1,67 @@
+{
+  "capturedAtUtc": "2026-08-05T22:33:36Z",
+  "purpose": "Verify whether train + token generation truly stalled after founder challenge of stale 120k / 326.7B numbers",
+  "verdict": {
+    "trainingStalled": false,
+    "tokenGenerationStalled": true,
+    "staleNumbersWere": {
+      "trainTipQuoted": 120000,
+      "tokenTotalQuoted": 326747001053,
+      "whyTrainLookedStale": "model_manifest.json + STATUS.trainingProgress not refreshed since 2026-08-02; live PID kept advancing"
+    }
+  },
+  "trainingLiveProbe": {
+    "method": "az vm run-command RunShellScript (read-only)",
+    "host": "auricrux-gpu-ncast4-t4",
+    "publicIp": "20.65.32.150",
+    "powerState": "VM running",
+    "pid": 1019003,
+    "pidAlive": true,
+    "elapsed": "20-23:30:06",
+    "cmd": "/mnt/auricrux-eod/runs/run-20260715T114454Z/training_env/bin/python scripts/57_train_3b_retrain_pack.py --config config/auricrux_training_config_3b_true_god_1b5.json",
+    "gpu": { "utilizationPct": 100, "memoryUsedMiB": 13266, "memoryTotalMiB": 16384 },
+    "checkpointTipOnDisk": 140000,
+    "trainerStateGlobalStep": 140000,
+    "maxSteps": 297000,
+    "progressPctByCheckpoint": 47.14,
+    "epoch": 0.4723322925153888,
+    "stateMtimeUtc": "2026-08-05T09:23:21Z",
+    "liveTqdmObservedSameSession": {
+      "approxStep": 143900,
+      "note": "In-flight tqdm in run-command capture showed ~143900/297000 (~48.5%) at ~12s/it; next disk checkpoint expected at 145000"
+    },
+    "eodDisk": "352G total, 127G used, 226G free (37%)",
+    "deltaSinceAug2Quote": "+20000 checkpoint steps (120000 → 140000); ~+23900 if counting live tqdm"
+  },
+  "tokenFactory": {
+    "canonicalTotal": 326747001053,
+    "canonicalLabel": "326.747B",
+    "lastSuccessfulGrow": {
+      "runId": "grow10b-20260801T121422Z",
+      "startedUtc": "2026-08-01T12:14:22Z",
+      "netNewTokens": 4500001316,
+      "freeGBAtStart": 51.85
+    },
+    "stall": {
+      "firstDeferUtc": "2026-08-01T14:41:53Z",
+      "event": "defer_wave_low_disk",
+      "minFreeGB": 50.0,
+      "freeGBThen": 47.47,
+      "freeGBNow": 34.01,
+      "deferEventCountSinceStall": 2470,
+      "growRunning": false,
+      "producerAlive": true,
+      "producerPid": 18172,
+      "watchdog": "watchdog_ok every ~2m"
+    },
+    "diskPressureHotspotsGB": {
+      "C_free": 34.01,
+      "modelLab_data": 196.98,
+      "knowledge_factory_dedup_shards": 123.57,
+      "datasets": 52.87,
+      "processed": 20.53,
+      "Auricrux_AppData_Docker": 23.39
+    },
+    "unblockRequires": "Free at least ~16GB on C: (target ≥50GB free) without deleting live KF dedup_shards / train checkpoints; then producer will launch next unique wave (waveIndex currently 78)"
+  }
+}
