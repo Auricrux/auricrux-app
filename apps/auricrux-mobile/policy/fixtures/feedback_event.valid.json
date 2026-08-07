@@ -1,0 +1,17 @@
+{
+  "rating": "up",
+  "message": "What is the safest sequence for this roofing work?",
+  "reply": "Start with access planning, fall protection setup, staging checks, then controlled install passes.",
+  "route": "/construction",
+  "context": {
+    "source": "auricrux-mobile",
+    "route": "/construction",
+    "specialistAgent": "construction-expert",
+    "thinkingMode": "deep",
+    "searchScope": "both",
+    "appRelease": "2026.07.17-r1",
+    "sessionId": "sess-1721222440000-a1b2c3d4",
+    "traceId": "trace-1721222441000-e5f6g7h8",
+    "turnId": "turn-00012"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "auricrux-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "npx tsc --noEmit",
+    "quality:gate": "node ./scripts/quality_gate.mjs",
+    "eval:policy": "node ./scripts/policy_eval.mjs",
+    "eval:feedback-schema": "node ./scripts/feedback_schema_eval.mjs",
+    "eval:redteam-safety": "node ./scripts/eval_redteam_safety.mjs",
+    "eval:promotion-gate": "node ./scripts/eval_promotion_gate.mjs --baseline ./eval/baseline_metrics.json --candidate ./eval/candidate_metrics.json",
+    "export:training-candidates": "node ./scripts/export_training_candidates.mjs --in ./data/training/conversation_events.sample.jsonl --out ./artifacts/training/candidates.jsonl --summary ./artifacts/training/summary.json",
+    "ci:quality": "npm run typecheck && npm run quality:gate && npm run eval:policy && npm run eval:feedback-schema && npm run eval:redteam-safety && npm run eval:promotion-gate",
+    "ci:seed": "npm run export:training-candidates",
+    "build:android": "npx eas-cli build -p android --profile preview",
+    "build:android:ci": "npx eas-cli build -p android --profile preview --non-interactive",
+    "build:ios": "npx eas-cli build -p ios --profile preview",
+    "export:web": "npx expo export --platform web",
+    "deploy:firebase": "npx firebase-tools hosting:channel:deploy live --project auricrux-mobile-prod",
+    "release:google": "npm run export:web ; npm run deploy:firebase"
+  },
+  "dependencies": {
+    "expo": "~51.0.28",
+    "expo-speech": "~12.0.2",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-native": "0.74.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~18.2.79",
+    "typescript": "^5.5.4"
+  }
+}

@@ -1,0 +1,170 @@
+name: Auricrux Mobile Release
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_google_play:
+        description: Also submit Android build to Google Play
+        type: boolean
+        required: true
+        default: false
+      google_play_track:
+        description: Google Play track for submission
+        type: choice
+        required: true
+        default: internal
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      deploy_firebase:
+        description: Also export web and deploy Firebase Hosting live channel
+        type: boolean
+        required: true
+        default: false
+      firebase_project_id:
+        description: Firebase project id for hosting deploy
+        type: string
+        required: false
+        default: auricrux-mobile-prod
+
+jobs:
+  build-mobile-and-optional-firebase:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/auricrux-mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/auricrux-mobile/package.json
+
+      - name: Validate required token for EAS
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "Missing EXPO_TOKEN repository secret."
+            exit 1
+          fi
+          if [ "${{ inputs.deploy_google_play }}" = "true" ] && [ -z "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}" ]; then
+            echo "Missing GOOGLE_PLAY_SERVICE_ACCOUNT_JSON repository secret while deploy_google_play is true."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Enforce quality and promotion gates
+        run: npm run ci:quality
+
+      - name: Export training seed candidates
+        run: npm run ci:seed
+
+      - name: Ensure EAS project is initialized
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ ! -f "eas.json" ]; then
+            echo "eas.json missing in apps/auricrux-mobile"
+            exit 1
+          fi
+          # Required for non-interactive cloud builds when repo has not been linked yet.
+          # --force allows first-time creation when the linked EAS project does not exist.
+          npx eas-cli init --non-interactive --force
+
+      - name: Trigger Android build in EAS
+        id: eas_build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          BUILD_PROFILE=preview
+          if [ "${{ inputs.deploy_google_play }}" = "true" ]; then
+            BUILD_PROFILE=production
+          fi
+          BUILD_JSON=$(npx eas-cli build --platform android --profile "$BUILD_PROFILE" --non-interactive --json)
+          echo "$BUILD_JSON" > eas-android-build.json
+          BUILD_URL=$(node -e "const fs=require('fs'); const raw=fs.readFileSync('eas-android-build.json','utf8'); const data=JSON.parse(raw); const item=Array.isArray(data)?data[0]:data; const u=item?.buildDetailsPageUrl || item?.artifacts?.buildUrl || ''; process.stdout.write(u);")
+          BUILD_ID=$(node -e "const fs=require('fs'); const raw=fs.readFileSync('eas-android-build.json','utf8'); const data=JSON.parse(raw); const item=Array.isArray(data)?data[0]:data; const id=item?.id || ''; process.stdout.write(id);")
+          if [ -z "$BUILD_URL" ]; then
+            echo "Could not parse Android build URL from EAS output."
+            cat eas-android-build.json
+            exit 1
+          fi
+          if [ -z "$BUILD_ID" ]; then
+            echo "Could not parse Android build ID from EAS output."
+            cat eas-android-build.json
+            exit 1
+          fi
+          echo "android_build_url=$BUILD_URL" >> "$GITHUB_OUTPUT"
+          echo "android_build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Submit Android build to Google Play
+        if: ${{ inputs.deploy_google_play }}
+        id: play_submit
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          printf '%s' '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > google-play-service-account.json
+          node -e "const fs=require('fs'); const p='eas.json'; const cfg=JSON.parse(fs.readFileSync(p,'utf8')); cfg.submit=cfg.submit||{}; cfg.submit.production=cfg.submit.production||{}; cfg.submit.production.android=cfg.submit.production.android||{}; cfg.submit.production.android.serviceAccountKeyPath='./google-play-service-account.json'; cfg.submit.production.android.track='${{ inputs.google_play_track }}'; fs.writeFileSync(p, JSON.stringify(cfg, null, 2));"
+          npx eas-cli submit --platform android --id "${{ steps.eas_build.outputs.android_build_id }}" --profile production --non-interactive
+          echo "google_play_track=${{ inputs.google_play_track }}" >> "$GITHUB_OUTPUT"
+
+      - name: Export web build
+        if: ${{ inputs.deploy_firebase }}
+        run: npx expo export --platform web
+
+      - name: Deploy Firebase Hosting live channel
+        if: ${{ inputs.deploy_firebase }}
+        id: firebase_deploy
+        run: |
+          if [ -z "${{ secrets.FIREBASE_TOKEN }}" ]; then
+            echo "Missing FIREBASE_TOKEN repository secret while deploy_firebase is true."
+            exit 1
+          fi
+          npx firebase-tools hosting:channel:deploy live --project "${{ inputs.firebase_project_id }}" --token "${{ secrets.FIREBASE_TOKEN }}"
+          echo "firebase_url=https://${{ inputs.firebase_project_id }}.web.app" >> "$GITHUB_OUTPUT"
+
+      - name: Upload EAS build metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: eas-android-build-metadata
+          path: apps/auricrux-mobile/eas-android-build.json
+
+      - name: Upload eval and training artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: auricrux-mobile-release-eval-and-training
+          path: |
+            apps/auricrux-mobile/artifacts/eval
+            apps/auricrux-mobile/artifacts/training
+
+      - name: Upload web export artifact
+        if: ${{ inputs.deploy_firebase }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: auricrux-mobile-web-dist
+          path: apps/auricrux-mobile/dist
+
+      - name: Release summary
+        run: |
+          echo "Android build details: ${{ steps.eas_build.outputs.android_build_url }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ inputs.deploy_google_play }}" = "true" ]; then
+            echo "Google Play submission requested on track: ${{ steps.play_submit.outputs.google_play_track }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Google Play submission skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "${{ inputs.deploy_firebase }}" = "true" ]; then
+            echo "Firebase hosting URL: ${{ steps.firebase_deploy.outputs.firebase_url }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Firebase deploy skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
