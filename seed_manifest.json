@@ -1,0 +1,39 @@
+﻿{
+    "generatedAtUtc":  "2026-07-17T16:08:52.6150665Z",
+    "sourceRepoRoot":  "C:\\Users\\Auricrux\\auricrux-central",
+    "targetSeedPath":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z",
+    "copied":  [
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\apps\\auricrux-mobile",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\apps\\auricrux-mobile"
+                   },
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\.github\\workflows\\auricrux-mobile-release.yml",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\.github\\workflows\\auricrux-mobile-release.yml"
+                   },
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\.github\\workflows\\auricrux-mobile-quality.yml",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\.github\\workflows\\auricrux-mobile-quality.yml"
+                   },
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\.github\\workflows\\deploy_auricrux_mobile_cloudrun.yml",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\.github\\workflows\\deploy_auricrux_mobile_cloudrun.yml"
+                   },
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\.github\\workflows\\operate_auricrux_mobile_cloudrun.yml",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\.github\\workflows\\operate_auricrux_mobile_cloudrun.yml"
+                   },
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\docs\\AURICRUX_APP_REPO_ELEVATION_PLAN.md",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\docs\\AURICRUX_APP_REPO_ELEVATION_PLAN.md"
+                   },
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\docs\\FCA_SYSTEM_LAW.md",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\FCA_SYSTEM_LAW.md"
+                   },
+                   {
+                       "Destination":  "C:\\Users\\Auricrux\\auricrux-central\\artifacts\\auricrux-app-seed\\seed-20260717T160852Z\\docs\\auricrux-system-law.rules.json",
+                       "Source":  "C:\\Users\\Auricrux\\auricrux-central\\auricrux-system-law.rules.json"
+                   }
+               ]
+}

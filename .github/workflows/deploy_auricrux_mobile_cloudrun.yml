@@ -1,0 +1,130 @@
+name: Deploy Auricrux Mobile to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/auricrux-mobile/**'
+      - '.github/workflows/deploy_auricrux_mobile_cloudrun.yml'
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: GitHub environment for deployment protections
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
+      min_instances:
+        description: Cloud Run minimum instances
+        type: string
+        default: '1'
+      max_instances:
+        description: Cloud Run maximum instances
+        type: string
+        default: '5'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: auricrux-mobile-prod
+  CLOUD_RUN_REGION: us-central1
+  PROD_SERVICE_NAME: auricrux-mobile-app
+  STAGING_SERVICE_NAME: auricrux-mobile-app-staging
+  RUNTIME_SERVICE_ACCOUNT: auricrux-mobile-app-runtime@auricrux-mobile-prod.iam.gserviceaccount.com
+
+concurrency:
+  group: deploy-auricrux-mobile-cloudrun
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.target_environment || 'production' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve deployment parameters
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET_ENV="${{ inputs.target_environment }}"
+            MIN_INSTANCES="${{ inputs.min_instances }}"
+            MAX_INSTANCES="${{ inputs.max_instances }}"
+          else
+            # Safe defaults for automatic deploys from main
+            TARGET_ENV="production"
+            MIN_INSTANCES="1"
+            MAX_INSTANCES="5"
+          fi
+
+          if [ "${TARGET_ENV}" = "staging" ]; then
+            TARGET_SERVICE="${STAGING_SERVICE_NAME}"
+            # Keep staging cost-efficient unless explicitly overridden
+            if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+              MIN_INSTANCES="0"
+              MAX_INSTANCES="2"
+            fi
+          else
+            TARGET_SERVICE="${PROD_SERVICE_NAME}"
+          fi
+
+          echo "TARGET_ENV=${TARGET_ENV}" >> "$GITHUB_ENV"
+          echo "TARGET_SERVICE=${TARGET_SERVICE}" >> "$GITHUB_ENV"
+          echo "MIN_INSTANCES=${MIN_INSTANCES}" >> "$GITHUB_ENV"
+          echo "MAX_INSTANCES=${MAX_INSTANCES}" >> "$GITHUB_ENV"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_AURICRUX_MOBILE_PROD }}
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Enable required APIs
+        run: |
+          gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}"
+
+      - name: Deploy auricrux-mobile source to Cloud Run
+        run: |
+          gcloud run deploy "${TARGET_SERVICE}" \
+            --source "apps/auricrux-mobile" \
+            --region "${CLOUD_RUN_REGION}" \
+            --platform managed \
+            --port 8081 \
+            --no-allow-unauthenticated \
+            --service-account "${RUNTIME_SERVICE_ACCOUNT}" \
+            --min-instances "${MIN_INSTANCES}" \
+            --max-instances "${MAX_INSTANCES}" \
+            --cpu-boost \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --quiet
+
+      - name: Authenticated smoke test
+        run: |
+          URL=$(gcloud run services describe "${TARGET_SERVICE}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --format="value(status.url)")
+          TOKEN=$(gcloud auth print-identity-token --billing-project "${GCP_PROJECT_ID}")
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${TOKEN}" "${URL}")
+          echo "Service URL: ${URL}"
+          echo "Environment: ${TARGET_ENV}"
+          echo "Service: ${TARGET_SERVICE}"
+          echo "Min instances: ${MIN_INSTANCES}"
+          echo "Max instances: ${MAX_INSTANCES}"
+          echo "Smoke status: ${HTTP}"
+          if [ "${HTTP}" != "200" ] && [ "${HTTP}" != "302" ]; then
+            echo "Smoke test failed with HTTP ${HTTP}"
+            exit 1
+          fi

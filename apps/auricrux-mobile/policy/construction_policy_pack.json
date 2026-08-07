@@ -1,0 +1,21 @@
+{
+  "name": "auricrux-mobile-construction-policy-pack",
+  "version": "2026.07.17",
+  "required": {
+    "route": "/construction",
+    "source": "auricrux-mobile",
+    "specialistAgent": "construction-expert",
+    "requestHeaders": [
+      "x-auricrux-source",
+      "x-auricrux-session-id",
+      "x-trace-id"
+    ]
+  },
+  "forbidden": {
+    "routeSnippets": [
+      "/medical",
+      "/legal",
+      "/finance-advice"
+    ]
+  }
+}

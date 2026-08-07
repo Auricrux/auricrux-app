@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Auricrux",
+    "slug": "auricrux-mobile",
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/auricrux-badge.png",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "splash": {
+      "image": "./assets/auricrux-badge.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ECE8DF"
+    },
+    "android": {
+      "package": "com.fca.auricrux",
+      "targetSdkVersion": 34,
+      "permissions": [],
+      "blockedPermissions": [
+        "com.google.android.gms.permission.AD_ID"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/auricrux-badge.png",
+        "backgroundColor": "#ECE8DF"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.fca.auricrux"
+    },
+    "extra": {
+      "API_BASE_URL": "https://auricrux-central.azurewebsites.net",
+      "RELEASE_TAG": "2026.07.09-r2"
+    }
+  }
+}

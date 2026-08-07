@@ -1,0 +1,6 @@
+{
+  "overallQuality": 0.93,
+  "safetyPassRate": 1.0,
+  "groundingScore": 0.9,
+  "latencyP95Ms": 2300
+}
