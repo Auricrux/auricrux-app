@@ -1,0 +1,169 @@
+name: Operate Auricrux Mobile Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation to perform
+        type: choice
+        options:
+          - deploy_source
+          - set_traffic
+          - rollback_previous
+        default: deploy_source
+      target_environment:
+        description: Target environment
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
+      revision_name:
+        description: Revision name for set_traffic (required only for set_traffic)
+        type: string
+        required: false
+      min_instances:
+        description: Min instances for deploy_source
+        type: string
+        default: '1'
+      max_instances:
+        description: Max instances for deploy_source
+        type: string
+        default: '5'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: auricrux-mobile-prod
+  CLOUD_RUN_REGION: us-central1
+  PROD_SERVICE_NAME: auricrux-mobile-app
+  STAGING_SERVICE_NAME: auricrux-mobile-app-staging
+  RUNTIME_SERVICE_ACCOUNT: auricrux-mobile-app-runtime@auricrux-mobile-prod.iam.gserviceaccount.com
+
+jobs:
+  operate:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve target service
+        run: |
+          if [ "${{ inputs.target_environment }}" = "staging" ]; then
+            echo "TARGET_SERVICE=${STAGING_SERVICE_NAME}" >> "$GITHUB_ENV"
+            if [ "${{ inputs.operation }}" = "deploy_source" ] && [ "${{ inputs.min_instances }}" = "1" ]; then
+              echo "MIN_INSTANCES=0" >> "$GITHUB_ENV"
+            else
+              echo "MIN_INSTANCES=${{ inputs.min_instances }}" >> "$GITHUB_ENV"
+            fi
+            if [ "${{ inputs.operation }}" = "deploy_source" ] && [ "${{ inputs.max_instances }}" = "5" ]; then
+              echo "MAX_INSTANCES=2" >> "$GITHUB_ENV"
+            else
+              echo "MAX_INSTANCES=${{ inputs.max_instances }}" >> "$GITHUB_ENV"
+            fi
+          else
+            echo "TARGET_SERVICE=${PROD_SERVICE_NAME}" >> "$GITHUB_ENV"
+            echo "MIN_INSTANCES=${{ inputs.min_instances }}" >> "$GITHUB_ENV"
+            echo "MAX_INSTANCES=${{ inputs.max_instances }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_AURICRUX_MOBILE_PROD }}
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Deploy source
+        if: ${{ inputs.operation == 'deploy_source' }}
+        run: |
+          gcloud run deploy "${TARGET_SERVICE}" \
+            --source "apps/auricrux-mobile" \
+            --region "${CLOUD_RUN_REGION}" \
+            --platform managed \
+            --port 8081 \
+            --no-allow-unauthenticated \
+            --service-account "${RUNTIME_SERVICE_ACCOUNT}" \
+            --min-instances "${MIN_INSTANCES}" \
+            --max-instances "${MAX_INSTANCES}" \
+            --cpu-boost \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --quiet
+
+      - name: Shift traffic to explicit revision
+        if: ${{ inputs.operation == 'set_traffic' }}
+        run: |
+          if [ -z "${{ inputs.revision_name }}" ]; then
+            echo "revision_name is required for set_traffic"
+            exit 1
+          fi
+          gcloud run services update-traffic "${TARGET_SERVICE}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --to-revisions "${{ inputs.revision_name }}=100" \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --quiet
+
+      - name: Roll back to previous ready revision
+        if: ${{ inputs.operation == 'rollback_previous' }}
+        run: |
+          REVS=$(gcloud run revisions list \
+            --service "${TARGET_SERVICE}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --sort-by="~metadata.creationTimestamp" \
+            --format="value(metadata.name,status.conditions[0].status)" | awk '$2=="True" {print $1}')
+
+          CURRENT=$(gcloud run services describe "${TARGET_SERVICE}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --format="value(status.latestReadyRevisionName)")
+
+          PREV=""
+          for R in ${REVS}; do
+            if [ "${R}" != "${CURRENT}" ]; then
+              PREV="${R}"
+              break
+            fi
+          done
+
+          if [ -z "${PREV}" ]; then
+            echo "No previous ready revision found to roll back to"
+            exit 1
+          fi
+
+          echo "Rolling back ${TARGET_SERVICE} from ${CURRENT} to ${PREV}"
+          gcloud run services update-traffic "${TARGET_SERVICE}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --to-revisions "${PREV}=100" \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --quiet
+
+      - name: Authenticated smoke test
+        run: |
+          URL=$(gcloud run services describe "${TARGET_SERVICE}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --project "${GCP_PROJECT_ID}" \
+            --billing-project "${GCP_PROJECT_ID}" \
+            --format="value(status.url)")
+          TOKEN=$(gcloud auth print-identity-token --billing-project "${GCP_PROJECT_ID}")
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${TOKEN}" "${URL}")
+          echo "Service: ${TARGET_SERVICE}"
+          echo "URL: ${URL}"
+          echo "Operation: ${{ inputs.operation }}"
+          echo "Smoke status: ${HTTP}"
+          if [ "${HTTP}" != "200" ] && [ "${HTTP}" != "302" ]; then
+            echo "Smoke test failed with HTTP ${HTTP}"
+            exit 1
+          fi

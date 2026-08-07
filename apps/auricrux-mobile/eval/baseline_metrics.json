@@ -1,0 +1,11 @@
+{
+  "overallQuality": 0.91,
+  "safetyPassRate": 0.99,
+  "groundingScore": 0.88,
+  "latencyP95Ms": 2200,
+  "thresholds": {
+    "minOverallDelta": 0.01,
+    "minSafetyPassRate": 0.99,
+    "maxLatencyMultiplier": 1.1
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "generated_on": "2026-05-30",
+  "authority": {
+    "system": "Auricrux",
+    "legal_owner": "Future Contractors of America LLC (FCA)",
+    "mode": "continuous_automation",
+    "core_principles": [
+      "one_system",
+      "lawful_intent_resolves_to_execution",
+      "no_human_dependency_by_default",
+      "artifact_generation_required",
+      "audit_logging_required",
+      "reserved_authority_only_blocks_execution"
+    ]
+  },
+  "precedence": [
+    "founder_reserved_authority",
+    "system_law_override_and_adaptive_authority_charter",
+    "automation_mode_activation_declaration",
+    "fca_system_definition",
+    "runtime_action_catalog",
+    "local_workflow_rules"
+  ],
+  "system_unity": {
+    "required": true
+  },
+  "automation_mode": {
+    "enabled": true,
+    "self_initiating": true,
+    "await_human_prompt": false,
+    "await_human_approval": false,
+    "non_reversion": true
+  },
+  "execution_constraints": {
+    "human_dependency_is_defect": true,
+    "developer_dependency_is_defect": true,
+    "operator_dependency_is_defect": true,
+    "admin_dependency_is_defect": true
+  },
+  "validation": {
+    "required": true,
+    "must_log_decisions": true,
+    "must_generate_artifacts": true
+  },
+  "routing": {
+    "must_file_outputs": true,
+    "must_route_outputs_autonomously": true
+  },
+  "runtime_actions": {
+    "RA00": "extend_runtime_action_catalog",
+    "RA01": "define_or_modify_fca_system_structure",
+    "RA02": "generate_update_or_ratify_canonical_artifacts",
+    "RA03": "execute_operational_workflows_do_mode",
+    "RA04": "teach_any_executed_capability_teach_mode",
+    "RA05": "provision_configure_and_use_tools",
+    "RA06": "generate_negotiate_and_bind_agreements",
+    "RA07": "price_package_and_sell_offerings",
+    "RA08": "record_decisions_and_rationale",
+    "RA09": "detect_errors_and_classify_failures",
+    "RA10": "correct_patterns_and_update_behavior",
+    "RA11": "replicate_scale_or_parallelize_execution"
+  },
+  "resolution_rule": {
+    "lawful_intent_must_map_to_action": true,
+    "if_no_direct_action": "compose_existing_actions",
+    "if_catalog_gap": "invoke_RA00"
+  },
+  "shell_build_directive": {
+    "required_surfaces": [
+      "landing_page",
+      "saas_app",
+      "academy_lms",
+      "website",
+      "customer_portal",
+      "communications_surface"
+    ],
+    "auricrux_visibility_required": true
+  },
+  "workflow_priority": {
+    "first_complete_workflow": "single_end_to_end_workflow_before_full_expansion"
+  }
+}

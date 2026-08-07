@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AuricruxMobileFeedbackEvent",
+  "type": "object",
+  "required": ["rating", "message", "reply", "route", "context"],
+  "properties": {
+    "rating": {
+      "type": "string",
+      "enum": ["up", "down"]
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reply": {
+      "type": "string",
+      "minLength": 1
+    },
+    "route": {
+      "type": "string",
+      "const": "/construction"
+    },
+    "context": {
+      "type": "object",
+      "required": [
+        "source",
+        "route",
+        "specialistAgent",
+        "thinkingMode",
+        "searchScope",
+        "appRelease",
+        "sessionId",
+        "traceId",
+        "turnId"
+      ],
+      "properties": {
+        "source": { "type": "string", "const": "auricrux-mobile" },
+        "route": { "type": "string", "const": "/construction" },
+        "specialistAgent": { "type": "string", "const": "construction-expert" },
+        "thinkingMode": { "type": "string", "enum": ["quick", "deep", "auto"] },
+        "searchScope": { "type": "string", "enum": ["internal", "public", "both"] },
+        "appRelease": { "type": "string", "minLength": 1 },
+        "sessionId": { "type": "string", "minLength": 1 },
+        "traceId": { "type": "string", "minLength": 1 },
+        "turnId": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
