@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace Auricrux.Web.Services;
 
@@ -8,31 +10,47 @@ public enum MemoryBackend
 {
     Session = 0,
     FileJsonl = 1,
-    Sqlite = 2
+    Sqlite = 2,
+    Atlas = 3,  // MongoDB Atlas — persistent, cross-device, no local storage bottleneck
 }
 
 /// <summary>
-/// Multiple memory persistence options: session (RAM), JSONL file, and SQLite.
+/// Multiple memory persistence options: session (RAM), JSONL file, SQLite, and Atlas.
+/// Atlas backend removes the local storage bottleneck — conversations are persisted in
+/// MongoDB and available across all deployments (GCE, Azure Web App, local docker).
 /// </summary>
 public sealed class ConversationMemoryService
 {
     private readonly IWebHostEnvironment _env;
+    private readonly AtlasService _atlas;
     private readonly ConcurrentDictionary<string, List<MemoryTurn>> _session = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _fileGate = new();
     private readonly string _sqlitePath;
     private readonly string _jsonlPath;
 
-    public ConversationMemoryService(IWebHostEnvironment env)
+    public ConversationMemoryService(IWebHostEnvironment env, AtlasService atlas)
     {
         _env = env;
+        _atlas = atlas;
         var data = Path.Combine(env.ContentRootPath, "Data", "memory");
         Directory.CreateDirectory(data);
         _sqlitePath = Path.Combine(data, "conversations.db");
         _jsonlPath = Path.Combine(data, "conversations.jsonl");
         EnsureSqlite();
+        _ = Task.Run(EnsureAtlasIndexAsync);
     }
 
-    public IReadOnlyList<string> Backends => ["session", "file-jsonl", "sqlite"];
+    public IReadOnlyList<string> Backends
+    {
+        get
+        {
+            var list = new List<string> { "session", "file-jsonl", "sqlite" };
+            if (_atlas.IsConfigured) list.Add("atlas");
+            return list;
+        }
+    }
+
+    public string DefaultBackend => _atlas.IsConfigured ? "atlas" : "sqlite";
 
     public async Task AppendAsync(string sessionId, MemoryBackend backend, string role, string content, CancellationToken ct = default)
     {
@@ -61,6 +79,26 @@ public sealed class ConversationMemoryService
                     cmd.Parameters.AddWithValue("$c", content);
                     cmd.Parameters.AddWithValue("$t", turn.CreatedUtc.ToString("O"));
                     await cmd.ExecuteNonQueryAsync(ct);
+                }
+                break;
+            case MemoryBackend.Atlas:
+                if (_atlas.IsConfigured)
+                {
+                    try
+                    {
+                        await _atlas.Memory.InsertOneAsync(new BsonDocument
+                        {
+                            ["session_id"] = sessionId,
+                            ["role"] = role,
+                            ["content"] = content,
+                            ["created_at"] = turn.CreatedUtc,
+                        }, cancellationToken: ct);
+                    }
+                    catch { /* fall through to SQLite if Atlas write fails */ goto case MemoryBackend.Sqlite; }
+                }
+                else
+                {
+                    goto case MemoryBackend.Sqlite;
                 }
                 break;
         }
@@ -114,6 +152,23 @@ public sealed class ConversationMemoryService
 
                 results.Reverse();
                 return results;
+            case MemoryBackend.Atlas:
+                if (!_atlas.IsConfigured) goto case MemoryBackend.Sqlite;
+                try
+                {
+                    var filter = Builders<BsonDocument>.Filter.Eq("session_id", sessionId);
+                    var docs = await _atlas.Memory
+                        .Find(filter)
+                        .Sort(Builders<BsonDocument>.Sort.Ascending("created_at"))
+                        .Limit(take)
+                        .ToListAsync(ct);
+                    return docs.Select(d => new MemoryTurn(
+                        d["session_id"].AsString,
+                        d["role"].AsString,
+                        d["content"].AsString,
+                        d["created_at"].ToUniversalTime())).ToList();
+                }
+                catch { goto case MemoryBackend.Sqlite; }
             default:
                 return [];
         }
@@ -167,6 +222,21 @@ public sealed class ConversationMemoryService
             CREATE INDEX IF NOT EXISTS ix_turns_session ON turns(session_id);
             """;
         cmd.ExecuteNonQuery();
+    }
+
+    private async Task EnsureAtlasIndexAsync()
+    {
+        if (!_atlas.IsConfigured) return;
+        try
+        {
+            var keys = Builders<BsonDocument>.IndexKeys
+                .Ascending("session_id")
+                .Ascending("created_at");
+            await _atlas.Memory.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(keys,
+                    new CreateIndexOptions { Background = true }));
+        }
+        catch { /* index may already exist */ }
     }
 }
 

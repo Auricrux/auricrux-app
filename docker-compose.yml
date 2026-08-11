@@ -71,6 +71,12 @@ services:
       Auricrux__OllamaUrl: "http://ollama:11434"
       Auricrux__PrimaryModel: "auricrux-fca"
       Auricrux__SecondaryModel: "llama3.2"
+      Auricrux__TertiaryModel: "mistral"
+      Auricrux__ExtendedModel: "llama3.1:70b"
+      Auricrux__VisionModel: "llava"
+      # Atlas RAG + memory — set connection string to activate; leave blank for local-only mode
+      Atlas__ConnectionString: "${ATLAS_CONNECTION_STRING:-}"
+      Atlas__Database: "auricrux"
     volumes:
       - auricrux-data:/app/Data
 

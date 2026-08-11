@@ -27,6 +27,11 @@ builder.Services.AddHttpClient(nameof(WebBrowseService), client =>
     client.Timeout = TimeSpan.FromSeconds(45);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("AuricruxWebBrowse/1.0 (+construction)");
 });
+// Atlas services — registered before any service that depends on them
+builder.Services.AddSingleton<AtlasService>();
+builder.Services.AddSingleton<AtlasCorpusService>();
+builder.Services.AddSingleton<AuricruxModelRouter>();
+
 builder.Services.AddSingleton<ConstructionIntelligenceService>();
 builder.Services.AddSingleton<MediaGenerationService>();
 builder.Services.AddSingleton<WorkspaceStorageService>();

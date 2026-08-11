@@ -7,8 +7,9 @@ using Auricrux.Shared.Models;
 namespace Auricrux.Web.Services;
 
 /// <summary>
-/// Multi-model construction AI backend. Primary model is Auricrux specialist;
-/// additional Ollama models satisfy multi-model selection.
+/// Multi-model construction AI backend.
+/// Model selection is delegated to AuricruxModelRouter (staged intelligence).
+/// Corpus search uses Atlas when configured, falls back to local JSON corpus.
 /// </summary>
 public sealed class ConstructionIntelligenceService
 {
@@ -16,6 +17,8 @@ public sealed class ConstructionIntelligenceService
     private readonly IConfiguration _config;
     private readonly ILogger<ConstructionIntelligenceService> _logger;
     private readonly List<ConstructionKnowledgeEntry> _corpus;
+    private readonly AtlasCorpusService _atlasCorpus;
+    private readonly AuricruxModelRouter _router;
     private readonly Dictionary<Guid, ChatResponse> _interactions = new();
     private readonly object _gate = new();
 
@@ -23,11 +26,15 @@ public sealed class ConstructionIntelligenceService
         IHttpClientFactory httpClientFactory,
         IConfiguration config,
         ILogger<ConstructionIntelligenceService> logger,
-        IHostEnvironment env)
+        IHostEnvironment env,
+        AtlasCorpusService atlasCorpus,
+        AuricruxModelRouter router)
     {
         _httpClientFactory = httpClientFactory;
         _config = config;
         _logger = logger;
+        _atlasCorpus = atlasCorpus;
+        _router = router;
         _corpus = LoadCorpus(env.ContentRootPath);
     }
 
@@ -74,20 +81,38 @@ public sealed class ConstructionIntelligenceService
         };
     }
 
-    public IReadOnlyList<string> AvailableModels =>
-    [
-        _config["Auricrux:PrimaryModel"] ?? "auricrux",
-        _config["Auricrux:SecondaryModel"] ?? "llama3.2",
-        _config["Auricrux:TertiaryModel"] ?? "mistral"
-    ];
+    public IReadOnlyList<string> AvailableModels => _router.Tiers.All;
 
     public async Task<ChatResponse> ChatAsync(ChatRequest request, string? model, CancellationToken ct)
     {
         var sw = Stopwatch.StartNew();
-        var sources = SearchInternal(request.Query, request.SearchScope, take: 5);
-        var thinking = await ThinkAsync(new ThinkingRequest { Query = request.Query, Mode = request.ThinkingMode }, model, ct);
+
+        // Staged intelligence: route to appropriate model tier
+        var selection = await _router.SelectAsync(
+            request.Query,
+            request.ThinkingMode,
+            hasImageAttachment: false,
+            clientRequestedModel: model,
+            ct);
+        var resolvedModel = selection.Model;
+        _logger.LogDebug("Model selected: {Model} tier={Tier} reason={Reason}", resolvedModel, selection.Tier, selection.Reason);
+
+        // Corpus search: try Atlas first, fall back to local
+        List<Source> sources;
+        if (_atlasCorpus.IsAtlasActive)
+        {
+            sources = await _atlasCorpus.SearchAsync(request.Query, request.SearchScope, take: 5, ct);
+            if (sources.Count == 0)
+                sources = SearchInternal(request.Query, request.SearchScope, take: 5);
+        }
+        else
+        {
+            sources = SearchInternal(request.Query, request.SearchScope, take: 5);
+        }
+
+        var thinking = await ThinkAsync(new ThinkingRequest { Query = request.Query, Mode = request.ThinkingMode }, resolvedModel, ct);
         var system = BuildSystemPrompt(request.ThinkingMode, sources);
-        var content = await CompleteAsync(system, request.Query, request.ConversationHistory, model, ct);
+        var content = await CompleteAsync(system, request.Query, request.ConversationHistory, resolvedModel, ct);
         sw.Stop();
 
         var response = new ChatResponse
