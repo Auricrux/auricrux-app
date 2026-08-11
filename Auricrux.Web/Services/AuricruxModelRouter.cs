@@ -1,5 +1,6 @@
 using Auricrux.Shared.Models;
 using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace Auricrux.Web.Services;
 

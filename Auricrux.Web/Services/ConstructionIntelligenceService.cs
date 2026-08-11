@@ -478,8 +478,10 @@ public sealed class ConstructionIntelligenceService
         return "general";
     }
 
-    private sealed record ConstructionKnowledgeEntry(string Title, string Scope, string Content, string[] Tags);
 }
+
+// Shared across services in the same namespace (AtlasCorpusService, ConstructionIntelligenceService)
+public sealed record ConstructionKnowledgeEntry(string Title, string Scope, string Content, string[] Tags);
 
 public sealed class CorpusStatsSnapshot
 {

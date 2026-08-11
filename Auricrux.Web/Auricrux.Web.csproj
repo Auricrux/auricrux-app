@@ -42,10 +42,16 @@
     </Content>
   </ItemGroup>
 
+  <!-- Stamp runs on Windows local builds; CI Linux uses pwsh if available; failure is non-fatal -->
   <Target Name="WriteAuricruxPackageStamp" BeforeTargets="BeforeBuild;BeforePublish"
-          Condition="'$(OS)' == 'Windows_NT' AND Exists('$(MSBuildThisFileDirectory)..\scripts\Write-AuricruxPackageStamp.ps1')">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\scripts\Write-AuricruxPackageStamp.ps1&quot; -RepoRoot &quot;$(MSBuildThisFileDirectory)..&quot; -PackageVersion &quot;$(AuricruxPackageVersion)&quot;"
-          IgnoreExitCode="false" />
+          Condition="Exists('$(MSBuildThisFileDirectory)..\scripts\Write-AuricruxPackageStamp.ps1')">
+    <PropertyGroup>
+      <_PsExe Condition="'$(OS)' == 'Windows_NT'">powershell -NoProfile -ExecutionPolicy Bypass</_PsExe>
+      <_PsExe Condition="'$(OS)' != 'Windows_NT'">pwsh -NoProfile</_PsExe>
+    </PropertyGroup>
+    <Exec Command="$(_PsExe) -File &quot;$(MSBuildThisFileDirectory)..\scripts\Write-AuricruxPackageStamp.ps1&quot; -RepoRoot &quot;$(MSBuildThisFileDirectory)..&quot; -PackageVersion &quot;$(AuricruxPackageVersion)&quot;"
+          IgnoreExitCode="true"
+          ContinueOnError="true" />
   </Target>
 
 </Project>
