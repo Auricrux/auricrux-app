@@ -57,6 +57,9 @@ builder.Services.AddSingleton<FcaEcosystemApiService>();
 builder.Services.AddSingleton<PredictiveIntelligenceService>();
 builder.Services.AddSingleton<AcademyLessonMatcherService>();
 
+// Phase 9B: Observability Dashboard
+builder.Services.AddSingleton<IntelligenceDashboardService>();
+
 // Background services
 builder.Services.AddHostedService<Auricrux.Web.BackgroundServices.LearningPipelineWorker>();
 builder.Services.AddHostedService<Auricrux.Web.BackgroundServices.PredictiveIntelligenceOrchestrator>();

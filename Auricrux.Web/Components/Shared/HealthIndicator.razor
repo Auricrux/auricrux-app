@@ -1,0 +1,22 @@
+@{
+    var (statusIcon, statusColor, statusText) = Status.ToLower() switch
+    {
+        "healthy" or "operational" or "active" => ("✅", "green", "Healthy"),
+        "unavailable" or "error" => ("❌", "red", "Unavailable"),
+        "degraded" or "warning" => ("⚠️", "yellow", "Degraded"),
+        _ => ("⚪", "gray", "Unknown")
+    };
+}
+
+<div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+    <div class="text-2xl">@statusIcon</div>
+    <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium text-gray-900">@Service</div>
+        <div class="text-xs text-@(statusColor)-600 font-semibold">@statusText</div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Service { get; set; } = "";
+    [Parameter] public string Status { get; set; } = "unknown";
+}
