@@ -80,6 +80,9 @@ public sealed class AtlasService : IDisposable
     public IMongoCollection<BsonDocument> GuidanceEffectiveness =>
         _db!.GetCollection<BsonDocument>("guidance_effectiveness");
 
+    public IMongoCollection<BsonDocument> LearningRecommendations =>
+        _db!.GetCollection<BsonDocument>("learning_recommendations");
+
     // ── Health ────────────────────────────────────────────────────────────────
 
     public async Task<(bool Ok, string Status)> PingAsync(CancellationToken ct = default)
@@ -181,7 +184,28 @@ public sealed class AtlasService : IDisposable
                     new CreateIndexOptions { Background = true }),
                 cancellationToken: ct);
 
-            _logger.LogInformation("Atlas indexes ensured for interactions, feedback, construction events, and guidance effectiveness collections");
+            // Learning Recommendations: index on user_id, engagement_status, and generated_at
+            var recommendationUserIndex = Builders<BsonDocument>.IndexKeys
+                .Ascending("user_id")
+                .Ascending("engagement_status");
+            await LearningRecommendations.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(recommendationUserIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var recommendationGapIndex = Builders<BsonDocument>.IndexKeys.Ascending("source_gap_pattern");
+            await LearningRecommendations.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(recommendationGapIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var recommendationDateIndex = Builders<BsonDocument>.IndexKeys.Ascending("generated_at");
+            await LearningRecommendations.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(recommendationDateIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            _logger.LogInformation("Atlas indexes ensured for all learning pipeline collections");
         }
         catch (Exception ex)
         {

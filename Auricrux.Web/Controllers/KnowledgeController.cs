@@ -9,6 +9,7 @@ public sealed class KnowledgeController(
     KnowledgeGapAnalysisService gapAnalysis,
     CorpusImprovementService corpusImprovement,
     ImprovementEvaluationService evaluation,
+    LearningRecommendationService learningRecommendations,
     ILogger<KnowledgeController> logger) : ControllerBase
 {
     /// <summary>
@@ -218,6 +219,108 @@ public sealed class KnowledgeController(
             timestamp = DateTime.UtcNow
         });
     }
+
+    // ── Learning Recommendations (Phase 7) ─────────────────────────────────────
+
+    /// <summary>
+    /// Get personalized learning recommendations for a user.
+    /// Recommends specific topics based on user's knowledge gaps and field activity.
+    /// </summary>
+    [HttpGet("recommendations")]
+    public async Task<ActionResult<RecommendationsResponse>> GetRecommendations(
+        [FromQuery] string userId,
+        [FromQuery] int? limit = 5,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return BadRequest(new { error = "userId is required." });
+        }
+
+        var recommendations = await learningRecommendations.GetRecommendationsForUserAsync(
+            userId,
+            limit ?? 5,
+            cancellationToken);
+
+        return Ok(new RecommendationsResponse
+        {
+            Success = true,
+            Recommendations = recommendations,
+            TotalRecommendations = recommendations.Count,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Get learning recommendations for a specific knowledge gap.
+    /// </summary>
+    [HttpGet("recommendations/gap/{pattern}")]
+    public async Task<ActionResult<RecommendationsResponse>> GetRecommendationsForGap(
+        string pattern,
+        [FromQuery] string? category = null,
+        CancellationToken cancellationToken = default)
+    {
+        var recommendations = await learningRecommendations.GetRecommendationsForGapAsync(
+            pattern,
+            category,
+            cancellationToken);
+
+        return Ok(new RecommendationsResponse
+        {
+            Success = true,
+            Recommendations = recommendations,
+            TotalRecommendations = recommendations.Count,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Mark a recommendation as engaged (viewed, started, completed).
+    /// </summary>
+    [HttpPost("recommendations/{recommendationId}/engage")]
+    public async Task<IActionResult> EngageRecommendation(
+        string recommendationId,
+        [FromBody] EngageRecommendationRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Status))
+        {
+            return BadRequest(new { error = "Status is required (viewed, started, completed)." });
+        }
+
+        var success = await learningRecommendations.TrackRecommendationEngagementAsync(
+            recommendationId,
+            request.Status,
+            cancellationToken);
+
+        if (!success)
+        {
+            return BadRequest(new { error = "Recommendation not found or Atlas not configured." });
+        }
+
+        return Ok(new { success = true, timestamp = DateTime.UtcNow });
+    }
+
+    /// <summary>
+    /// Get recommendation effectiveness report.
+    /// Shows engagement rate and follow-through metrics.
+    /// </summary>
+    [HttpGet("recommendations/effectiveness")]
+    public async Task<ActionResult<RecommendationEffectivenessResponse>> GetRecommendationEffectiveness(
+        [FromQuery] int? days = 30,
+        CancellationToken cancellationToken = default)
+    {
+        var since = days.HasValue ? DateTime.UtcNow.AddDays(-days.Value) : (DateTime?)null;
+
+        var report = await learningRecommendations.GetEffectivenessReportAsync(since, cancellationToken);
+
+        return Ok(new RecommendationEffectivenessResponse
+        {
+            Success = true,
+            Report = report,
+            Timestamp = DateTime.UtcNow
+        });
+    }
 }
 
 // ── Response models ────────────────────────────────────────────────────────────
@@ -277,4 +380,24 @@ public sealed class EvaluateImprovementRequest
 {
     public required string Query { get; init; }
     public string? ApprovedEntryId { get; init; }
+}
+
+public sealed class RecommendationsResponse
+{
+    public bool Success { get; init; }
+    public List<LearningRecommendation> Recommendations { get; init; } = [];
+    public int TotalRecommendations { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class EngageRecommendationRequest
+{
+    public required string Status { get; init; } // "viewed", "started", "completed"
+}
+
+public sealed class RecommendationEffectivenessResponse
+{
+    public bool Success { get; init; }
+    public required RecommendationEffectivenessReport Report { get; init; }
+    public DateTime Timestamp { get; init; }
 }
