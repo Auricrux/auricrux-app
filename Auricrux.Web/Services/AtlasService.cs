@@ -68,6 +68,15 @@ public sealed class AtlasService : IDisposable
     public IMongoCollection<BsonDocument> Interactions =>
         _db!.GetCollection<BsonDocument>("interactions");
 
+    public IMongoCollection<BsonDocument> ConstructionEvents =>
+        _db!.GetCollection<BsonDocument>("construction_events");
+
+    public IMongoCollection<BsonDocument> ConstructionOutcomes =>
+        _db!.GetCollection<BsonDocument>("construction_outcomes");
+
+    public IMongoCollection<BsonDocument> ConstructionEvidence =>
+        _db!.GetCollection<BsonDocument>("construction_evidence");
+
     // ── Health ────────────────────────────────────────────────────────────────
 
     public async Task<(bool Ok, string Status)> PingAsync(CancellationToken ct = default)
@@ -119,7 +128,44 @@ public sealed class AtlasService : IDisposable
                     new CreateIndexOptions { Background = true }),
                 cancellationToken: ct);
 
-            _logger.LogInformation("Atlas indexes ensured for interactions and feedback collections");
+            // Construction Events: indexes for event queries by project, user, type, date
+            var eventProjectIndex = Builders<BsonDocument>.IndexKeys
+                .Ascending("project_id")
+                .Ascending("timestamp");
+            await ConstructionEvents.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(eventProjectIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var eventUserIndex = Builders<BsonDocument>.IndexKeys
+                .Ascending("user_id")
+                .Ascending("timestamp");
+            await ConstructionEvents.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(eventUserIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var eventInteractionIndex = Builders<BsonDocument>.IndexKeys.Ascending("interaction_id");
+            await ConstructionEvents.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(eventInteractionIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            // Construction Outcomes: index on event_id for outcome lookups
+            var outcomeEventIndex = Builders<BsonDocument>.IndexKeys.Ascending("event_id");
+            await ConstructionOutcomes.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(outcomeEventIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            // Construction Evidence: index on outcome_id for evidence lookups
+            var evidenceOutcomeIndex = Builders<BsonDocument>.IndexKeys.Ascending("outcome_id");
+            await ConstructionEvidence.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(evidenceOutcomeIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            _logger.LogInformation("Atlas indexes ensured for interactions, feedback, and construction event collections");
         }
         catch (Exception ex)
         {

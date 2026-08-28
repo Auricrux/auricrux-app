@@ -157,6 +157,67 @@ public sealed class KnowledgeController(
 
         return Ok(new { success = true, timestamp = DateTime.UtcNow });
     }
+
+    /// <summary>
+    /// Evaluate improvement for a specific query.
+    /// Tests whether recent corpus additions improved response quality.
+    /// </summary>
+    [HttpPost("evaluate-improvement")]
+    public async Task<ActionResult<ImprovementResult>> EvaluateImprovement(
+        [FromBody] EvaluateImprovementRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Query))
+        {
+            return BadRequest(new { error = "Query is required." });
+        }
+
+        var result = await evaluation.EvaluateQueryImprovementAsync(
+            request.Query,
+            request.ApprovedEntryId,
+            cancellationToken);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Evaluate impact of an approved corpus entry.
+    /// Tests whether the entry is being retrieved and improving responses.
+    /// </summary>
+    [HttpGet("evaluate-entry/{approvedEntryId}")]
+    public async Task<ActionResult<ApprovedEntryImpactReport>> EvaluateEntryImpact(
+        string approvedEntryId,
+        CancellationToken cancellationToken)
+    {
+        var report = await evaluation.EvaluateApprovedEntryImpactAsync(
+            approvedEntryId,
+            testQueries: null,
+            cancellationToken);
+
+        if (!report.Success)
+        {
+            return BadRequest(new { error = report.Error });
+        }
+
+        return Ok(report);
+    }
+
+    /// <summary>
+    /// Get improvement report dashboard.
+    /// Shows overall improvement metrics across all approved entries.
+    /// </summary>
+    [HttpGet("improvement-dashboard")]
+    public ActionResult<object> GetImprovementDashboard()
+    {
+        // Placeholder for dashboard aggregation
+        // Would aggregate data from interactions, feedback, and approved entries
+        return Ok(new
+        {
+            success = true,
+            message = "Dashboard aggregation to be implemented",
+            timestamp = DateTime.UtcNow
+        });
+    }
 }
 
 // ── Response models ────────────────────────────────────────────────────────────
@@ -210,4 +271,10 @@ public sealed class RejectionRequest
 {
     public string? RejectedBy { get; init; }
     public string? RejectionReason { get; init; }
+}
+
+public sealed class EvaluateImprovementRequest
+{
+    public required string Query { get; init; }
+    public string? ApprovedEntryId { get; init; }
 }
