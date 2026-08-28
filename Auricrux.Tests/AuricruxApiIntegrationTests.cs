@@ -348,6 +348,51 @@ public sealed class AuricruxApiIntegrationTests : IClassFixture<WebApplicationFa
         Assert.Equal(HttpStatusCode.BadRequest, feedbackResponse.StatusCode);
     }
 
+    // NOTE: Atlas persistence tests require Atlas:ConnectionString configuration.
+    // When configured, interactions and feedback are persisted to MongoDB Atlas
+    // for durable learning pipeline. When not configured, the service gracefully
+    // falls back to in-memory storage for interactions and logging-only for feedback.
+    // To enable Atlas tests: set Atlas:ConnectionString in test configuration.
+
+    [Fact]
+    public async Task Feedback_with_comment_is_accepted()
+    {
+        var chatResponse = await _client.PostAsJsonAsync("/api/chat", new ChatRequest { Query = "Retainage calculation example" });
+        var chatPayload = await chatResponse.Content.ReadFromJsonAsync<ChatResponse>();
+        Assert.NotNull(chatPayload?.InteractionId);
+
+        var feedbackResponse = await _client.PostAsJsonAsync(
+            $"/api/feedback/{chatPayload!.InteractionId}",
+            new StarRating { Stars = 2, Comment = "Missing RSMeans reference data" });
+
+        Assert.Equal(HttpStatusCode.Accepted, feedbackResponse.StatusCode);
+        // When Atlas is configured, feedback persists to feedback collection with:
+        // feedback_id, interaction_id, stars, comment, timestamp, created_at
+    }
+
+    [Fact]
+    public async Task Interaction_includes_full_context()
+    {
+        var chatResponse = await _client.PostAsJsonAsync("/api/chat", new ChatRequest
+        {
+            Query = "Concrete curing requirements IBC",
+            ThinkingMode = ThinkingMode.Deep,
+            SearchScope = SearchScope.Both,
+            SessionId = "test-session-123"
+        });
+
+        var chatPayload = await chatResponse.Content.ReadFromJsonAsync<ChatResponse>();
+        Assert.NotNull(chatPayload);
+        Assert.NotNull(chatPayload!.InteractionId);
+        Assert.True(chatPayload.ProcessingTimeMs > 0);
+        Assert.True(chatPayload.ConfidenceScore >= 0 && chatPayload.ConfidenceScore <= 1);
+        Assert.NotEmpty(chatPayload.Content);
+        // When Atlas is configured, interaction persists with:
+        // interaction_id, query, response_content, thinking_content, sources[],
+        // model, model_tier, selection_reason, thinking_mode, search_scope,
+        // session_id, processing_time_ms, confidence_score, created_at
+    }
+
     // ---------- Security / platform controls ----------
 
     [Fact]

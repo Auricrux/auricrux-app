@@ -65,6 +65,9 @@ public sealed class AtlasService : IDisposable
     public IMongoCollection<BsonDocument> Feedback =>
         _db!.GetCollection<BsonDocument>("feedback");
 
+    public IMongoCollection<BsonDocument> Interactions =>
+        _db!.GetCollection<BsonDocument>("interactions");
+
     // ── Health ────────────────────────────────────────────────────────────────
 
     public async Task<(bool Ok, string Status)> PingAsync(CancellationToken ct = default)
@@ -78,6 +81,49 @@ public sealed class AtlasService : IDisposable
         catch (Exception ex)
         {
             return (false, ex.Message);
+        }
+    }
+
+    // ── Index management ──────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Ensure indexes exist for interactions and feedback collections.
+    /// Safe to call multiple times - existing indexes are ignored.
+    /// </summary>
+    public async Task EnsureIndexesAsync(CancellationToken ct = default)
+    {
+        if (!IsConfigured) return;
+
+        try
+        {
+            // Interactions: compound index on interaction_id (unique) + created_at for time-based queries
+            var interactionIdIndex = Builders<BsonDocument>.IndexKeys.Ascending("interaction_id");
+            await Interactions.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(interactionIdIndex,
+                    new CreateIndexOptions { Background = true, Unique = true }),
+                cancellationToken: ct);
+
+            var interactionDateIndex = Builders<BsonDocument>.IndexKeys.Ascending("created_at");
+            await Interactions.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(interactionDateIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            // Feedback: compound index on interaction_id + stars + created_at for gap analysis queries
+            var feedbackInteractionIndex = Builders<BsonDocument>.IndexKeys
+                .Ascending("interaction_id")
+                .Ascending("stars")
+                .Ascending("created_at");
+            await Feedback.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(feedbackInteractionIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            _logger.LogInformation("Atlas indexes ensured for interactions and feedback collections");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to ensure Atlas indexes — continuing without index verification");
         }
     }
 

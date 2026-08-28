@@ -33,6 +33,7 @@ builder.Services.AddSingleton<AtlasCorpusService>();
 builder.Services.AddSingleton<AuricruxModelRouter>();
 
 builder.Services.AddSingleton<ConstructionIntelligenceService>();
+builder.Services.AddSingleton<KnowledgeGapAnalysisService>();
 builder.Services.AddSingleton<MediaGenerationService>();
 builder.Services.AddSingleton<WorkspaceStorageService>();
 builder.Services.AddSingleton<ConversationMemoryService>();
@@ -151,6 +152,10 @@ var mediaRoot = Path.Combine(app.Environment.ContentRootPath, "Data", "media");
 Directory.CreateDirectory(mediaRoot);
 var workspaceRoot = Path.Combine(app.Environment.ContentRootPath, "Data", "workspace");
 Directory.CreateDirectory(workspaceRoot);
+
+// Ensure Atlas indexes for learning pipeline collections
+var atlas = app.Services.GetRequiredService<AtlasService>();
+_ = Task.Run(async () => await atlas.EnsureIndexesAsync());
 
 if (!app.Environment.IsDevelopment())
 {

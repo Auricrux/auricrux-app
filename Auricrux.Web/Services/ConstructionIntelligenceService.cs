@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Auricrux.Shared.Models;
+using MongoDB.Bson;
 
 namespace Auricrux.Web.Services;
 
@@ -18,6 +19,7 @@ public sealed class ConstructionIntelligenceService
     private readonly ILogger<ConstructionIntelligenceService> _logger;
     private readonly List<ConstructionKnowledgeEntry> _corpus;
     private readonly AtlasCorpusService _atlasCorpus;
+    private readonly AtlasService _atlas;
     private readonly AuricruxModelRouter _router;
     private readonly Dictionary<Guid, ChatResponse> _interactions = new();
     private readonly object _gate = new();
@@ -28,12 +30,14 @@ public sealed class ConstructionIntelligenceService
         ILogger<ConstructionIntelligenceService> logger,
         IHostEnvironment env,
         AtlasCorpusService atlasCorpus,
+        AtlasService atlas,
         AuricruxModelRouter router)
     {
         _httpClientFactory = httpClientFactory;
         _config = config;
         _logger = logger;
         _atlasCorpus = atlasCorpus;
+        _atlas = atlas;
         _router = router;
         _corpus = LoadCorpus(env.ContentRootPath);
     }
@@ -126,9 +130,44 @@ public sealed class ConstructionIntelligenceService
             InteractionId = Guid.NewGuid()
         };
 
+        // Persist interaction to in-memory cache (for TryGetInteraction fallback)
         lock (_gate)
         {
             _interactions[response.InteractionId!.Value] = response;
+        }
+
+        // Persist interaction to Atlas for durable learning pipeline
+        if (_atlas.IsConfigured)
+        {
+            try
+            {
+                await _atlas.Interactions.InsertOneAsync(new BsonDocument
+                {
+                    ["interaction_id"] = response.InteractionId!.Value.ToString(),
+                    ["query"] = request.Query,
+                    ["response_content"] = response.Content,
+                    ["thinking_content"] = response.ThinkingContent,
+                    ["sources"] = new BsonArray(response.Sources.Select(s => new BsonDocument
+                    {
+                        ["title"] = s.Title,
+                        ["url"] = s.Url ?? "",
+                        ["relevance_score"] = s.RelevanceScore
+                    })),
+                    ["model"] = resolvedModel,
+                    ["model_tier"] = selection.Tier.ToString(),
+                    ["selection_reason"] = selection.Reason,
+                    ["thinking_mode"] = request.ThinkingMode.ToString(),
+                    ["search_scope"] = request.SearchScope.ToString(),
+                    ["session_id"] = request.SessionId,
+                    ["processing_time_ms"] = response.ProcessingTimeMs,
+                    ["confidence_score"] = response.ConfidenceScore,
+                    ["created_at"] = response.Timestamp,
+                }, cancellationToken: ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to persist interaction to Atlas — continuing with in-memory only");
+            }
         }
 
         return response;
@@ -189,12 +228,29 @@ public sealed class ConstructionIntelligenceService
         }
     }
 
-    public void RecordFeedback(Guid interactionId, StarRating rating)
+    public async Task RecordFeedbackAsync(Guid interactionId, StarRating rating, CancellationToken ct = default)
     {
-        lock (_gate)
+        _logger.LogInformation("Feedback {Stars} for {Id}: {Comment}", rating.Stars, interactionId, rating.Comment);
+
+        // Persist feedback to Atlas with full interaction linkage
+        if (_atlas.IsConfigured)
         {
-            // Feedback retained in-process for freemium metering / later persistence.
-            _logger.LogInformation("Feedback {Stars} for {Id}: {Comment}", rating.Stars, interactionId, rating.Comment);
+            try
+            {
+                await _atlas.Feedback.InsertOneAsync(new BsonDocument
+                {
+                    ["feedback_id"] = Guid.NewGuid().ToString(),
+                    ["interaction_id"] = interactionId.ToString(),
+                    ["stars"] = rating.Stars,
+                    ["comment"] = rating.Comment ?? "",
+                    ["timestamp"] = rating.Timestamp,
+                    ["created_at"] = DateTime.UtcNow,
+                }, cancellationToken: ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to persist feedback to Atlas — logged only");
+            }
         }
     }
 

@@ -179,7 +179,7 @@ public sealed class AuricruxApiController(
     }
 
     [HttpPost("feedback/{interactionId:guid}")]
-    public IActionResult Feedback(Guid interactionId, [FromBody] StarRating rating)
+    public async Task<IActionResult> Feedback(Guid interactionId, [FromBody] StarRating rating, CancellationToken cancellationToken)
     {
         if (!intelligence.TryGetInteraction(interactionId, out _))
         {
@@ -191,7 +191,7 @@ public sealed class AuricruxApiController(
             return BadRequest(new { error = "Stars must be 1-5." });
         }
 
-        intelligence.RecordFeedback(interactionId, rating);
+        await intelligence.RecordFeedbackAsync(interactionId, rating, cancellationToken);
         return Accepted();
     }
 
