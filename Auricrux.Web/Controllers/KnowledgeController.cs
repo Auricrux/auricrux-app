@@ -8,6 +8,7 @@ namespace Auricrux.Web.Controllers;
 public sealed class KnowledgeController(
     KnowledgeGapAnalysisService gapAnalysis,
     CorpusImprovementService corpusImprovement,
+    ImprovementEvaluationService evaluation,
     ILogger<KnowledgeController> logger) : ControllerBase
 {
     /// <summary>
