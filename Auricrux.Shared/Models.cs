@@ -65,12 +65,12 @@ public class ChatRequest
     /// <summary>Session identifier for tracking</summary>
     public string SessionId { get; set; } = Guid.NewGuid().ToString();
 
-    // ── Context parameters (optional, for Phase 6 context-aware guidance) ────────
+    // ── Context parameters (Phase 6 + Phase 8 FCA ecosystem integration) ────────
 
-    /// <summary>User ID for personalized context</summary>
+    /// <summary>User ID for personalized context (legacy string support)</summary>
     public string? UserId { get; set; }
 
-    /// <summary>Project ID for project-specific context</summary>
+    /// <summary>Project ID for project-specific context (legacy string support)</summary>
     public string? ProjectId { get; set; }
 
     /// <summary>User role (e.g., "Project Manager", "Superintendent", "Foreman")</summary>
@@ -78,6 +78,17 @@ public class ChatRequest
 
     /// <summary>Current construction phase (e.g., "preconstruction", "foundations", "framing")</summary>
     public string? Phase { get; set; }
+    
+    // ── Phase 8: Typed FCA domain references (preferred) ─────────────────────────
+    
+    /// <summary>FCA Member ID (typed reference to FCA ecosystem)</summary>
+    public Guid? MemberId { get; set; }
+    
+    /// <summary>FCA Project ID (typed reference to FCA ecosystem)</summary>
+    public Guid? FcaProjectId { get; set; }
+    
+    /// <summary>FCA Role Name (one of: Admin, PM, Field, Owner, Accountant)</summary>
+    public string? FcaRoleName { get; set; }
 }
 
 /// <summary>

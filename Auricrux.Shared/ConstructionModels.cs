@@ -24,15 +24,15 @@ public sealed class ConstructionEvent
     /// <summary>Structured context data (JSON-serializable)</summary>
     public Dictionary<string, object>? ContextData { get; init; }
 
-    // ── Context linkage (optional until fca-ecosystem integration) ──────────────
+    // ── Context linkage (Phase 8: FCA ecosystem integration) ────────────────────
 
-    /// <summary>User who performed or was affected by this event</summary>
+    /// <summary>User who performed or was affected by this event (legacy string)</summary>
     public string? UserId { get; init; }
 
-    /// <summary>Role of user at time of event</summary>
+    /// <summary>Role of user at time of event (legacy string)</summary>
     public string? Role { get; init; }
 
-    /// <summary>Project this event relates to</summary>
+    /// <summary>Project this event relates to (legacy string)</summary>
     public string? ProjectId { get; init; }
 
     /// <summary>Job or task this event relates to</summary>
@@ -43,6 +43,17 @@ public sealed class ConstructionEvent
 
     /// <summary>Specific task within phase</summary>
     public string? Task { get; init; }
+    
+    // ── Phase 8: Typed FCA domain references (preferred) ─────────────────────────
+    
+    /// <summary>FCA Member ID (typed reference to FCA ecosystem)</summary>
+    public Guid? MemberId { get; init; }
+    
+    /// <summary>FCA Project ID (typed reference to FCA ecosystem)</summary>
+    public Guid? FcaProjectId { get; init; }
+    
+    /// <summary>FCA Role Name (one of: Admin, PM, Field, Owner, Accountant)</summary>
+    public string? FcaRoleName { get; init; }
 
     // ── Auricrux integration ────────────────────────────────────────────────────
 
