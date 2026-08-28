@@ -40,6 +40,8 @@ builder.Services.AddSingleton<ConstructionEventService>();
 builder.Services.AddSingleton<ContextAwareGuidanceService>();
 builder.Services.AddSingleton<LearningRecommendationService>();
 builder.Services.AddSingleton<ContinuousImprovementService>();
+builder.Services.AddSingleton<AuditTrailService>();
+builder.Services.AddSingleton<ProvenanceService>();
 builder.Services.AddSingleton<MediaGenerationService>();
 
 // Background services

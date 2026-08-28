@@ -11,6 +11,8 @@ public sealed class KnowledgeController(
     ImprovementEvaluationService evaluation,
     LearningRecommendationService learningRecommendations,
     ContinuousImprovementService continuousImprovement,
+    AuditTrailService auditTrail,
+    ProvenanceService provenance,
     ILogger<KnowledgeController> logger) : ControllerBase
 {
     /// <summary>
@@ -402,6 +404,148 @@ public sealed class KnowledgeController(
 
         return Ok(report);
     }
+
+    // ── Audit Trail & Provenance (Phase 10) ────────────────────────────────────
+
+    /// <summary>
+    /// Query audit trail with filters.
+    /// Shows complete history of all learning pipeline actions.
+    /// </summary>
+    [HttpGet("audit")]
+    public async Task<ActionResult<AuditTrailResponse>> QueryAuditTrail(
+        [FromQuery] string? actionType = null,
+        [FromQuery] string? actorId = null,
+        [FromQuery] string? resourceId = null,
+        [FromQuery] int? days = 30,
+        [FromQuery] int? limit = 100,
+        CancellationToken cancellationToken = default)
+    {
+        var since = days.HasValue ? DateTime.UtcNow.AddDays(-days.Value) : (DateTime?)null;
+
+        var entries = await auditTrail.QueryAuditTrailAsync(
+            actionType,
+            actorId,
+            resourceId,
+            since,
+            limit ?? 100,
+            cancellationToken);
+
+        return Ok(new AuditTrailResponse
+        {
+            Success = true,
+            Entries = entries,
+            TotalEntries = entries.Count,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Get complete provenance for a corpus entry.
+    /// Traces entry back to original interactions and feedback.
+    /// </summary>
+    [HttpGet("provenance/corpus/{entryId}")]
+    public async Task<ActionResult<CorpusProvenanceResponse>> GetCorpusProvenance(
+        string entryId,
+        CancellationToken cancellationToken)
+    {
+        var provenance = await provenance.GetCorpusEntryProvenanceAsync(entryId, cancellationToken);
+
+        if (provenance == null)
+        {
+            return NotFound(new { error = "Corpus entry not found or Atlas not configured." });
+        }
+
+        return Ok(new CorpusProvenanceResponse
+        {
+            Success = true,
+            Provenance = provenance,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Get provenance for a knowledge gap.
+    /// Shows all interactions and feedback contributing to the gap.
+    /// </summary>
+    [HttpGet("provenance/gap/{pattern}")]
+    public async Task<ActionResult<GapProvenanceResponse>> GetGapProvenance(
+        string pattern,
+        CancellationToken cancellationToken)
+    {
+        var gapProvenance = await provenance.GetGapAnalysisProvenanceAsync(pattern, cancellationToken);
+
+        if (gapProvenance == null)
+        {
+            return NotFound(new { error = "Gap not found or Atlas not configured." });
+        }
+
+        return Ok(new GapProvenanceResponse
+        {
+            Success = true,
+            Provenance = gapProvenance,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Get provenance for a learning recommendation.
+    /// Shows events and outcomes that led to the recommendation.
+    /// </summary>
+    [HttpGet("provenance/recommendation/{recommendationId}")]
+    public async Task<ActionResult<RecommendationProvenanceResponse>> GetRecommendationProvenance(
+        string recommendationId,
+        CancellationToken cancellationToken)
+    {
+        var recProvenance = await provenance.GetRecommendationProvenanceAsync(recommendationId, cancellationToken);
+
+        if (recProvenance == null)
+        {
+            return NotFound(new { error = "Recommendation not found or Atlas not configured." });
+        }
+
+        return Ok(new RecommendationProvenanceResponse
+        {
+            Success = true,
+            Provenance = recProvenance,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Get complete observability dashboard.
+    /// Combines pipeline health, audit trail, and provenance metrics.
+    /// </summary>
+    [HttpGet("observability-dashboard")]
+    public async Task<ActionResult<object>> GetObservabilityDashboard(
+        CancellationToken cancellationToken)
+    {
+        // Get pipeline health
+        var health = await continuousImprovement.GenerateImprovementReportAsync("week", cancellationToken);
+
+        // Get recent audit actions
+        var recentAudit = await auditTrail.QueryAuditTrailAsync(
+            actionType: null,
+            actorId: null,
+            resourceId: null,
+            since: DateTime.UtcNow.AddDays(-7),
+            limit: 50,
+            ct: cancellationToken);
+
+        return Ok(new
+        {
+            success = true,
+            pipeline_health = health,
+            recent_audit_count = recentAudit.Count,
+            recent_actions = recentAudit.Take(10).Select(a => new
+            {
+                action = a.ActionType,
+                actor = a.ActorId,
+                resource = a.ResourceId,
+                timestamp = a.Timestamp
+            }),
+            timestamp = DateTime.UtcNow
+        });
+    }
 }
 
 // ── Response models ────────────────────────────────────────────────────────────
@@ -488,5 +632,34 @@ public sealed class AutoProposalsResponse
     public bool Success { get; init; }
     public int ProposalsCreated { get; init; }
     public int HighConfidenceGaps { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class AuditTrailResponse
+{
+    public bool Success { get; init; }
+    public List<AuditEntry> Entries { get; init; } = [];
+    public int TotalEntries { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class CorpusProvenanceResponse
+{
+    public bool Success { get; init; }
+    public required CorpusProvenance Provenance { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class GapProvenanceResponse
+{
+    public bool Success { get; init; }
+    public required GapProvenance Provenance { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class RecommendationProvenanceResponse
+{
+    public bool Success { get; init; }
+    public required RecommendationProvenance Provenance { get; init; }
     public DateTime Timestamp { get; init; }
 }

@@ -86,6 +86,9 @@ public sealed class AtlasService : IDisposable
     public IMongoCollection<BsonDocument> QualityMetrics =>
         _db!.GetCollection<BsonDocument>("quality_metrics");
 
+    public IMongoCollection<BsonDocument> AuditTrail =>
+        _db!.GetCollection<BsonDocument>("audit_trail");
+
     // ── Health ────────────────────────────────────────────────────────────────
 
     public async Task<(bool Ok, string Status)> PingAsync(CancellationToken ct = default)
@@ -215,7 +218,32 @@ public sealed class AtlasService : IDisposable
                     new CreateIndexOptions { Background = true }),
                 cancellationToken: ct);
 
-            _logger.LogInformation("Atlas indexes ensured for all learning pipeline collections");
+            // Audit Trail: indexes on timestamp, actor_id, resource_id, action_type for queries
+            var auditTimestampIndex = Builders<BsonDocument>.IndexKeys.Descending("timestamp");
+            await AuditTrail.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(auditTimestampIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var auditActorIndex = Builders<BsonDocument>.IndexKeys.Ascending("actor_id");
+            await AuditTrail.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(auditActorIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var auditResourceIndex = Builders<BsonDocument>.IndexKeys.Ascending("resource_id");
+            await AuditTrail.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(auditResourceIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var auditActionTypeIndex = Builders<BsonDocument>.IndexKeys.Ascending("action_type");
+            await AuditTrail.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(auditActionTypeIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            _logger.LogInformation("Atlas indexes ensured for all learning pipeline collections including audit trail");
         }
         catch (Exception ex)
         {
