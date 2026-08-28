@@ -39,7 +39,11 @@ builder.Services.AddSingleton<ImprovementEvaluationService>();
 builder.Services.AddSingleton<ConstructionEventService>();
 builder.Services.AddSingleton<ContextAwareGuidanceService>();
 builder.Services.AddSingleton<LearningRecommendationService>();
+builder.Services.AddSingleton<ContinuousImprovementService>();
 builder.Services.AddSingleton<MediaGenerationService>();
+
+// Background services
+builder.Services.AddHostedService<Auricrux.Web.BackgroundServices.LearningPipelineWorker>();
 builder.Services.AddSingleton<WorkspaceStorageService>();
 builder.Services.AddSingleton<ConversationMemoryService>();
 builder.Services.AddSingleton<FcaAccountLinkService>();

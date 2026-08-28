@@ -10,6 +10,7 @@ public sealed class KnowledgeController(
     CorpusImprovementService corpusImprovement,
     ImprovementEvaluationService evaluation,
     LearningRecommendationService learningRecommendations,
+    ContinuousImprovementService continuousImprovement,
     ILogger<KnowledgeController> logger) : ControllerBase
 {
     /// <summary>
@@ -321,6 +322,86 @@ public sealed class KnowledgeController(
             Timestamp = DateTime.UtcNow
         });
     }
+
+    // ── Continuous Improvement & Pipeline Health (Phase 9) ──────────────────────
+
+    /// <summary>
+    /// Manually trigger weekly analysis.
+    /// Normally runs automatically every Sunday, but can be triggered manually for testing.
+    /// </summary>
+    [HttpPost("run-analysis")]
+    public async Task<ActionResult<WeeklyAnalysisReport>> RunAnalysis(
+        CancellationToken cancellationToken)
+    {
+        var report = await continuousImprovement.RunWeeklyAnalysisAsync(cancellationToken);
+
+        if (!report.Success)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { error = report.Error });
+        }
+
+        return Ok(report);
+    }
+
+    /// <summary>
+    /// Get quality trends over time.
+    /// Shows week-over-week improvements in ratings, confidence, gap count, etc.
+    /// </summary>
+    [HttpGet("quality-trends")]
+    public async Task<ActionResult<QualityTrendsReport>> GetQualityTrends(
+        [FromQuery] int? weeks = 4,
+        CancellationToken cancellationToken = default)
+    {
+        var report = await continuousImprovement.CalculateQualityTrendsAsync(weeks ?? 4, cancellationToken);
+
+        if (!report.Success)
+        {
+            return BadRequest(new { error = report.Error });
+        }
+
+        return Ok(report);
+    }
+
+    /// <summary>
+    /// Get auto-generated corpus proposals.
+    /// Lists proposals created automatically from high-confidence knowledge gaps.
+    /// </summary>
+    [HttpGet("auto-proposals")]
+    public async Task<ActionResult<AutoProposalsResponse>> GetAutoProposals(
+        CancellationToken cancellationToken)
+    {
+        // Trigger auto-proposal generation
+        var result = await continuousImprovement.GenerateAutoProposalsAsync(cancellationToken);
+
+        if (!result.Success)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { error = result.Error });
+        }
+
+        return Ok(new AutoProposalsResponse
+        {
+            Success = true,
+            ProposalsCreated = result.ProposalsCreated,
+            HighConfidenceGaps = result.HighConfidenceGaps,
+            Timestamp = result.GeneratedAt
+        });
+    }
+
+    /// <summary>
+    /// Get learning pipeline health dashboard.
+    /// Complete overview of learning loop metrics and trends.
+    /// </summary>
+    [HttpGet("pipeline-health")]
+    public async Task<ActionResult<PipelineHealthReport>> GetPipelineHealth(
+        [FromQuery] string? period = "week",
+        CancellationToken cancellationToken = default)
+    {
+        var report = await continuousImprovement.GenerateImprovementReportAsync(period ?? "week", cancellationToken);
+
+        return Ok(report);
+    }
 }
 
 // ── Response models ────────────────────────────────────────────────────────────
@@ -399,5 +480,13 @@ public sealed class RecommendationEffectivenessResponse
 {
     public bool Success { get; init; }
     public required RecommendationEffectivenessReport Report { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class AutoProposalsResponse
+{
+    public bool Success { get; init; }
+    public int ProposalsCreated { get; init; }
+    public int HighConfidenceGaps { get; init; }
     public DateTime Timestamp { get; init; }
 }

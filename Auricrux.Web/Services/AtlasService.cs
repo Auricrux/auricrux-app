@@ -83,6 +83,9 @@ public sealed class AtlasService : IDisposable
     public IMongoCollection<BsonDocument> LearningRecommendations =>
         _db!.GetCollection<BsonDocument>("learning_recommendations");
 
+    public IMongoCollection<BsonDocument> QualityMetrics =>
+        _db!.GetCollection<BsonDocument>("quality_metrics");
+
     // ── Health ────────────────────────────────────────────────────────────────
 
     public async Task<(bool Ok, string Status)> PingAsync(CancellationToken ct = default)
@@ -202,6 +205,13 @@ public sealed class AtlasService : IDisposable
             var recommendationDateIndex = Builders<BsonDocument>.IndexKeys.Ascending("generated_at");
             await LearningRecommendations.Indexes.CreateOneAsync(
                 new CreateIndexModel<BsonDocument>(recommendationDateIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            // Quality Metrics: index on period_end for time-series queries
+            var qualityMetricsDateIndex = Builders<BsonDocument>.IndexKeys.Descending("period_end");
+            await QualityMetrics.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(qualityMetricsDateIndex,
                     new CreateIndexOptions { Background = true }),
                 cancellationToken: ct);
 
