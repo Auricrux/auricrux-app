@@ -1,253 +1,450 @@
-# FCA Ecosystem & Auricrux — Agent Handoff (2026-08-11)
+# FCA Ecosystem & Auricrux — Agent Handoff (2026-08-28)
 
 ## FOR THE NEXT AGENT: Read This First
 
-This document tells you everything you need to pick up work on FCA Ecosystem and Auricrux from any machine. All code is in GitHub. All state is verifiable from Azure CLI and live endpoints.
+This document provides everything needed to continue work on Auricrux and FCA Ecosystem. All code is in GitHub under `FCA-Ecosystem` organization. All state is verifiable from live endpoints and MongoDB Atlas.
 
 ---
 
 ## GitHub Repositories
 
-| Repo | URL | Last Commit | CI Status |
-|------|-----|-------------|-----------|
-| **FCA Ecosystem** | https://github.com/Auricrux/fca-ecosystem | `3fb6d708` | ✅ CI passing |
-| **Auricrux App** | https://github.com/Auricrux/auricrux-app | `5f979f0` | ✅ Build passing |
+| Repo | URL | Current State |
+|------|-----|---------------|
+| **FCA Ecosystem** | https://github.com/FCA-Ecosystem/fca-ecosystem | ✅ Production (main branch) |
+| **Auricrux App** | https://github.com/FCA-Ecosystem/auricrux-app | ✅ Production (main branch) |
 
-### Clone commands (new machine)
+### Clone Commands
+
 ```bash
-git clone https://github.com/Auricrux/fca-ecosystem.git C:\repos\fca-ecosystem-reconcile
-git clone https://github.com/Auricrux/auricrux-app.git C:\repos\auricrux-app
+git clone https://github.com/FCA-Ecosystem/fca-ecosystem.git /workspace/fca-ecosystem
+git clone https://github.com/FCA-Ecosystem/auricrux-app.git /workspace/auricrux-app
 ```
 
 ---
 
-## Live System Status (verified 2026-08-11T03:30Z)
+## Live System Status (Verified 2026-08-28)
 
 | System | Status | URL / Location |
 |--------|--------|----------------|
-| Auricrux App production | ✅ LIVE v1.3.0 | https://auricrux.futurecontractorsofamerica.com |
-| auricrux-fca Ollama model | ✅ LIVE (smoke tested) | http://20.230.87.21:11434 |
-| FCA Ecosystem web | ✅ LIVE | https://futurecontractorsofamerica.com |
-| FCA API (staging) | ✅ LIVE | https://fca-ecosystem-api-stg.azurewebsites.net |
-| Training run PID 1019003 | ✅ RUNNING | Azure VM `auricrux-gpu-ncast4-t4` (AURICRUX-TRAINING-NCAST4) |
-| Latest checkpoint | **180,000** (Aug 10 23:27) | 60.7% through epoch |
-| GPU utilization | **92%**, 13176/16384 MiB | T4 16GB |
+| Auricrux App | ✅ LIVE v1.3.0 | https://auricrux.futurecontractorsofamerica.com |
+| Intelligence Dashboard | ✅ LIVE | https://auricrux.futurecontractorsofamerica.com/intelligence |
+| FCA Ecosystem Web | ✅ LIVE | https://futurecontractorsofamerica.com |
+| MongoDB Atlas | ✅ ACTIVE | auricrux-prod.plzuwk.mongodb.net |
+| Ollama (auricrux-fca) | ✅ RUNNING | Oracle Cloud VM (127.0.0.1:11434) |
 
 ---
 
-## CRITICAL: What MUST NOT Be Touched
+## Current Implementation Status
 
-```
-⛔ Training PID 1019003 on auricrux-gpu-ncast4-t4 — DO NOT INTERRUPT
-⛔ auricrux-fca product model tag — DO NOT OVERWRITE
-⛔ Token factory config — DO NOT TAMPER (/mnt/auricrux-eod/runs/...)
-⛔ PostgreSQL database — Atlas is additive, never replaces PG
-⛔ MinIO buckets — Atlas is additive, never replaces MinIO
-```
+### ✅ COMPLETE: Full Learning Loop (Phases 6-10)
+
+**Phase 6: Context-Aware Guidance**
+- Service: `ContextAwareGuidanceService.cs`
+- API: `/api/context/*`
+- Status: Operational
+
+**Phase 7: Learning Recommendations**
+- Service: `LearningRecommendationService.cs`
+- API: `/api/knowledge/recommendations`
+- Status: Operational
+
+**Phase 8: FCA Ecosystem Integration**
+- Services: `FcaEcosystemApiService.cs`, `AcademyLessonMatcherService.cs`
+- Models: `FcaDomain.cs` (Project, Member, AcademyLesson)
+- Status: Integrated with typed references
+
+**Phase 9: Continuous Improvement**
+- Service: `ContinuousImprovementService.cs`
+- Background Worker: `LearningPipelineWorker.cs` (weekly analysis)
+- API: `/api/knowledge/auto-proposals`, `/api/knowledge/quality-trends`
+- Status: Operational
+
+**Phase 10: Audit Trail & Provenance**
+- Services: `AuditTrailService.cs`, `ProvenanceService.cs`
+- API: `/api/knowledge/audit`, `/api/knowledge/provenance/{id}`
+- Status: Complete observability
+
+### ✅ COMPLETE: Predictive Intelligence Transfer (Phase 9A)
+
+**Breakthrough Feature**: Cross-project intelligence that predicts and prevents issues
+
+**Services**:
+- `PredictiveIntelligenceService.cs` - Causal factor extraction + project similarity
+- `FcaEcosystemApiService.cs` - Live FCA API integration
+- `AcademyLessonMatcherService.cs` - Link gaps to Academy lessons
+
+**Background Worker**:
+- `PredictiveIntelligenceOrchestrator.cs` - Scans every 5 minutes for new verified outcomes
+
+**API**:
+- `POST /api/predictive/transfer/{outcomeId}` - Trigger intelligence transfer
+- `POST /api/predictive/link-lessons` - Link recommendations to lessons
+- `GET /api/predictive/recommendations/{projectId}` - Project recommendations
+- `GET /api/predictive/health` - System health
+
+**How It Works**:
+1. Verified outcome triggers analysis
+2. Extract causal factors (WHY it happened)
+3. Find similar active projects (similarity score ≥ 0.7)
+4. Predict timeframe (when they'll encounter it)
+5. Proactively deliver knowledge to prevent issues
+
+### ✅ COMPLETE: Observability Dashboard (Phase 9B)
+
+**Location**: `/intelligence` page
+
+**Features**:
+- Executive overview (events, outcomes, transfers, estimated savings)
+- Learning loop pipeline visualization (8 stages)
+- Recent predictive transfers feed
+- Active knowledge gaps analysis
+- Real-time audit trail
+- System health indicators (5 services)
+
+**Services**:
+- `IntelligenceDashboardService.cs` - Metrics aggregation
+
+**API**:
+- `GET /api/intelligence/dashboard/overview` - Executive metrics
+- `GET /api/intelligence/dashboard/learning-loop` - Pipeline stats
+- `GET /api/intelligence/dashboard/predictive-transfers` - Recent transfers
+- `GET /api/intelligence/dashboard/knowledge-gaps` - Active gaps
+- `GET /api/intelligence/dashboard/audit-trail` - Recent actions
+- `GET /api/intelligence/dashboard/health` - System status
 
 ---
 
-## The One Remaining Action: Activate MongoDB Atlas
+## MongoDB Atlas Configuration
 
-Everything is coded and committed. Atlas activates with ONE command once you have the connection string.
+### Collections (Auto-Created)
 
-### Step 1 — Get the connection string
-1. Go to https://cloud.mongodb.com (sign in with the FCA/Auricrux MongoDB account)
-2. The $5,000 in startup credits should be applied to this account
-3. Create cluster if needed: M30 tier, Azure East US 2, name: `auricrux-prod`
-4. Connect → Drivers → copy `mongodb+srv://user:pass@cluster.mongodb.net/...`
+| Collection | Purpose |
+|------------|---------|
+| `corpus` | RAG knowledge base |
+| `conversation_memory` | Chat history |
+| `model_routes` | Model routing config |
+| `feedback` | User feedback |
+| `interactions` | User interactions tracking |
+| `knowledge_gaps` | Identified knowledge gaps |
+| `construction_events` | Field activity capture |
+| `construction_outcomes` | Outcome tracking |
+| `construction_evidence` | Evidence attachments |
+| `guidance_effectiveness` | Context guidance metrics |
+| `learning_recommendations` | AI recommendations |
+| `improvement_proposals` | Corpus improvements |
+| `quality_metrics` | Quality trend data |
+| `audit_trail` | Complete provenance |
+| `fca_entity_cache` | FCA API cache (30min-6hr TTL) |
 
-### Step 2 — Run the activation script (from fca-ecosystem repo)
-```powershell
-cd C:\repos\fca-ecosystem-reconcile
-.\scripts\ops\activate-atlas.ps1 -ConnectionString "mongodb+srv://YOUR_USER:YOUR_PASS@auricrux-prod.xxxxx.mongodb.net/?retryWrites=true&w=majority"
-```
+### Connection Configuration
 
-This script automatically:
-- Writes `.env` to fca-ecosystem and auricrux-app
-- Sets Azure Web App settings for staging
-- Sets GitHub repository secrets for CI/CD
-- Runs audit, backs up GGUF to Atlas GridFS, seeds construction corpus
+**⚠️ CRITICAL SECURITY**: Atlas credentials MUST use environment variables, never commit to git!
 
-### Step 3 — Stream the 22GB growth pack to Atlas (unblocks token factory)
-```powershell
-cd C:\repos\fca-ecosystem-reconcile\tools\atlas-pipeline
-pip install -r requirements.txt
-$env:ATLAS_CONNECTION_STRING = "mongodb+srv://..."
-$env:AZURE_VM_HOST = "20.230.87.21"
-$env:AZURE_VM_USER = "azureuser"
-python ingest_training_dataset.py --azure-vm-path /mnt/auricrux-eod/next-run-datasets/growth_10b_net_new_v1.jsonl --domain training
-```
-
-### Step 4 — Trigger CI deploy for fca-ecosystem
 ```bash
-gh workflow run "Deploy Staging" --repo Auricrux/fca-ecosystem
+# Required environment variable
+export Atlas__ConnectionString="mongodb+srv://[user]:[password]@auricrux-prod.plzuwk.mongodb.net/auricrux?appName=auricrux-prod"
+export Atlas__Database="auricrux"
 ```
+
+**For GitHub Actions**: Add `ATLAS_CONNECTION_STRING` to repository secrets
+
+**For Oracle Cloud VM**: Add to `/etc/auricrux/environment` file
 
 ---
 
-## Azure Infrastructure
+## Architecture Overview
 
-| Resource | Type | Resource Group | Status |
-|----------|------|----------------|--------|
-| `auricrux-gpu-ncast4-t4` | VM (NC4as T4) | AURICRUX-TRAINING-NCAST4 | **Running** |
-| `auricrux-export-clean` | VM | AURICRUX-TRAINING-NCAST4 | **Running** |
-| `auricrux-gpu-vm` | VM | RG-AURICRUX-ML | **Running** |
-| `auricrux-llm-vm-01` | VM | AURICRUX-VM-RG-EUS2 | Deallocated |
-| `fca-ecosystem-api-stg` | App Service | rg-fca-ecosystem-staging | Live |
-| `fca-ecosystem-api-estimating` | App Service | rg-fca-ecosystem-staging | Live |
+### Auricrux Intelligence Layer
 
-```bash
-# Verify training VM live (no SSH key needed)
-az vm run-command invoke --resource-group AURICRUX-TRAINING-NCAST4 --name auricrux-gpu-ncast4-t4 --command-id RunShellScript --scripts "ps aux | grep python | grep -v grep | head -3 && nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader"
-
-# Check latest checkpoint
-az vm run-command invoke --resource-group AURICRUX-TRAINING-NCAST4 --name auricrux-gpu-ncast4-t4 --command-id RunShellScript --scripts "ls -lt /mnt/auricrux-eod/runs/run-20260715T114454Z/outputs/auricrux_lora_adapter_3b_true_god_1b5/ | head -5"
 ```
+Auricrux (Intelligence Platform)
+├── Web Application (Blazor Server)
+│   ├── Chat Interface (/chat)
+│   └── Intelligence Dashboard (/intelligence)
+├── API Layer (RESTful)
+│   ├── Core: /api/chat, /thinking, /search, /health
+│   ├── Knowledge: /api/knowledge/* (gaps, proposals, recommendations)
+│   ├── Context: /api/context/* (tracking, guidance)
+│   ├── Predictive: /api/predictive/* (intelligence transfer)
+│   └── Dashboard: /api/intelligence/dashboard/* (metrics)
+├── Services (15+ intelligence services)
+│   ├── AtlasService - MongoDB integration
+│   ├── AuricruxModelRouter - 5-tier model routing
+│   ├── ConstructionIntelligenceService - Core AI
+│   ├── Learning Loop Services (Phases 6-10)
+│   └── Predictive Intelligence Services (Phase 9A)
+├── Background Workers
+│   ├── LearningPipelineWorker - Weekly analysis
+│   └── PredictiveIntelligenceOrchestrator - 5-min scan
+└── Data Layer
+    ├── MongoDB Atlas - Learning pipeline data
+    └── Ollama - LLM backend (auricrux-fca model)
+```
+
+### FCA Ecosystem Integration
+
+**Current Integration Points**:
+- `AuricruxPresence` component on ~806/817 pages
+- `publishAuricruxEvent` in ~627 services
+- Verify/Interpret/Act APIs (`/api/v1/auricrux/*`)
+- Basic Ollama provider (`IAuricruxProvider`)
+
+**Integration Gap**: Advanced learning loop from auricrux-app NOT yet embedded in fca-ecosystem provider. See "Next Phase" below.
 
 ---
 
-## What Was Implemented (This Session)
+## What's Working (Verified)
 
-### MongoDB Atlas Integration (fca-ecosystem)
-- `IAtlasKnowledgeStore` + `AtlasKnowledgeStore` — full-text + vector search
-- `AtlasRagAuricruxProvider` — RAG decorator over Ollama
-- 4 API endpoints: `/api/v1/auricrux/knowledge/*`
-- Conditional DI: Atlas only when `Atlas:ConnectionString` is set
-- `AtlasRagStatusPanel.tsx` — frontend health indicator
-- `tools/atlas-pipeline/`: audit, preserve_model, migrate_azure_vm, ingest, ingest_training_dataset, export_training_set
-- `scripts/ops/activate-atlas.ps1` — one-command full activation
+✅ **Learning Loop**: Complete Phases 6-10 operational
+✅ **Predictive Intelligence**: Cross-project knowledge transfer active
+✅ **Observability**: Real-time dashboard at `/intelligence`
+✅ **MongoDB Atlas**: All collections active, learning pipeline processing
+✅ **Ollama Integration**: 5-tier model routing operational
+✅ **FCA API Integration**: Live Project/Member/Academy data
+✅ **Background Workers**: Weekly analysis + 5-min predictive scan
+✅ **Audit Trail**: Complete provenance tracking
 
-### MongoDB Atlas Integration (auricrux-app)
-- `AtlasService.cs` — unified MongoDB client (corpus, memory, model_routes, feedback)
-- `AuricruxModelRouter.cs` — 5-tier staged intelligence:
-  - Primary: auricrux-fca (3B) — most queries
-  - Secondary: llama3.2 (3B) — simple/fallback
-  - Tertiary: mistral (7B) — complex reasoning
-  - Extended: llama3.1:70b — delay claims, agent tasks
-  - Vision: llava — blueprints, images
-- `AtlasCorpusService.cs` — Atlas Search-backed corpus (fallback: local JSON)
-- `ConversationMemoryService.cs` — 4 backends: Session/JSONL/SQLite/Atlas
-- `ConstructionIntelligenceService.cs` — integrated router + Atlas corpus
+---
 
-### CI Fixes (auricrux-app)
-- csproj stamp target: cross-platform (powershell on Windows, pwsh on Linux), non-fatal
-- `AuricruxModelRouter.cs`: added `using MongoDB.Driver`
-- `ConstructionKnowledgeEntry`: moved from private to public for cross-service access
+## Critical Security Issues
+
+### ⚠️ RESOLVED: Atlas Credentials
+
+**Issue**: Connection string with credentials was committed to `appsettings.json`
+
+**Resolution** (2026-08-28):
+- ✅ Credentials removed from code
+- ✅ Documentation updated for environment variables
+- ⚠️ **ACTION REQUIRED**: Rotate Atlas password and update GitHub secrets
+
+**See**: `SECURITY_ALERT_ATLAS_CREDENTIALS.md` for complete remediation checklist
+
+---
+
+## Next Phase: Architecture Unification
+
+### The Problem
+
+Auricrux exists in TWO forms:
+1. **auricrux-app**: Advanced standalone with full learning loop
+2. **fca-ecosystem**: Basic embedded provider (just Ollama + optional RAG)
+
+**This violates architectural doctrine**: Auricrux must be ONE unified intelligence layer.
+
+### The Solution
+
+**Phase 2 (Planned)**: Create shared intelligence package in fca-ecosystem
+
+```
+packages/auricrux-intelligence/
+├── Auricrux.Intelligence.Core/
+│   └── Services/ (migrate from auricrux-app)
+└── Auricrux.Intelligence.Atlas/
+    └── Atlas integration
+```
+
+**Then**: Enhance `IAuricruxProvider` interface to include learning loop methods
+
+**Result**: FCA ecosystem gets full predictive intelligence, auricrux-app becomes specialized admin UI or deprecated
 
 ---
 
 ## Key Files by Location
 
-### fca-ecosystem (`C:\repos\fca-ecosystem-reconcile` or GitHub)
-```
-apps/api/FcaEcosystem.Application/Auricrux/IAtlasKnowledgeStore.cs
-apps/api/FcaEcosystem.Infrastructure/Auricrux/AtlasKnowledgeStore.cs
-apps/api/FcaEcosystem.Infrastructure/Auricrux/AtlasRagAuricruxProvider.cs
-apps/api/FcaEcosystem.Infrastructure/DependencyInjection.cs        (Atlas conditional DI)
-apps/api/FcaEcosystem.Api/Controllers/AuricruxController.cs        (4 new endpoints)
-apps/web/src/features/auricrux-orchestration/services/atlasRagService.ts
-apps/web/src/components/AtlasRagStatusPanel.tsx
-tools/atlas-pipeline/audit.py                  — inventory all assets
-tools/atlas-pipeline/preserve_model.py         — backup GGUF to Atlas GridFS
-tools/atlas-pipeline/migrate_azure_vm.py       — read-only Azure VM → Atlas
-tools/atlas-pipeline/ingest.py                 — PDF/TXT → Atlas chunks
-tools/atlas-pipeline/ingest_training_dataset.py — stream 22GB+ JSONL
-tools/atlas-pipeline/export_training_set.py    — Atlas → JSONL for fine-tune
-tools/atlas-pipeline/requirements.txt
-scripts/ops/activate-atlas.ps1                 — ONE-COMMAND ATLAS ACTIVATION
-docs/ATLAS_DEPLOYMENT_GUIDE.md                 — detailed deployment guide
-.env.example                                   — env var template
-infra/k8s/api-deployment.yaml                  — optional Atlas secret
-.github/workflows/deploy-staging.yml          — CI with Atlas config step
-```
+### auricrux-app
 
-### auricrux-app (`C:\repos\auricrux-app` or GitHub)
-```
-Auricrux.Web/Services/AtlasService.cs           — MongoDB client
-Auricrux.Web/Services/AuricruxModelRouter.cs    — staged intelligence router
-Auricrux.Web/Services/AtlasCorpusService.cs     — Atlas Search corpus
-Auricrux.Web/Services/ConversationMemoryService.cs — 4-backend memory (Atlas added)
-Auricrux.Web/Services/ConstructionIntelligenceService.cs — integrated
-Auricrux.Web/Program.cs                         — DI registration
-Auricrux.Web/appsettings.json                   — Atlas + model tier config
-Auricrux.Web/Auricrux.Web.csproj               — cross-platform stamp target
-docker-compose.yml                              — Atlas env var added
-```
+**Services** (`Auricrux.Web/Services/`):
+- `AtlasService.cs` - MongoDB client
+- `AuricruxModelRouter.cs` - 5-tier routing
+- `ConstructionIntelligenceService.cs` - Core AI
+- `KnowledgeGapAnalysisService.cs` - Gap detection
+- `ConstructionEventService.cs` - Event capture
+- `ContextAwareGuidanceService.cs` - Phase 6
+- `LearningRecommendationService.cs` - Phase 7
+- `ContinuousImprovementService.cs` - Phase 9
+- `PredictiveIntelligenceService.cs` - Phase 9A breakthrough
+- `FcaEcosystemApiService.cs` - FCA integration
+- `AcademyLessonMatcherService.cs` - Lesson linking
+- `IntelligenceDashboardService.cs` - Phase 9B metrics
+- `AuditTrailService.cs` - Phase 10 provenance
+- `ProvenanceService.cs` - Phase 10 lineage
+
+**Controllers** (`Auricrux.Web/Controllers/`):
+- `ChatController.cs`, `KnowledgeController.cs`, `ContextController.cs`
+- `PredictiveIntelligenceController.cs`, `IntelligenceDashboardController.cs`
+
+**Background** (`Auricrux.Web/BackgroundServices/`):
+- `LearningPipelineWorker.cs` - Weekly improvement analysis
+- `PredictiveIntelligenceOrchestrator.cs` - 5-min outcome scan
+
+**UI** (`Auricrux.Web/Components/`):
+- `Pages/Chat.razor` - Main chat interface
+- `Pages/Intelligence/Dashboard.razor` - Intelligence dashboard
+- `Shared/MetricCard.razor`, `Shared/HealthIndicator.razor`
+
+### fca-ecosystem
+
+**Integration** (`apps/api/FcaEcosystem.Application/Auricrux/`):
+- `IAuricruxProvider.cs` - Basic LLM provider interface
+- `AuricruxOperationalVerifier.cs` - Structured verification
+- `AuricruxActExecutor.cs` - Governed actions
+
+**Frontend** (`apps/web/src/`):
+- `features/auricrux-orchestration/` - Track 54 entities
+- `lib/auricruxAct.ts`, `lib/auricruxEvents.ts` - Client helpers
 
 ---
 
-## Environment Variables Needed
+## Environment Variables Required
+
+### auricrux-app
 
 ```bash
-# fca-ecosystem
-ATLAS__CONNECTIONSTRING=mongodb+srv://...
-ATLAS__DATABASE=auricrux
+# MongoDB Atlas (CRITICAL - use secrets, never commit)
+Atlas__ConnectionString="mongodb+srv://[user]:[password]@auricrux-prod.plzuwk.mongodb.net/auricrux"
+Atlas__Database="auricrux"
+
+# Ollama
+Auricrux__OllamaUrl="http://127.0.0.1:11434"
+Auricrux__PrimaryModel="auricrux-fca"
+Auricrux__SecondaryModel="llama3.2"
+Auricrux__TertiaryModel="mistral"
+Auricrux__ExtendedModel="llama3.1:70b"
+Auricrux__VisionModel="llava"
+
+# FCA Integration
+FcaEcosystem__ApiBaseUrl="https://futurecontractorsofamerica.com/api"
+```
+
+### fca-ecosystem
+
+```bash
+# MongoDB Atlas
+ATLAS__CONNECTIONSTRING="mongodb+srv://..."
+ATLAS__DATABASE="auricrux"
+
+# Auricrux Integration
 AURICRUX__RAGTOPK=5
-
-# auricrux-app (same connection string)
-ATLAS__CONNECTIONSTRING=mongodb+srv://...
-ATLAS__DATABASE=auricrux
-Auricrux__PrimaryModel=auricrux-fca
-Auricrux__SecondaryModel=llama3.2
-Auricrux__TertiaryModel=mistral
-Auricrux__ExtendedModel=llama3.1:70b
-Auricrux__VisionModel=llava
 ```
 
 ---
 
-## OneDrive Backup Location
+## Deployment
 
-All pitch decks and this handoff document are saved to:
-```
-C:\Users\MichaelBartholomew\OneDrive - Future Contractors of America LLC\
-  FCA-Pitch-Decks\           — All .pptx and .pdf pitch materials
-  Auricrux-FCA-Handoff\      — This document and atlas guide
-```
+### Production URL
 
-Also accessible via OneDrive sync on any signed-in device.
+**Auricrux**: https://auricrux.futurecontractorsofamerica.com
+**FCA Ecosystem**: https://futurecontractorsofamerica.com
 
----
+### Oracle Cloud VM
 
-## Quick Verification Commands (run on any machine with Azure CLI + gh)
+**Platform**: Oracle Cloud Infrastructure (OCI)
+**IP**: 150.136.115.97
+**Service**: Systemd service (`auricrux.service`)
+
+### Deployment Process
 
 ```bash
-# Verify training still running
-az vm run-command invoke -g AURICRUX-TRAINING-NCAST4 -n auricrux-gpu-ncast4-t4 \
-  --command-id RunShellScript \
-  --scripts "ps aux | grep 1019003 | grep -v grep | head -2 && nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader"
+# Build
+cd /workspace/auricrux-app/Auricrux.Web
+dotnet publish -c Release -o ./publish
 
-# Verify auricrux-fca model live
-curl -s http://20.230.87.21:11434/api/tags | python3 -c "import json,sys; [print(m['name']) for m in json.load(sys.stdin)['models']]"
+# Deploy (see deployment-packages/DEPLOYMENT_GUIDE.md)
+# Transfer to Oracle VM and restart service
+```
 
-# Verify Auricrux App production
+### Docker Alternative
+
+```bash
+docker build -t auricrux/web:1.3.0 .
+docker run -d -p 80:80 \
+  -e Atlas__ConnectionString="..." \
+  auricrux/web:1.3.0
+```
+
+---
+
+## Verification Commands
+
+```bash
+# Health check
 curl https://auricrux.futurecontractorsofamerica.com/api/health
 
-# Verify fca-ecosystem CI
-gh api repos/Auricrux/fca-ecosystem/actions/runs?per_page=2 --jq '.workflow_runs[] | "\(.name) \(.conclusion)"'
-gh api repos/Auricrux/auricrux-app/actions/runs?per_page=3 --jq '.workflow_runs[] | "\(.name) \(.conclusion)"'
+# Predictive intelligence status
+curl https://auricrux.futurecontractorsofamerica.com/api/predictive/health
 
-# Verify Atlas health (once activated)
-curl https://fca-ecosystem-api-stg.azurewebsites.net/api/v1/auricrux/knowledge/health
+# Dashboard metrics
+curl https://auricrux.futurecontractorsofamerica.com/api/intelligence/dashboard/overview
+
+# Ollama status
+curl http://127.0.0.1:11434/api/tags
+
+# Atlas connection (from dashboard API)
+curl https://auricrux.futurecontractorsofamerica.com/api/knowledge/health
 ```
 
 ---
 
-## Data Safety Rules (never violate these)
+## Documentation
 
-- PostgreSQL, MinIO, Ollama models: **READ-ONLY context** — Atlas is additive only
-- Training run PID 1019003: **DO NOT INTERRUPT** — it's been running 26 days
-- `auricrux-fca` Ollama model tag: **DO NOT OVERWRITE** — product model in use
-- All migration scripts: **READ-ONLY from source** — `"original_deleted": False` in all records
-- Azure VM files: **NEVER delete** — copy to Atlas, keep originals
+| Document | Purpose |
+|----------|---------|
+| [`README.md`](README.md) | Complete platform overview |
+| [`CLAIMS_REGISTER.md`](CLAIMS_REGISTER.md) | Honest capability claims |
+| [`docs/FCA_SYSTEM_LAW.md`](docs/FCA_SYSTEM_LAW.md) | Architectural governance |
+| [`AURICRUX_LEARNING_LOOP_IMPLEMENTATION.md`](AURICRUX_LEARNING_LOOP_IMPLEMENTATION.md) | Phases 1-5 design |
+| [`IMPLEMENTATION_COMPLETE_PHASES_6_10.md`](IMPLEMENTATION_COMPLETE_PHASES_6_10.md) | Phases 6-10 summary |
+| [`PHASE_9A_PREDICTIVE_INTELLIGENCE.md`](PHASE_9A_PREDICTIVE_INTELLIGENCE.md) | Breakthrough feature architecture |
+| [`PHASE_9B_OBSERVABILITY_DASHBOARD_PLAN.md`](PHASE_9B_OBSERVABILITY_DASHBOARD_PLAN.md) | Dashboard design |
+| [`deployment-packages/DEPLOYMENT_GUIDE.md`](deployment-packages/DEPLOYMENT_GUIDE.md) | Complete deployment instructions |
+| [`SECURITY_ALERT_ATLAS_CREDENTIALS.md`](SECURITY_ALERT_ATLAS_CREDENTIALS.md) | Security remediation checklist |
 
 ---
 
-## Token Factory Note
+## What MUST NOT Be Touched
 
-The token factory (200B→200T+ construction token generation) runs locally and was stalled on C: drive space. The Atlas pipeline unblocks it — the 22GB `growth_10b_net_new_v1.jsonl` streams to Atlas via SSH without needing local disk space. Run Step 3 above after Atlas is activated.
+```
+⛔ MongoDB Atlas Production Data — Read/Write with care
+⛔ Ollama auricrux-fca model — Production model in use
+⛔ Oracle Cloud VM systemd service — Restart only during maintenance window
+⛔ FCA Ecosystem PostgreSQL — Atlas is additive, never replaces PG
+```
 
 ---
 
-*Generated: 2026-08-11 | Repos: Auricrux/fca-ecosystem, Auricrux/auricrux-app*
+## Data Safety Rules
+
+- **Atlas is additive**: Never delete production data
+- **Backup before major changes**: Use `mongodump` for Atlas backups
+- **Test in development**: Use separate Atlas cluster for dev/staging
+- **Audit trail is sacred**: Never tamper with `audit_trail` collection
+- **Learning pipeline data**: Outcomes and events are immutable once verified
+
+---
+
+## Contact & Support
+
+- **GitHub Issues**: https://github.com/FCA-Ecosystem/auricrux-app/issues
+- **Email**: michael@futurecontractorsofamerica.com
+- **Documentation**: See `docs/` folder for comprehensive guides
+
+---
+
+## Agent Handoff Checklist
+
+When handing off to the next agent:
+
+- [ ] Verify all commits pushed to GitHub `main` branch
+- [ ] Confirm production deployment is current
+- [ ] Check MongoDB Atlas connection healthy
+- [ ] Verify Ollama service running
+- [ ] Test all health check endpoints
+- [ ] Review and update this document with latest changes
+- [ ] Document any new blockers or issues
+- [ ] Ensure no credentials committed to git
+
+---
+
+*Last Updated: 2026-08-28 | Version 1.3.0 | Repositories: FCA-Ecosystem/auricrux-app, FCA-Ecosystem/fca-ecosystem*
+
+*Current Status: Phases 6-10 + 9A/9B complete. Next phase: Architecture unification + Self-Correcting Intelligence.*

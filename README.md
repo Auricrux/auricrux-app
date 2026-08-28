@@ -1,233 +1,311 @@
-# Auricrux App - Production-Ready .NET/C# Application
+# Auricrux - Construction Intelligence Platform
 
-A complete, enterprise-grade AI assistant application built with .NET 10, featuring cross-platform support through MAUI and web deployment via Blazor Server.
+**Version 1.3.0** | August 28, 2026
 
-## Features
+Auricrux is the integrated intelligence layer for the Future Contractors of America (FCA) Construction Operating System. It's not a chatbot or standalone app—it's the operating intelligence that observes, understands, learns from, acts upon, and continuously improves all FCA platform activities.
 
-- **Multi-platform support**: MAUI for Android, iOS, Windows, and macOS
-- **Web deployment**: Blazor Server for browser-based access
-- **AI integration**: Seamless communication with Auricrux backend API
-- **Advanced chat interface**:
-  - Multiple thinking modes (Quick, Auto, Deep) for flexible AI responses
-  - Configurable search scopes (Internal, Public, Both)
-  - Auto-speak/TTS support for accessibility
-  - Real-time conversation history
-  - Star rating feedback system for response quality
-- **Production-ready code**:
-  - Full error handling and logging
-  - Async/await patterns throughout
-  - Dependency injection and IoC containers
-  - Shared service layer for code reuse
+## What is Auricrux?
 
-## Project Structure
+Auricrux implements a continuously learning cycle that transforms construction field activity into institutional knowledge:
+
+```
+FIELD ACTIVITY → EVENT CAPTURE → CONTEXTUALIZATION → 
+OUTCOME TRACKING → VALIDATION → KNOWLEDGE EXTRACTION → 
+LEARNING RECOMMENDATIONS → PREDICTIVE INTELLIGENCE TRANSFER → 
+WORKFLOW IMPROVEMENT → MEASURED OUTCOMES → CONTINUOUS LEARNING
+```
+
+### Core Capabilities
+
+- **Learning Loop** (Phases 6-10): Complete feedback-to-improvement pipeline
+- **Predictive Intelligence** (Phase 9A): Cross-project knowledge transfer that predicts and prevents issues
+- **Observability Dashboard** (Phase 9B): Real-time intelligence metrics and visualization
+- **Construction Events**: Capture field activities, decisions, and interactions
+- **Outcome Tracking**: Link results back to events with evidence
+- **Knowledge Gap Analysis**: Identify what teams don't know and need to learn
+- **Context-Aware Guidance**: Real-time recommendations based on user/project context
+- **Continuous Improvement**: Automated analysis and quality trend tracking
+- **Audit Trail & Provenance**: Complete lineage tracking of all learning actions
+
+## Architecture
+
+```
+Auricrux Intelligence Layer
+├── Atlas (MongoDB): Persistent learning pipeline data
+├── Ollama: Local LLM backend (auricrux-fca model)
+├── Model Router: 5-tier routing (auricrux-fca → llama3.2 → mistral → llama3.1:70b → llava)
+├── Learning Services: 10+ specialized intelligence services
+├── API: RESTful endpoints for intelligence operations
+└── UI: Blazor dashboard + chat interface
+```
+
+### Repository Structure
 
 ```
 auricrux-app/
-├── Auricrux.Shared/          # Shared class library
-│   ├── Models.cs             # Data models, enums (ThinkingMode, SearchScope, etc.)
-│   └── Services.cs           # API client, TTS, business logic
-├── Auricrux.Mobile/          # MAUI cross-platform app
-│   ├── MainPage.xaml         # UI layout
-│   ├── MainPageViewModel.cs  # MVVM logic
-│   ├── MauiProgram.cs        # Service registration & configuration
-│   └── Resources/            # Images, fonts, assets
-├── Auricrux.Web/             # Blazor Server web app
+├── Auricrux.Web/                    # Primary intelligence platform
 │   ├── Components/
-│   │   ├── Pages/Chat.razor  # Main chat interface
-│   │   └── Layout/           # App shell
-│   ├── Program.cs            # Web app configuration
-│   └── appsettings.json      # Configuration
-├── AuricruxApp.sln           # Solution file
-├── README.md                 # This file
-└── .gitignore                # Git exclusions
+│   │   ├── Pages/
+│   │   │   ├── Chat.razor           # AI chat interface
+│   │   │   └── Intelligence/
+│   │   │       └── Dashboard.razor  # Intelligence observability
+│   │   └── Shared/                  # Reusable components
+│   ├── Controllers/                 # API endpoints
+│   │   ├── ChatController.cs
+│   │   ├── KnowledgeController.cs
+│   │   ├── ContextController.cs
+│   │   ├── PredictiveIntelligenceController.cs
+│   │   └── IntelligenceDashboardController.cs
+│   ├── Services/                    # Core intelligence services
+│   │   ├── AtlasService.cs          # MongoDB Atlas integration
+│   │   ├── AuricruxModelRouter.cs   # 5-tier model routing
+│   │   ├── ConstructionIntelligenceService.cs
+│   │   ├── KnowledgeGapAnalysisService.cs
+│   │   ├── ConstructionEventService.cs
+│   │   ├── ContextAwareGuidanceService.cs
+│   │   ├── LearningRecommendationService.cs
+│   │   ├── ContinuousImprovementService.cs
+│   │   ├── PredictiveIntelligenceService.cs
+│   │   ├── AuditTrailService.cs
+│   │   └── ProvenanceService.cs
+│   ├── BackgroundServices/
+│   │   ├── LearningPipelineWorker.cs
+│   │   └── PredictiveIntelligenceOrchestrator.cs
+│   └── Program.cs                   # Service registration & configuration
+├── Auricrux.Shared/                 # Shared libraries
+│   ├── Models.cs                    # Core data models
+│   ├── ConstructionModels.cs        # Construction domain models
+│   ├── FcaDomain.cs                 # FCA ecosystem integration models
+│   └── Services.cs                  # HTTP client, TTS, business logic
+├── Auricrux.Mobile/                 # MAUI cross-platform app
+├── Auricrux.Tests/                  # Integration tests
+└── docs/                            # Comprehensive documentation
 ```
 
-## Prerequisites
+## Key Features
 
-- **.NET 10 SDK** or later ([Download](https://dotnet.microsoft.com/download))
-- **Visual Studio 2024** (or VS Code with C# extension) - recommended for MAUI development
-- **Mobile development tools** (optional):
-  - Android SDK/emulator (for Android development)
-  - Xcode (for iOS development)
-  - Visual Studio with MAUI workload installed
+### 1. Learning Loop (Phases 6-10)
+
+**Phase 6: Context-Aware Guidance**
+- Track user activity and provide relevant recommendations
+- Project/role-based context
+- Effectiveness measurement
+
+**Phase 7: Learning Recommendations**
+- Generate personalized training suggestions
+- Link to Academy lessons
+- Priority-based delivery
+
+**Phase 8: FCA Ecosystem Integration**
+- Live Project, Member, Academy data
+- Typed domain references
+- Entity validation
+
+**Phase 9: Continuous Improvement**
+- Automated gap analysis
+- Auto-proposal generation
+- Quality trend tracking
+- Weekly improvement reports
+
+**Phase 10: Audit Trail & Provenance**
+- Complete action lineage
+- Resource tracking
+- Compliance and observability
+
+### 2. Predictive Intelligence Transfer (Phase 9A) - BREAKTHROUGH
+
+When Auricrux learns something significant on Project A, it automatically:
+1. Extracts causal factors (understands WHY it happened)
+2. Identifies similar active projects
+3. Predicts WHEN they'll encounter the same situation
+4. Proactively delivers knowledge BEFORE the issue occurs
+
+**This shifts construction intelligence from reactive to PREDICTIVE.**
+
+### 3. Observability Dashboard (Phase 9B)
+
+Real-time intelligence metrics at `/intelligence`:
+- Executive overview (events, outcomes, transfers, savings)
+- Learning loop pipeline visualization
+- Recent predictive transfers
+- Active knowledge gaps
+- System health indicators
 
 ## Quick Start
 
-### 1. Clone/Setup
+### Prerequisites
+
+- **.NET 10 SDK** ([Download](https://dotnet.microsoft.com/download))
+- **MongoDB Atlas** account (or local MongoDB)
+- **Ollama** with auricrux-fca model
+- **Visual Studio 2024** or VS Code
+
+### 1. Clone Repository
 
 ```bash
-cd C:\Users\Auricrux\OneDrive\FCA\auricrux-app
-dotnet restore
+git clone https://github.com/FCA-Ecosystem/auricrux-app.git
+cd auricrux-app
 ```
 
-### 2. Run the Blazor Web App
+### 2. Configure Environment
 
-```bash
-cd Auricrux.Web
-dotnet run
-```
+Create `Auricrux.Web/appsettings.Development.json` (gitignored):
 
-The web app will be available at `https://localhost:7000`
-
-### 3. Build and Run MAUI (Windows Desktop)
-
-```bash
-cd Auricrux.Mobile
-dotnet build -f net10.0-windows10.0.19041.0
-dotnet run -f net10.0-windows10.0.19041.0
-```
-
-### 4. Build for Android (if Android SDK installed)
-
-```bash
-cd Auricrux.Mobile
-dotnet publish -f net10.0-android -c Release
-```
-
-## Configuration
-
-### Backend API Endpoint
-
-The default backend endpoint is `http://localhost:5000`. To change it:
-
-**MAUI (MainPage.xaml)**:
-```csharp
-var auricruxConfig = new AuricruxConfig
-{
-    ApiEndpoint = "https://your-api.com",
-    // ...
-};
-```
-
-**Blazor Web (appsettings.json)**:
 ```json
 {
+  "Atlas": {
+    "ConnectionString": "mongodb+srv://[user]:[password]@[cluster]/auricrux",
+    "Database": "auricrux"
+  },
   "Auricrux": {
-    "ApiEndpoint": "https://your-api.com"
+    "OllamaUrl": "http://127.0.0.1:11434",
+    "PrimaryModel": "auricrux-fca"
+  },
+  "FcaEcosystem": {
+    "ApiBaseUrl": "https://futurecontractorsofamerica.com/api"
   }
 }
 ```
 
-### Thinking Modes
+**⚠️ NEVER commit credentials to git!**
 
-The app supports three thinking modes:
-- **Quick**: Minimal reasoning, fastest response
-- **Auto**: Balanced thinking time and response quality (default)
-- **Deep**: Extended thinking for complex queries
+### 3. Start Ollama
 
-### Search Scopes
-
-- **Internal**: Search only internal documents/knowledge base
-- **Public**: Search public resources only
-- **Both**: Combined search (default)
-
-## API Requirements
-
-The backend must provide these endpoints:
-
-### POST /api/chat
-Send a chat query and receive an AI-generated response.
-
-**Request**:
-```json
-{
-  "query": "What is Auricrux?",
-  "thinkingMode": "Auto",
-  "searchScope": "Both",
-  "conversationHistory": [],
-  "sessionId": "session-uuid"
-}
+```bash
+# Pull and run the auricrux-fca model
+ollama pull auricrux-fca
+ollama serve
 ```
 
-**Response**:
-```json
-{
-  "content": "Auricrux is an AI assistant...",
-  "thinkingContent": "Internal reasoning...",
-  "sources": [
-    {
-      "title": "Source 1",
-      "url": "https://...",
-      "relevanceScore": 0.95
-    }
-  ],
-  "timestamp": "2025-01-15T10:30:00Z",
-  "processingTimeMs": 1234,
-  "confidenceScore": 0.92
-}
-```
+### 4. Run the Application
 
-### GET /health
-Health check endpoint to verify backend availability.
-
-**Response**:
-```json
-{
-  "status": "healthy",
-  "uptime": 12345
-}
-```
-
-### POST /api/feedback/{interactionId}
-Submit user feedback/rating for an interaction.
-
-**Request**:
-```json
-{
-  "stars": 5,
-  "comment": "Great response!",
-  "timestamp": "2025-01-15T10:35:00Z"
-}
-```
-
-## Building for Production
-
-### Blazor Web Deployment
-
-**Docker**:
 ```bash
 cd Auricrux.Web
-docker build -t auricrux-web:1.0 .
-docker run -p 80:8080 -p 443:8443 auricrux-web:1.0
+dotnet restore
+dotnet run
 ```
 
-**Azure App Service**:
+Access:
+- Chat interface: `https://localhost:7080`
+- Intelligence dashboard: `https://localhost:7080/intelligence`
+- API health: `https://localhost:7080/api/health`
+
+## API Endpoints
+
+### Core Intelligence
+
+```
+POST   /api/chat                      - AI chat with construction context
+POST   /api/thinking                  - Deep reasoning mode
+POST   /api/search                    - Corpus search
+POST   /api/feedback/{id}             - Submit feedback
+GET    /api/health                    - Health check
+GET    /api/capabilities              - System capabilities
+```
+
+### Knowledge & Learning
+
+```
+GET    /api/knowledge/gaps            - Active knowledge gaps
+POST   /api/knowledge/propose         - Propose corpus improvement
+POST   /api/knowledge/approve/{id}    - Approve improvement
+POST   /api/knowledge/reject/{id}     - Reject improvement
+POST   /api/knowledge/evaluate        - Evaluate improvements
+GET    /api/knowledge/recommendations - Learning recommendations
+POST   /api/knowledge/run-analysis    - Trigger gap analysis
+GET    /api/knowledge/quality-trends  - Quality metrics
+GET    /api/knowledge/auto-proposals  - Auto-generated proposals
+GET    /api/knowledge/pipeline-health - Learning pipeline status
+GET    /api/knowledge/audit           - Audit trail
+GET    /api/knowledge/provenance/{id} - Resource provenance
+```
+
+### Context & Guidance
+
+```
+POST   /api/context/track             - Track user activity
+GET    /api/context/recent            - Recent activity
+GET    /api/context/guidance-effectiveness - Guidance metrics
+```
+
+### Predictive Intelligence (Phase 9A)
+
+```
+POST   /api/predictive/transfer/{outcomeId}  - Trigger intelligence transfer
+POST   /api/predictive/link-lessons          - Link recommendations to Academy
+GET    /api/predictive/recommendations/{projectId} - Project recommendations
+GET    /api/predictive/health                - Predictive system health
+```
+
+### Intelligence Dashboard (Phase 9B)
+
+```
+GET    /api/intelligence/dashboard/overview          - Executive metrics
+GET    /api/intelligence/dashboard/learning-loop     - Loop stage metrics
+GET    /api/intelligence/dashboard/predictive-transfers - Recent transfers
+GET    /api/intelligence/dashboard/knowledge-gaps    - Active gaps
+GET    /api/intelligence/dashboard/audit-trail       - Recent actions
+GET    /api/intelligence/dashboard/health            - System health
+```
+
+## MongoDB Atlas Collections
+
+Auricrux uses these collections for the learning pipeline:
+
+- `corpus` - RAG knowledge base
+- `conversation_memory` - Chat history
+- `model_routes` - Model routing configuration
+- `feedback` - User feedback
+- `interactions` - User interactions
+- `knowledge_gaps` - Identified knowledge gaps
+- `construction_events` - Field activities
+- `construction_outcomes` - Outcome tracking
+- `construction_evidence` - Evidence attachments
+- `guidance_effectiveness` - Context guidance metrics
+- `learning_recommendations` - AI-generated recommendations
+- `improvement_proposals` - Corpus improvement proposals
+- `quality_metrics` - Quality trend data
+- `audit_trail` - Complete action provenance
+- `fca_entity_cache` - FCA API response cache
+
+## Deployment
+
+### Production (Oracle Cloud VM)
+
+See [`deployment-packages/DEPLOYMENT_GUIDE.md`](deployment-packages/DEPLOYMENT_GUIDE.md) for complete deployment instructions.
+
+Quick deployment:
 ```bash
-cd Auricrux.Web
 dotnet publish -c Release -o ./publish
-# Upload to Azure App Service
+# Transfer to Oracle VM and configure systemd service
 ```
 
-**Self-hosted (IIS)**:
+### Docker
+
 ```bash
-cd Auricrux.Web
-dotnet publish -c Release -o ./publish
-# Deploy to IIS as an ASP.NET Core application
+docker build -t auricrux/web:1.3.0 .
+docker run -d \
+  -p 80:80 \
+  -e Atlas__ConnectionString="mongodb+srv://..." \
+  -e Auricrux__OllamaUrl="http://ollama:11434" \
+  --name auricrux-web \
+  auricrux/web:1.3.0
 ```
 
-### MAUI Mobile Deployment
+### Kubernetes
 
-**Android APK**:
 ```bash
-cd Auricrux.Mobile
-dotnet publish -f net10.0-android -c Release -p:AndroidPackageFormat=apk
-# APK output: bin/Release/net10.0-android/com.companyname.auricrux.mobile-Signed.apk
-```
-
-**iOS App**:
-```bash
-cd Auricrux.Mobile
-dotnet publish -f net10.0-ios -c Release
-# Follow App Store submission process
-```
-
-**macOS App**:
-```bash
-cd Auricrux.Mobile
-dotnet publish -f net10.0-maccatalyst -c Release
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-ingress.yaml
 ```
 
 ## Development
+
+### Run Tests
+
+```bash
+dotnet test
+```
 
 ### Build All Projects
 
@@ -235,99 +313,42 @@ dotnet publish -f net10.0-maccatalyst -c Release
 dotnet build
 ```
 
-### Run Unit Tests (if added)
+### Code Style
 
-```bash
-dotnet test
-```
+Using C# 12 with nullable reference types enabled for type safety.
 
-### Code Style & Analysis
+## Integration with FCA Ecosystem
 
-Using C# 12 features with nullable reference types enabled for type safety.
+Auricrux is designed to be the intelligence layer for the complete FCA ecosystem:
 
-```bash
-dotnet format  # if Roslyn analyzers are configured
-```
+- **Bidding**: Learn from bid outcomes, predict win probability
+- **Estimating**: Identify gaps in estimates, recommend improvements
+- **Project Execution**: Track field events, capture outcomes
+- **Workforce Development**: Personalized learning recommendations
+- **Financial Intelligence**: Pattern recognition in billing/invoicing
+- **Compliance**: Automated verification and guidance
 
-## Troubleshooting
+See [`fca-ecosystem` repository](https://github.com/FCA-Ecosystem/fca-ecosystem) for complete integration.
 
-### "Cannot connect to backend"
-- Verify backend is running at the configured endpoint
-- Check network connectivity and firewall settings
-- Ensure `ApiEndpoint` is correctly configured
+## Architectural Principles
 
-### "MAUI build fails"
-- Ensure .NET 10 SDK is installed: `dotnet --version`
-- For platform-specific builds, verify appropriate SDKs (Android SDK, Xcode, etc.)
-- Clean and rebuild: `dotnet clean && dotnet restore && dotnet build`
+From [`docs/FCA_SYSTEM_LAW.md`](docs/FCA_SYSTEM_LAW.md):
 
-### "Blazor components not rendering"
-- Check browser console for JavaScript errors
-- Verify Auricrux services are registered in `Program.cs`
-- Ensure `@rendermode InteractiveServer` is set on interactive components
+1. **Every action creates evidence** - Complete audit trail
+2. **No disconnected features** - All capabilities link to the spine
+3. **Governed autonomy** - AI acts within defined boundaries
+4. **Continuous learning** - System improves with every interaction
+5. **Construction-specific** - Not generic AI, built for construction
 
-## Logging
+## Documentation
 
-All services include comprehensive logging:
-
-**MAUI**: Output to Debug Console in Debug mode
-```csharp
-builder.Logging.AddDebug();
-```
-
-**Blazor Web**: Output to console and application logs
-```csharp
-logging.AddConsole();
-```
-
-Log level can be configured in `appsettings.json`.
-
-## Architecture
-
-### Shared Library (Auricrux.Shared)
-- **Models**: Enums, DTOs, configuration objects
-- **Services**:
-  - `AuricruxApiClient`: HTTP communication with backend
-  - `TextToSpeechService`: Platform-agnostic TTS wrapper
-  - `AuricruxService`: Business logic, conversation management
-
-### MAUI App (Auricrux.Mobile)
-- XAML-based UI for cross-platform mobile/desktop
-- MVVM pattern with `MainPageViewModel`
-- Async/await for responsive UI
-- Platform-specific integrations (permissions, TTS)
-
-### Blazor Web (Auricrux.Web)
-- Server-side rendering with SignalR
-- Bootstrap 5 responsive design
-- Razor components for composable UI
-- Real-time interactivity
-
-## Security Considerations
-
-1. **API Communication**: Use HTTPS in production
-2. **Authentication**: Implement OAuth2/OpenID Connect as needed
-3. **Data Validation**: All inputs validated before sending to backend
-4. **Sensitive Data**: Avoid storing tokens in app.config/appsettings
-5. **CORS**: Configure backend CORS policies appropriately
-
-## Performance Optimization
-
-- **Async Operations**: All long-running operations use async/await
-- **Message History**: Limited to 10 most recent messages per request
-- **Lazy Loading**: UI components load on-demand
-- **HTTP Client**: Reusable HttpClient via dependency injection
-- **Caching**: Consider implementing caching for frequently requested data
-
-## Future Enhancements
-
-- [ ] Message persistence (local SQLite database)
-- [ ] Conversation export (PDF/TXT)
-- [ ] Image/file upload support
-- [ ] Voice input transcription
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support
-- [ ] Offline mode with sync
+- [`AGENTS.md`](AGENTS.md) - Agent handoff and operational details
+- [`CLAIMS_REGISTER.md`](CLAIMS_REGISTER.md) - Honest capability claims
+- [`docs/FCA_SYSTEM_LAW.md`](docs/FCA_SYSTEM_LAW.md) - Architectural governance
+- [`AURICRUX_LEARNING_LOOP_IMPLEMENTATION.md`](AURICRUX_LEARNING_LOOP_IMPLEMENTATION.md) - Learning loop design
+- [`IMPLEMENTATION_COMPLETE_PHASES_6_10.md`](IMPLEMENTATION_COMPLETE_PHASES_6_10.md) - Implementation summary
+- [`PHASE_9A_PREDICTIVE_INTELLIGENCE.md`](PHASE_9A_PREDICTIVE_INTELLIGENCE.md) - Predictive intelligence architecture
+- [`deployment-packages/DEPLOYMENT_GUIDE.md`](deployment-packages/DEPLOYMENT_GUIDE.md) - Deployment instructions
 
 ## License
 
@@ -335,10 +356,14 @@ This project is part of Future Contractors of America LLC.
 
 ## Support
 
-For issues or questions, contact the development team or submit an issue in the repository.
+- **GitHub Issues**: https://github.com/FCA-Ecosystem/auricrux-app/issues
+- **Email**: michael@futurecontractorsofamerica.com
+- **Documentation**: See docs/ folder for comprehensive guides
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-01-15  
-**Built with**: .NET 10, MAUI, Blazor Server
+**Current Status**: Production-ready with complete learning loop, predictive intelligence, and observability dashboard.
+
+**Live URL**: https://auricrux.futurecontractorsofamerica.com
+
+**Next Phase**: Self-Correcting Construction Intelligence with physical verification and provable reasoning.
