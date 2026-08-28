@@ -27,6 +27,14 @@ builder.Services.AddHttpClient(nameof(WebBrowseService), client =>
     client.Timeout = TimeSpan.FromSeconds(45);
     client.DefaultRequestHeaders.UserAgent.ParseAdd("AuricruxWebBrowse/1.0 (+construction)");
 });
+// Phase 9A: FCA Ecosystem API integration
+builder.Services.AddHttpClient("FcaEcosystem", client =>
+{
+    var baseUrl = builder.Configuration["FcaEcosystem:ApiBaseUrl"] ?? "https://futurecontractorsofamerica.com/api";
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("User-Agent", "Auricrux/1.0");
+});
 // Atlas services — registered before any service that depends on them
 builder.Services.AddSingleton<AtlasService>();
 builder.Services.AddSingleton<AtlasCorpusService>();
@@ -44,8 +52,14 @@ builder.Services.AddSingleton<AuditTrailService>();
 builder.Services.AddSingleton<ProvenanceService>();
 builder.Services.AddSingleton<MediaGenerationService>();
 
+// Phase 9A: FCA Ecosystem integration + Predictive Intelligence (Breakthrough)
+builder.Services.AddSingleton<FcaEcosystemApiService>();
+builder.Services.AddSingleton<PredictiveIntelligenceService>();
+builder.Services.AddSingleton<AcademyLessonMatcherService>();
+
 // Background services
 builder.Services.AddHostedService<Auricrux.Web.BackgroundServices.LearningPipelineWorker>();
+builder.Services.AddHostedService<Auricrux.Web.BackgroundServices.PredictiveIntelligenceOrchestrator>();
 builder.Services.AddSingleton<WorkspaceStorageService>();
 builder.Services.AddSingleton<ConversationMemoryService>();
 builder.Services.AddSingleton<FcaAccountLinkService>();
