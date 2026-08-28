@@ -1,265 +1,481 @@
 # Auricrux App Deployment Guide
 
-## Version 1.0.0 - Release Date: July 8, 2026
+## Version 1.3.0 - Updated: August 28, 2026
 
 ### Project Overview
-Auricrux is a cross-platform .NET application consisting of:
-- **Auricrux.Mobile**: MAUI-based mobile application (iOS, Android, Windows, macOS)
-- **Auricrux.Web**: Blazor Server web application
+Auricrux is a Construction Intelligence Platform consisting of:
+- **Auricrux.Web**: Blazor Server web application (.NET 10)
+  - Full learning loop (Phases 6-10)
+  - Predictive intelligence transfer (Phase 9A)
+  - Observability dashboard (Phase 9B)
+- **Auricrux.Mobile**: MAUI-based mobile application
 - **Auricrux.Shared**: Shared libraries and services
 
+**Architecture**: Integrated intelligence layer for FCA Construction Operating System
+
 ---
 
-## 1. Azure Web App Deployment
+## 1. Oracle Cloud VM Deployment (PRIMARY)
 
-### Current Deployment Status: ✅ DEPLOYED
+### Current Deployment Status: ✅ LIVE
 
 **Deployment Details:**
-- **Service**: Azure App Service (fca-bid-saas)
-- **Resource Group**: Auricrux_group
-- **Region**: Central US
-- **Runtime**: .NET 10.0
-- **URL**: https://fca-bid-saas-c8cnbhdndhfyg8h0.centralus-01.azurewebsites.net
+- **Platform**: Oracle Cloud Infrastructure (OCI)
+- **URL**: https://auricrux.futurecontractorsofamerica.com
+- **IP**: 150.136.115.97
+- **Runtime**: .NET 10.0 on Linux
+- **Database**: MongoDB Atlas (shared with FCA ecosystem)
 
-### Deployment Method:
-The web application is deployed using Azure's zip deployment method. The application files are packaged into a zip archive and deployed directly to the Azure App Service.
+### Prerequisites
 
-### Redeployment Instructions:
+1. **Oracle Cloud VM Access**
+   - SSH key configured
+   - Firewall rules: ports 80, 443 open
+   - Systemd for service management
 
-1. Build the web app:
-   ```powershell
-   cd Auricrux.Web
-   dotnet publish -c Release -o ".\bin\Release\publish"
-   ```
+2. **Required Services**
+   - Ollama (running on port 11434)
+   - MongoDB Atlas connection
+   - .NET 10 runtime
 
-2. Create deployment zip:
-   ```powershell
-   Add-Type -AssemblyName System.IO.Compression.FileSystem
-   [System.IO.Compression.ZipFile]::CreateFromDirectory(".\bin\Release\publish", "..\deployment-packages\auricrux-web.zip")
-   ```
+### Deployment Steps
 
-3. Deploy to Azure:
-   ```powershell
-   az webapp deploy --resource-group "Auricrux_group" --name "fca-bid-saas" --src-path "..\deployment-packages\auricrux-web.zip" --type "zip"
-   ```
-
----
-
-## 2. Mobile App (MAUI) Deployment
-
-### Current Status: ⚠️ NOT DEPLOYED (Prerequisites Required)
-
-**Prerequisites for Android APK Build:**
-- Android SDK (API 21 or higher)
-- Java Development Kit (JDK)
-- Environment variables:
-  - `ANDROID_SDK_ROOT`: Path to Android SDK
-  - `JAVA_HOME`: Path to JDK
-
-**Current Blocker:**
-Android target is currently commented out in the project file. To enable Android builds:
-
-1. Edit `Auricrux.Mobile\Auricrux.Mobile.csproj`
-2. Uncomment the Android target framework line:
-   ```xml
-   <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">net10.0-android;$(TargetFrameworks)</TargetFrameworks>
-   ```
-
-3. Install Android SDK and JDK
-4. Set environment variables
-5. Build APK:
-   ```powershell
-   cd Auricrux.Mobile
-   dotnet publish -f net10.0-android -c Release
-   ```
-
-### APK Signing for Google Play:
-1. Generate signing key (if not exists):
+1. **Build the application**:
    ```bash
-   keytool -genkey -v -keystore com.auricrux.app.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+   cd Auricrux.Web
+   dotnet publish -c Release -o ./publish
    ```
 
-2. Configure signing in `.csproj`:
-   ```xml
-   <AndroidKeyStore>true</AndroidKeyStore>
-   <AndroidSigningKeyStore>true</AndroidSigningKeyStore>
-   <AndroidSigningKeyAlias>upload</AndroidSigningKeyAlias>
-   <AndroidSigningKeyPass>[PASSWORD]</AndroidSigningKeyPass>
-   <AndroidSigningStorePass>[PASSWORD]</AndroidSigningStorePass>
+2. **Transfer to Oracle VM**:
+   ```bash
+   scp -r ./publish/* user@150.136.115.97:/opt/auricrux/
    ```
 
-3. Build signed APK:
-   ```powershell
-   dotnet publish -f net10.0-android -c Release
+3. **Configure environment variables** (on VM):
+   ```bash
+   # Create environment file
+   sudo nano /etc/auricrux/environment
+   
+   # Add these variables:
+   export ASPNETCORE_ENVIRONMENT=Production
+   export Atlas__ConnectionString="mongodb+srv://..."
+   export Atlas__Database="auricrux"
+   export Auricrux__OllamaUrl="http://127.0.0.1:11434"
+   export FcaEcosystem__ApiBaseUrl="https://futurecontractorsofamerica.com/api"
    ```
 
+4. **Create systemd service**:
+   ```bash
+   sudo nano /etc/systemd/system/auricrux.service
+   ```
+   
+   ```ini
+   [Unit]
+   Description=Auricrux Intelligence Platform
+   After=network.target
+   
+   [Service]
+   Type=notify
+   WorkingDirectory=/opt/auricrux
+   ExecStart=/usr/bin/dotnet /opt/auricrux/Auricrux.Web.dll
+   EnvironmentFile=/etc/auricrux/environment
+   Restart=always
+   RestartSec=10
+   KillSignal=SIGINT
+   SyslogIdentifier=auricrux
+   User=auricrux
+   
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+5. **Start the service**:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable auricrux
+   sudo systemctl start auricrux
+   sudo systemctl status auricrux
+   ```
+
+6. **Verify deployment**:
+   ```bash
+   curl http://localhost:5080/api/health
+   ```
+
+### Automated Deployment Script
+
+See `/tmp/oracle-deploy.sh` for automated deployment script.
+
 ---
 
-## 3. GitHub Repository
+## 2. Environment Configuration (CRITICAL)
 
-### Status: ✅ REPOSITORY CREATED & CODE PUSHED
+### Security Best Practices
 
-**Repository URL**: https://github.com/Auricrux/auricrux-app
+**⚠️ NEVER commit secrets to git!**
 
-**Commit Details:**
-- Initial commit: f26d3bc
-- Commit message: "Initial Auricrux .NET/C# app - MAUI + Blazor"
-- Files: 107 files committed (63,307 insertions)
+All sensitive configuration must use environment variables:
 
-**To clone the repository:**
+### Required Environment Variables
+
 ```bash
-git clone https://github.com/Auricrux/auricrux-app.git
+# MongoDB Atlas (REQUIRED)
+Atlas__ConnectionString="mongodb+srv://[user]:[password]@[cluster]/[database]"
+Atlas__Database="auricrux"
+
+# Ollama (REQUIRED)
+Auricrux__OllamaUrl="http://127.0.0.1:11434"
+
+# FCA Ecosystem Integration (REQUIRED for Phase 8+)
+FcaEcosystem__ApiBaseUrl="https://futurecontractorsofamerica.com/api"
+
+# Optional
+Auth__Enabled="false"
+Auth__Authority=""
+Auth__Audience="auricrux"
 ```
 
----
+### Local Development
 
-## 4. Docker Deployment
-
-### Docker Image Creation:
-
-**Dockerfile for Auricrux.Web:**
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
-WORKDIR /app
-COPY bin/Release/publish/ .
-EXPOSE 80 443
-ENV ASPNETCORE_URLS=http://+:80
-ENTRYPOINT ["dotnet", "Auricrux.Web.dll"]
+Create `appsettings.Development.json` (gitignored):
+```json
+{
+  "Atlas": {
+    "ConnectionString": "mongodb+srv://[your-dev-credentials]",
+    "Database": "auricrux-dev"
+  }
+}
 ```
 
-**Build and push Docker image:**
+### GitHub Actions Secrets
+
+Configure these in repository settings:
+1. Go to: https://github.com/FCA-Ecosystem/auricrux-app/settings/secrets/actions
+2. Add:
+   - `ATLAS_CONNECTION_STRING`: MongoDB connection string
+   - `ORACLE_SSH_KEY`: SSH private key for VM access
+   - `ORACLE_VM_HOST`: VM hostname or IP
+
+### Docker Deployment
+
 ```bash
-# Build
-docker build -t auricrux/web:1.0.0 -f Dockerfile .
-
-# Tag for container registry
-docker tag auricrux/web:1.0.0 [registry]/auricrux/web:1.0.0
-
-# Push
-docker push [registry]/auricrux/web:1.0.0
+docker run -d \
+  -p 80:80 \
+  -e Atlas__ConnectionString="mongodb+srv://..." \
+  -e Atlas__Database="auricrux" \
+  -e Auricrux__OllamaUrl="http://ollama:11434" \
+  --name auricrux-web \
+  auricrux/web:1.3.0
 ```
 
-**Run Docker container:**
+---
+
+## 3. Docker Deployment (Alternative)
+
+### Build Docker Image
+
+Using the provided [`Dockerfile`](../Dockerfile):
+
 ```bash
-docker run -p 80:80 -p 443:443 auricrux/web:1.0.0
+cd /workspace/auricrux-app
+docker build -t auricrux/web:1.3.0 .
+```
+
+### Docker Compose
+
+Using the provided [`docker-compose.yml`](../docker-compose.yml):
+
+```bash
+# Start all services (Ollama + Auricrux Web)
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f auricrux-web
+
+# Stop services
+docker-compose down
+```
+
+### Environment Variables in Docker
+
+Create `.env` file (gitignored):
+```env
+ATLAS_CONNECTION_STRING=mongodb+srv://...
+ATLAS_DATABASE=auricrux
+OLLAMA_URL=http://ollama:11434
+FCA_API_URL=https://futurecontractorsofamerica.com/api
 ```
 
 ---
 
-## 5. Deployment Checklist
+## 4. Kubernetes Deployment (Advanced)
 
-### Pre-Deployment:
-- [ ] All tests passing
-- [ ] Code review completed
-- [ ] Security scanning completed
-- [ ] Dependencies updated
-- [ ] Environment variables configured
+### Deploy to Kubernetes
 
-### Deployment:
-- [x] Web app published to Azure
-- [ ] Mobile app APK built (blocked - requires Android SDK)
-- [x] Code pushed to GitHub
-- [ ] Docker image built and pushed
-- [ ] Release notes published
+Using the provided manifests [`k8s-deployment.yaml`](../k8s-deployment.yaml):
 
-### Post-Deployment:
-- [ ] Health checks passed
-- [ ] Smoke tests executed
-- [ ] User acceptance testing completed
-- [ ] Performance monitoring enabled
-- [ ] Backup/rollback plan verified
+```bash
+# Create namespace
+kubectl create namespace auricrux
 
----
+# Create secret for Atlas connection
+kubectl create secret generic auricrux-secrets \
+  --from-literal=atlas-connection="mongodb+srv://..." \
+  --namespace=auricrux
 
-## 6. Environment Configuration
+# Apply deployment
+kubectl apply -f k8s-deployment.yaml
+kubectl apply -f k8s-ingress.yaml
 
-### Azure App Service Settings:
-Configure these in Azure Portal > App Settings:
-
-```
-ASPNETCORE_ENVIRONMENT = Production
-ConnectionString = [Your database connection string]
-ApiKey = [Your API keys]
-```
-
-### Application Secrets:
-Use Azure Key Vault for sensitive data:
-```powershell
-az keyvault secret set --vault-name "auricrux-vault" --name "ConnectionString" --value "[connection-string]"
+# Check status
+kubectl get pods -n auricrux
+kubectl logs -f deployment/auricrux-web -n auricrux
 ```
 
 ---
 
-## 7. Monitoring & Logging
+## 5. GitHub Actions CI/CD
 
-### Azure Monitor:
-- Application Insights for web app monitoring
-- Log Analytics for aggregated logs
-- Alerts configured for critical errors
+### Automated Workflows
 
-### Dashboards:
-- Azure Portal dashboard for deployment status
-- Application Insights dashboard for performance metrics
+The repository includes these workflows:
+
+- `.github/workflows/dotnet-test.yml` - Run tests on push
+- `.github/workflows/docker-build.yml` - Build Docker images
+- `.github/workflows/prod-smoke.yml` - Smoke tests after deployment
+
+### Manual Deployment Trigger
+
+```bash
+# Trigger deployment workflow
+gh workflow run deploy-to-production \
+  --ref main \
+  --field environment=production
+```
+
+---
+
+## 6. Database Configuration
+
+### MongoDB Atlas Setup
+
+1. **Create cluster** (if not exists):
+   - Login to https://cloud.mongodb.com
+   - Create M10+ cluster (production)
+   - Enable MongoDB 7.0+
+
+2. **Create database user**:
+   - Database Access → Add New Database User
+   - Username: `auricrux-app`
+   - Password: Generate strong password
+   - Database User Privileges: `readWrite` on `auricrux` database
+
+3. **Network Access**:
+   - Add Oracle Cloud VM IP to whitelist
+   - Or use `0.0.0.0/0` with strong authentication
+
+4. **Collections** (created automatically):
+   - `corpus` - RAG knowledge base
+   - `conversation_memory` - Chat history
+   - `feedback` - User feedback
+   - `interactions` - User interactions
+   - `construction_events` - Field events
+   - `construction_outcomes` - Outcome tracking
+   - `learning_recommendations` - AI recommendations
+   - `audit_trail` - Provenance tracking
+   - `fca_entity_cache` - FCA API cache
+
+---
+
+## 7. Monitoring & Health Checks
+
+### Health Check Endpoints
+
+```bash
+# Main health check
+curl https://auricrux.futurecontractorsofamerica.com/api/health
+
+# Atlas connection status
+curl https://auricrux.futurecontractorsofamerica.com/api/knowledge/health
+
+# Predictive intelligence status
+curl https://auricrux.futurecontractorsofamerica.com/api/predictive/health
+
+# Dashboard health
+curl https://auricrux.futurecontractorsofamerica.com/api/intelligence/dashboard/health
+```
+
+### Monitoring Services
+
+- **Logs**: `journalctl -u auricrux -f` (systemd)
+- **Atlas**: MongoDB Atlas monitoring dashboard
+- **Ollama**: Check Ollama service status
+- **Metrics**: Phase 9B Intelligence Dashboard at `/intelligence`
 
 ---
 
 ## 8. Rollback Procedure
 
-If deployment fails or issues are discovered:
+### Systemd Rollback
 
-1. **Web App Rollback:**
-   ```powershell
-   az webapp deployment slot swap --resource-group "Auricrux_group" --name "fca-bid-saas" --slot "staging"
-   ```
+```bash
+# Stop current version
+sudo systemctl stop auricrux
 
-2. **GitHub Revert:**
-   ```bash
-   git revert [commit-hash]
-   git push origin main
-   ```
+# Restore previous version
+sudo cp -r /opt/auricrux-backup-[date]/* /opt/auricrux/
 
-3. **Docker Rollback:**
-   ```bash
-   docker run -p 80:80 -p 443:443 auricrux/web:[previous-version]
-   ```
+# Restart
+sudo systemctl start auricrux
+```
+
+### Git Rollback
+
+```bash
+# Revert to previous commit
+git revert [commit-hash]
+git push origin main
+
+# Or reset to previous version
+git reset --hard [previous-commit]
+git push --force origin main  # Use with caution!
+```
+
+### Docker Rollback
+
+```bash
+# Stop current container
+docker stop auricrux-web
+
+# Start previous version
+docker run -d \
+  -p 80:80 \
+  -e Atlas__ConnectionString="..." \
+  --name auricrux-web \
+  auricrux/web:1.2.0  # Previous version
+```
 
 ---
 
-## Support & Troubleshooting
+## 9. Deployment Checklist
 
-### Common Issues:
+### Pre-Deployment
+- [ ] All tests passing (`dotnet test`)
+- [ ] Code review completed
+- [ ] Security scan completed
+- [ ] Environment variables configured
+- [ ] Atlas connection tested
+- [ ] Ollama service running
 
-**1. Web App deployment fails:**
-- Check Azure App Service logs in Azure Portal
-- Verify application settings are correct
-- Ensure database connectivity
+### Deployment
+- [ ] Build published successfully
+- [ ] Transferred to production server
+- [ ] Service restarted
+- [ ] Health checks passing
+- [ ] Atlas connection verified
 
-**2. Mobile app won't build:**
-- Verify Android SDK installation
-- Check JAVA_HOME environment variable
-- Update NuGet packages: `dotnet restore`
-
-**3. Docker image too large:**
-- Use multi-stage builds
-- Remove unnecessary files
-- Use Alpine base image
+### Post-Deployment
+- [ ] Smoke tests executed
+- [ ] Intelligence dashboard accessible at `/intelligence`
+- [ ] Predictive intelligence working
+- [ ] Learning loop processing events
+- [ ] No errors in logs
 
 ---
 
-## Release Schedule
+## 10. Troubleshooting
 
-- **Development**: Main branch (continuous)
-- **Staging**: Staging environment (daily)
-- **Production**: Release tagged branches (weekly)
+### Common Issues
+
+**1. Atlas connection fails:**
+```bash
+# Check connection string format
+# Ensure password is URL-encoded
+# Verify network access in Atlas console
+# Test with mongo shell: mongosh "mongodb+srv://..."
+```
+
+**2. Ollama not responding:**
+```bash
+# Check Ollama service
+sudo systemctl status ollama
+
+# Verify Ollama is listening
+curl http://127.0.0.1:11434/api/tags
+
+# Restart if needed
+sudo systemctl restart ollama
+```
+
+**3. Service won't start:**
+```bash
+# Check logs
+journalctl -u auricrux -n 50
+
+# Check permissions
+ls -la /opt/auricrux
+
+# Verify .NET runtime
+dotnet --info
+```
+
+**4. High memory usage:**
+```bash
+# Ollama models can use significant RAM
+# Check memory
+free -h
+
+# Consider smaller models or increase VM memory
+```
+
+---
+
+## 11. Security Hardening
+
+### Firewall Configuration
+
+```bash
+# Allow only necessary ports
+sudo ufw allow 22/tcp    # SSH
+sudo ufw allow 80/tcp    # HTTP
+sudo ufw allow 443/tcp   # HTTPS
+sudo ufw enable
+```
+
+### SSL/TLS Configuration
+
+```bash
+# Install certbot
+sudo apt install certbot
+
+# Obtain certificate
+sudo certbot certonly --standalone -d auricrux.futurecontractorsofamerica.com
+
+# Configure nginx as reverse proxy with SSL
+sudo nano /etc/nginx/sites-available/auricrux
+```
+
+### Regular Updates
+
+```bash
+# Update system packages
+sudo apt update && sudo apt upgrade
+
+# Update .NET runtime
+# Update Ollama models
+ollama pull auricrux-fca
+```
 
 ---
 
 ## Contact & Support
 
 For deployment questions or issues:
-- GitHub Issues: https://github.com/Auricrux/auricrux-app/issues
-- Email: michael@futurecontractorsofamerica.com
+- **GitHub**: https://github.com/FCA-Ecosystem/auricrux-app/issues
+- **Email**: michael@futurecontractorsofamerica.com
+- **Docs**: See AGENTS.md for operational details
 
 ---
 
-*This deployment guide was generated on July 8, 2026*
+*Last Updated: August 28, 2026 - Version 1.3.0*
+*Reflects Phase 6-10 learning loop, Phase 9A predictive intelligence, Phase 9B observability dashboard*
