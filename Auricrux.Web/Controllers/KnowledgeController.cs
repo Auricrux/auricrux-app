@@ -7,6 +7,7 @@ namespace Auricrux.Web.Controllers;
 [Route("api/knowledge")]
 public sealed class KnowledgeController(
     KnowledgeGapAnalysisService gapAnalysis,
+    CorpusImprovementService corpusImprovement,
     ILogger<KnowledgeController> logger) : ControllerBase
 {
     /// <summary>
@@ -54,6 +55,107 @@ public sealed class KnowledgeController(
             Timestamp = DateTime.UtcNow
         });
     }
+
+    /// <summary>
+    /// Propose a new corpus entry to fill a knowledge gap.
+    /// Entry status is "proposed" until approved by reviewer.
+    /// </summary>
+    [HttpPost("propose-entry")]
+    public async Task<ActionResult<ProposeEntryResponse>> ProposeEntry(
+        [FromBody] ProposeEntryRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Content))
+        {
+            return BadRequest(new { error = "Title and Content are required." });
+        }
+
+        var entry = await corpusImprovement.ProposeEntryAsync(request, cancellationToken);
+
+        if (entry == null)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { error = "Atlas not configured or proposal failed." });
+        }
+
+        return Ok(new ProposeEntryResponse
+        {
+            Success = true,
+            Entry = entry,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// List all proposed corpus entries awaiting review.
+    /// </summary>
+    [HttpGet("proposed-entries")]
+    public async Task<ActionResult<ProposedEntriesResponse>> ListProposedEntries(
+        [FromQuery] string? category = null,
+        CancellationToken cancellationToken = default)
+    {
+        var entries = await corpusImprovement.ListProposedEntriesAsync(category, cancellationToken);
+
+        return Ok(new ProposedEntriesResponse
+        {
+            Success = true,
+            Entries = entries,
+            TotalEntries = entries.Count,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Approve a proposed corpus entry, moving it to production.
+    /// </summary>
+    [HttpPost("approve-entry/{proposalId}")]
+    public async Task<ActionResult<ApprovalResponse>> ApproveEntry(
+        string proposalId,
+        [FromBody] ApprovalRequest? request,
+        CancellationToken cancellationToken)
+    {
+        var result = await corpusImprovement.ApproveEntryAsync(
+            proposalId,
+            request?.ApprovedBy,
+            request?.ReviewNotes,
+            cancellationToken);
+
+        if (!result.Success)
+        {
+            return BadRequest(new { error = result.Error });
+        }
+
+        return Ok(new ApprovalResponse
+        {
+            Success = true,
+            ApprovedEntryId = result.ApprovedEntryId!,
+            ApprovedAt = result.ApprovedAt!.Value,
+            Timestamp = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Reject a proposed corpus entry with reason.
+    /// </summary>
+    [HttpPost("reject-entry/{proposalId}")]
+    public async Task<IActionResult> RejectEntry(
+        string proposalId,
+        [FromBody] RejectionRequest? request,
+        CancellationToken cancellationToken)
+    {
+        var success = await corpusImprovement.RejectEntryAsync(
+            proposalId,
+            request?.RejectedBy,
+            request?.RejectionReason,
+            cancellationToken);
+
+        if (!success)
+        {
+            return BadRequest(new { error = "Proposal not found or already processed." });
+        }
+
+        return Ok(new { success = true, timestamp = DateTime.UtcNow });
+    }
 }
 
 // ── Response models ────────────────────────────────────────────────────────────
@@ -72,4 +174,39 @@ public sealed class KnowledgeGapDetailResponse
     public bool Success { get; init; }
     public required KnowledgeGapDetail Detail { get; init; }
     public DateTime Timestamp { get; init; }
+}
+
+public sealed class ProposeEntryResponse
+{
+    public bool Success { get; init; }
+    public required ProposedEntry Entry { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class ProposedEntriesResponse
+{
+    public bool Success { get; init; }
+    public List<ProposedEntry> Entries { get; init; } = [];
+    public int TotalEntries { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class ApprovalRequest
+{
+    public string? ApprovedBy { get; init; }
+    public string? ReviewNotes { get; init; }
+}
+
+public sealed class ApprovalResponse
+{
+    public bool Success { get; init; }
+    public required string ApprovedEntryId { get; init; }
+    public DateTime ApprovedAt { get; init; }
+    public DateTime Timestamp { get; init; }
+}
+
+public sealed class RejectionRequest
+{
+    public string? RejectedBy { get; init; }
+    public string? RejectionReason { get; init; }
 }

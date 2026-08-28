@@ -34,6 +34,7 @@ builder.Services.AddSingleton<AuricruxModelRouter>();
 
 builder.Services.AddSingleton<ConstructionIntelligenceService>();
 builder.Services.AddSingleton<KnowledgeGapAnalysisService>();
+builder.Services.AddSingleton<CorpusImprovementService>();
 builder.Services.AddSingleton<MediaGenerationService>();
 builder.Services.AddSingleton<WorkspaceStorageService>();
 builder.Services.AddSingleton<ConversationMemoryService>();
