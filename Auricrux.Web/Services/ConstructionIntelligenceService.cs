@@ -21,6 +21,7 @@ public sealed class ConstructionIntelligenceService
     private readonly AtlasCorpusService _atlasCorpus;
     private readonly AtlasService _atlas;
     private readonly AuricruxModelRouter _router;
+    private readonly ContextAwareGuidanceService? _contextService;
     private readonly Dictionary<Guid, ChatResponse> _interactions = new();
     private readonly object _gate = new();
 
@@ -31,7 +32,8 @@ public sealed class ConstructionIntelligenceService
         IHostEnvironment env,
         AtlasCorpusService atlasCorpus,
         AtlasService atlas,
-        AuricruxModelRouter router)
+        AuricruxModelRouter router,
+        ContextAwareGuidanceService? contextService = null)
     {
         _httpClientFactory = httpClientFactory;
         _config = config;
@@ -39,6 +41,7 @@ public sealed class ConstructionIntelligenceService
         _atlasCorpus = atlasCorpus;
         _atlas = atlas;
         _router = router;
+        _contextService = contextService;
         _corpus = LoadCorpus(env.ContentRootPath);
     }
 
@@ -91,9 +94,37 @@ public sealed class ConstructionIntelligenceService
     {
         var sw = Stopwatch.StartNew();
 
+        // Phase 6: Context-aware guidance enhancement
+        var effectiveQuery = request.Query;
+        string? contextSummary = null;
+        if (_contextService != null && 
+            (!string.IsNullOrWhiteSpace(request.UserId) || !string.IsNullOrWhiteSpace(request.ProjectId)))
+        {
+            try
+            {
+                var contextEnhanced = await _contextService.BuildContextPromptAsync(
+                    request.Query,
+                    request.UserId,
+                    request.ProjectId,
+                    request.Role,
+                    request.Phase,
+                    ct);
+
+                effectiveQuery = contextEnhanced.EnhancedQuery;
+                contextSummary = contextEnhanced.ContextSummary;
+
+                _logger.LogInformation("Context-enhanced query: {EventCount} recent events",
+                    contextEnhanced.RecentEventCount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Context enhancement failed - using original query");
+            }
+        }
+
         // Staged intelligence: route to appropriate model tier
         var selection = await _router.SelectAsync(
-            request.Query,
+            request.Query, // Use original query for routing decision
             request.ThinkingMode,
             hasImageAttachment: false,
             clientRequestedModel: model,
@@ -116,7 +147,8 @@ public sealed class ConstructionIntelligenceService
 
         var thinking = await ThinkAsync(new ThinkingRequest { Query = request.Query, Mode = request.ThinkingMode }, resolvedModel, ct);
         var system = BuildSystemPrompt(request.ThinkingMode, sources);
-        var content = await CompleteAsync(system, request.Query, request.ConversationHistory, resolvedModel, ct);
+        // Use context-enhanced query for LLM completion
+        var content = await CompleteAsync(system, effectiveQuery, request.ConversationHistory, resolvedModel, ct);
         sw.Stop();
 
         var response = new ChatResponse
@@ -162,6 +194,13 @@ public sealed class ConstructionIntelligenceService
                     ["processing_time_ms"] = response.ProcessingTimeMs,
                     ["confidence_score"] = response.ConfidenceScore,
                     ["created_at"] = response.Timestamp,
+                    // Phase 6: Store context information
+                    ["user_id"] = request.UserId ?? "",
+                    ["project_id"] = request.ProjectId ?? "",
+                    ["role"] = request.Role ?? "",
+                    ["phase"] = request.Phase ?? "",
+                    ["context_summary"] = contextSummary ?? "",
+                    ["context_enhanced"] = contextSummary != null,
                 }, cancellationToken: ct);
             }
             catch (Exception ex)

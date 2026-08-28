@@ -64,6 +64,20 @@ public class ChatRequest
 
     /// <summary>Session identifier for tracking</summary>
     public string SessionId { get; set; } = Guid.NewGuid().ToString();
+
+    // ── Context parameters (optional, for Phase 6 context-aware guidance) ────────
+
+    /// <summary>User ID for personalized context</summary>
+    public string? UserId { get; set; }
+
+    /// <summary>Project ID for project-specific context</summary>
+    public string? ProjectId { get; set; }
+
+    /// <summary>User role (e.g., "Project Manager", "Superintendent", "Foreman")</summary>
+    public string? Role { get; set; }
+
+    /// <summary>Current construction phase (e.g., "preconstruction", "foundations", "framing")</summary>
+    public string? Phase { get; set; }
 }
 
 /// <summary>

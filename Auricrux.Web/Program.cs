@@ -37,6 +37,7 @@ builder.Services.AddSingleton<KnowledgeGapAnalysisService>();
 builder.Services.AddSingleton<CorpusImprovementService>();
 builder.Services.AddSingleton<ImprovementEvaluationService>();
 builder.Services.AddSingleton<ConstructionEventService>();
+builder.Services.AddSingleton<ContextAwareGuidanceService>();
 builder.Services.AddSingleton<MediaGenerationService>();
 builder.Services.AddSingleton<WorkspaceStorageService>();
 builder.Services.AddSingleton<ConversationMemoryService>();

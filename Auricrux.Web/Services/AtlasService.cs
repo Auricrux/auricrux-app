@@ -77,6 +77,9 @@ public sealed class AtlasService : IDisposable
     public IMongoCollection<BsonDocument> ConstructionEvidence =>
         _db!.GetCollection<BsonDocument>("construction_evidence");
 
+    public IMongoCollection<BsonDocument> GuidanceEffectiveness =>
+        _db!.GetCollection<BsonDocument>("guidance_effectiveness");
+
     // ── Health ────────────────────────────────────────────────────────────────
 
     public async Task<(bool Ok, string Status)> PingAsync(CancellationToken ct = default)
@@ -165,7 +168,20 @@ public sealed class AtlasService : IDisposable
                     new CreateIndexOptions { Background = true }),
                 cancellationToken: ct);
 
-            _logger.LogInformation("Atlas indexes ensured for interactions, feedback, and construction event collections");
+            // Guidance Effectiveness: index on interaction_id and linked_at for effectiveness tracking
+            var effectivenessInteractionIndex = Builders<BsonDocument>.IndexKeys.Ascending("interaction_id");
+            await GuidanceEffectiveness.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(effectivenessInteractionIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            var effectivenessDateIndex = Builders<BsonDocument>.IndexKeys.Ascending("linked_at");
+            await GuidanceEffectiveness.Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(effectivenessDateIndex,
+                    new CreateIndexOptions { Background = true }),
+                cancellationToken: ct);
+
+            _logger.LogInformation("Atlas indexes ensured for interactions, feedback, construction events, and guidance effectiveness collections");
         }
         catch (Exception ex)
         {
