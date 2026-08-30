@@ -49,8 +49,9 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         Assert.Contains("ChatGPT", payload.Competitors);
         Assert.Contains(payload.Features, f => f.Name.Contains("Multi-model chat") && f.Status == "shipped");
         Assert.Contains(payload.Features, f => f.Name.Contains("Live web browsing") && f.Status == "shipped");
-        Assert.Contains(payload.Features, f => f.Name.Contains("Fine-tuned") && f.Status == "blocked");
-        Assert.False(payload.ConstructionMoat.PromotedFineTuneLive);
+        // model_manifest marks product-ollama-loaded merged LoRA GGUF — honest status is partial (not TRUE God final)
+        Assert.Contains(payload.Features, f => f.Name.Contains("Fine-tuned") && f.Status == "partial");
+        Assert.True(payload.ConstructionMoat.PromotedFineTuneLive);
         Assert.Contains("FORWARD", payload.ParityScore.OverallAssessment, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(payload.Features, f => f.Name.Contains("Vision") && f.Status == "shipped");
         Assert.True(payload.CompetitiveMatrix.Count >= 15, "Per-competitor matrix should cover major feature rows.");
@@ -82,7 +83,7 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         Assert.Equal("shipped", vision.Auricrux);
 
         var fineTune = payload.CompetitiveMatrix.First(r => r.Feature.Contains("fine-tuned weights"));
-        Assert.Equal("blocked", fineTune.Auricrux);
+        Assert.Equal("partial", fineTune.Auricrux);
         Assert.Equal("no", fineTune.Peers["Claude"]);
     }
 

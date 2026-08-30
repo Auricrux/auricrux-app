@@ -1,0 +1,30 @@
+name: Atlas Health (secret smoke)
+
+# Uses the existing ATLAS_CONNECTION_STRING Actions secret.
+# Never prints the connection string. Reports configured/ping only.
+# Cursor Cloud VMs cannot read Actions secret values — this is how we
+# verify Atlas without putting the string in the agent environment.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/atlas-health.yml"
+      - "scripts/ci/atlas-health-check.py"
+
+jobs:
+  atlas-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pymongo
+        run: pip install --quiet "pymongo[srv]>=4.6,<5"
+      - name: Ping Atlas (no secret echo)
+        env:
+          ATLAS_CONNECTION_STRING: ${{ secrets.ATLAS_CONNECTION_STRING }}
+          ATLAS_DATABASE: auricrux
+        run: python scripts/ci/atlas-health-check.py
