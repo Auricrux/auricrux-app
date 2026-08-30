@@ -42,6 +42,11 @@ public sealed class FoundationPourSelfCorrectionTests
         Assert.False(string.IsNullOrWhiteSpace(result.Proof.Conclusion));
         Assert.True(result.LoopClosed);
         Assert.Contains("correction required=True", result.Summary, StringComparison.OrdinalIgnoreCase);
+        Assert.NotEmpty(result.Hypotheses[0].QuantitativePredictions);
+        Assert.NotEmpty(result.Hypotheses[0].RiskFactors);
+        Assert.False(string.IsNullOrWhiteSpace(result.Verification.CorrectionRationale));
+        Assert.NotEmpty(result.Proof.ProofSteps);
+        Assert.NotEmpty(result.Proof.CitedStandards);
     }
 
     [Fact]

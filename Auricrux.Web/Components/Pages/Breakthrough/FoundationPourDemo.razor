@@ -11,8 +11,8 @@
         <p class="pour-demo__brand">Auricrux</p>
         <h1>Foundation pour self-correction</h1>
         <p class="pour-demo__lede">
-            Competing pour hypotheses verified against simulated field measurements —
-            the loop closes when correction is required.
+            Competing pour hypotheses → field verification → meta-learning → provable reasoning.
+            Works without Atlas (in-process cache).
         </p>
         <div class="pour-demo__actions">
             <button class="pour-demo__run" disabled="@running" @onclick="RunDemoAsync">
@@ -42,6 +42,7 @@
             <p>@result.Summary</p>
             <dl class="pour-demo__meta">
                 <div><dt>Scenario</dt><dd>@result.ScenarioName</dd></div>
+                <div><dt>Decision</dt><dd><code>@result.DecisionId</code></dd></div>
                 <div><dt>Recommended</dt><dd>@result.RecommendedApproach</dd></div>
                 <div><dt>Verification accuracy</dt><dd>@result.Verification.AccuracyScore.ToString("P0")</dd></div>
                 <div><dt>Correction required</dt><dd>@(result.Verification.RequiresModelCorrection ? "Yes" : "No")</dd></div>
@@ -50,24 +51,138 @@
             </dl>
         </section>
 
-        <section class="pour-demo__hypotheses">
-            <h2>Competing approaches</h2>
-            <ul>
+        <section class="pour-demo__step">
+            <h2>1. Competing hypotheses</h2>
+            <p class="pour-demo__reason">@result.RecommendationReasoning</p>
+            <ul class="pour-demo__hypotheses">
                 @foreach (var h in result.Hypotheses)
                 {
                     var selected = h.HypothesisId == result.ChosenHypothesisId;
                     <li class="@(selected ? "is-chosen" : null)">
                         <strong>@h.Approach</strong>
-                        <span>confidence @h.ConfidenceScore.ToString("P0")</span>
+                        <span>confidence @h.ConfidenceScore.ToString("P0")@(selected ? " — chosen for verification" : "")</span>
                         <p>@h.PredictedOutcome</p>
+                        @if (h.QuantitativePredictions.Count > 0)
+                        {
+                            <p class="pour-demo__preds">
+                                Predictions:
+                                @string.Join(", ", h.QuantitativePredictions.Select(kv => $"{kv.Key}={kv.Value}"))
+                            </p>
+                        }
+                        @if (h.RiskFactors.Count > 0)
+                        {
+                            <ul class="pour-demo__risks">
+                                @foreach (var risk in h.RiskFactors.Take(4))
+                                {
+                                    <li>@risk</li>
+                                }
+                            </ul>
+                        }
                     </li>
                 }
             </ul>
         </section>
 
-        <section class="pour-demo__proof">
-            <h2>Provable reasoning</h2>
-            <p>@result.Proof.Conclusion</p>
+        <section class="pour-demo__step">
+            <h2>2. Physical verification</h2>
+            <p>
+                Accuracy @result.Verification.AccuracyScore.ToString("P1") ·
+                Correction required: <strong>@(result.Verification.RequiresModelCorrection ? "yes" : "no")</strong>
+            </p>
+            <p class="pour-demo__reason">@result.Verification.CorrectionRationale</p>
+            @if (result.Verification.IdentifiedErrors.Count > 0)
+            {
+                <ul>
+                    @foreach (var errItem in result.Verification.IdentifiedErrors)
+                    {
+                        <li>@errItem</li>
+                    }
+                </ul>
+            }
+            @if (result.Verification.MeasurementVariances.Count > 0)
+            {
+                <table class="pour-demo__table">
+                    <thead>
+                        <tr>
+                            <th>Measurement</th>
+                            <th>Predicted</th>
+                            <th>Actual</th>
+                            <th>Variance</th>
+                            <th>In tol.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in result.Verification.MeasurementVariances.Values)
+                        {
+                            <tr>
+                                <td>@v.Measurement</td>
+                                <td>@(v.Predicted?.ToString("0.##") ?? "—")</td>
+                                <td>@(v.Actual?.ToString("0.##") ?? "—")</td>
+                                <td>@(v.VariancePercent is null ? "—" : $"{v.VariancePercent:0.#}%")</td>
+                                <td>@(v.WithinTolerance ? "yes" : "no")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </section>
+
+        <section class="pour-demo__step">
+            <h2>3. Meta-learning</h2>
+            <p>
+                @result.MetaLearning.TotalPredictions predictions ·
+                overall accuracy @result.MetaLearning.OverallAccuracy.ToString("P1")
+            </p>
+            @if (result.MetaLearning.SystematicErrors.Count > 0)
+            {
+                <ul class="pour-demo__hypotheses">
+                    @foreach (var e in result.MetaLearning.SystematicErrors)
+                    {
+                        <li>
+                            <strong>@e.ErrorPattern</strong>
+                            <span>@e.AffectedDomain · @e.Occurrences× · avg variance @e.AverageVariance.ToString("0.#")%</span>
+                            <p>@e.ProposedCorrection</p>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="pour-demo__empty">No systematic error patterns above threshold yet.</p>
+            }
+            @if (result.MetaLearning.RecommendedExperiments.Count > 0)
+            {
+                <h3 class="pour-demo__subhead">Recommended experiments</h3>
+                <ol>
+                    @foreach (var exp in result.MetaLearning.RecommendedExperiments)
+                    {
+                        <li>@exp</li>
+                    }
+                </ol>
+            }
+        </section>
+
+        <section class="pour-demo__step">
+            <h2>4. Provable reasoning</h2>
+            <p class="pour-demo__reason">@result.Proof.Conclusion</p>
+            <p>Certainty @result.Proof.CertaintyLevel.ToString("P0")</p>
+            @if (result.Proof.ProofSteps.Count > 0)
+            {
+                <ol>
+                    @foreach (var step in result.Proof.ProofSteps)
+                    {
+                        <li>@step</li>
+                    }
+                </ol>
+            }
+            @if (result.Proof.CitedStandards.Count > 0)
+            {
+                <p class="pour-demo__preds">Standards: @string.Join(", ", result.Proof.CitedStandards)</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(result.Proof.LimitationsDisclosure))
+            {
+                <p class="pour-demo__limit">@result.Proof.LimitationsDisclosure</p>
+            }
         </section>
     }
 </div>

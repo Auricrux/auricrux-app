@@ -215,3 +215,94 @@ h1:focus {
     padding: 1.75rem 1.1rem 1.5rem;
   }
 }
+
+.pour-demo__step {
+  margin-top: 1.75rem;
+  animation: pour-rise 0.45s ease-out both;
+}
+
+.pour-demo__step h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.65rem;
+  color: var(--pour-ink);
+}
+
+.pour-demo__subhead {
+  font-size: 0.95rem;
+  margin: 1rem 0 0.4rem;
+}
+
+.pour-demo__reason {
+  white-space: pre-wrap;
+  line-height: 1.45;
+  margin: 0 0 0.75rem;
+}
+
+.pour-demo__preds,
+.pour-demo__limit {
+  font-size: 0.88rem;
+  color: var(--pour-steel);
+  margin: 0.35rem 0;
+}
+
+.pour-demo__risks {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--pour-steel);
+}
+
+.pour-demo__hypotheses {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pour-demo__hypotheses li {
+  padding: 1rem 1.1rem;
+  background: var(--pour-mist);
+  border-left: 3px solid transparent;
+}
+
+.pour-demo__hypotheses li.is-chosen {
+  border-left-color: var(--pour-clay);
+  background: #f0ebe1;
+}
+
+.pour-demo__hypotheses li strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.pour-demo__hypotheses li > span {
+  font-size: 0.85rem;
+  color: var(--pour-steel);
+}
+
+.pour-demo__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.pour-demo__table th,
+.pour-demo__table td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #c5d0cb;
+}
+
+.pour-demo__table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pour-steel);
+}
+
+.pour-demo__meta code {
+  font-size: 0.8rem;
+  word-break: break-all;
+}
