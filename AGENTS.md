@@ -1,5 +1,21 @@
 # FCA Ecosystem & Auricrux — Agent Handoff (2026-08-28)
 
+## OWNERSHIP UPDATE (2026-08-30) — READ FIRST
+
+**Dual-agent split (Principal directive):**
+
+| Agent | Owns |
+|---|---|
+| **Cursor Cloud** | **This entire `auricrux-app` repository**, plus Auricrux intelligence package / wiring inside `fca-ecosystem` |
+| **Claude Code** | **FCA Ecosystem** product + Atlas/AWS/Cloudflare credentials & deploy — **not** this repo |
+
+Canonical coordination (living board):  
+`fca-ecosystem` → [`docs/handoffs/AGENT_COORDINATION.md`](https://github.com/FCA-Ecosystem/fca-ecosystem/blob/main/docs/handoffs/AGENT_COORDINATION.md) · [`STATUS_BOARD.md`](https://github.com/FCA-Ecosystem/fca-ecosystem/blob/main/docs/handoffs/STATUS_BOARD.md)
+
+Claude: do not commit here unless STATUS_BOARD explicitly requests support. Cursor: treat this repo as primary Auricrux application work.
+
+---
+
 ## FOR THE NEXT AGENT: Read This First
 
 This document provides everything needed to continue work on Auricrux and FCA Ecosystem. All code is in GitHub under `FCA-Ecosystem` organization. All state is verifiable from live endpoints and MongoDB Atlas.
