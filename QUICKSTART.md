@@ -11,8 +11,10 @@ All projects compile successfully without errors:
 ### Option 1: Run Blazor Web App (Quickest)
 ```bash
 cd Auricrux.Web
-dotnet run
-# Open https://localhost:7000
+dotnet run --urls http://127.0.0.1:43147
+# Open http://127.0.0.1:43147
+# Foundation pour demo: /breakthrough/foundation-pour
+# API: GET|POST /api/breakthrough/demo/foundation-pour
 ```
 
 ### Option 2: Run MAUI Windows Desktop
