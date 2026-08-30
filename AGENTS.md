@@ -14,6 +14,12 @@ Canonical coordination (living board):
 
 Claude: do not commit here unless STATUS_BOARD explicitly requests support. Cursor: treat this repo as primary Auricrux application work.
 
+### Living breakthrough demo (this repo)
+
+- UI: `/breakthrough/foundation-pour`
+- API: `GET|POST /api/breakthrough/demo/foundation-pour`
+- Self-correction loop works without Atlas (in-memory).
+
 ---
 
 ## FOR THE NEXT AGENT: Read This First

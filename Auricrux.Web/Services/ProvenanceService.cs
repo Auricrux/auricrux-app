@@ -452,17 +452,17 @@ public sealed class CorpusProvenance
     public required string Title { get; init; }
     public required string Status { get; init; }
     public required string Source { get; init; }
-    public string? SourceInteractionId { get; init; }
-    public List<string> SourceFeedbackIds { get; init; } = [];
-    public string? GapPattern { get; init; }
-    public string? OriginalQuery { get; init; }
-    public DateTime? OriginalTimestamp { get; init; }
-    public int FeedbackCount { get; init; }
-    public double AverageFeedbackRating { get; init; }
-    public string? ProposedBy { get; init; }
-    public DateTime? ProposedAt { get; init; }
-    public string? ApprovedBy { get; init; }
-    public DateTime? ApprovedAt { get; init; }
+    public string? SourceInteractionId { get; set; }
+    public List<string> SourceFeedbackIds { get; set; } = [];
+    public string? GapPattern { get; set; }
+    public string? OriginalQuery { get; set; }
+    public DateTime? OriginalTimestamp { get; set; }
+    public int FeedbackCount { get; set; }
+    public double AverageFeedbackRating { get; set; }
+    public string? ProposedBy { get; set; }
+    public DateTime? ProposedAt { get; set; }
+    public string? ApprovedBy { get; set; }
+    public DateTime? ApprovedAt { get; set; }
     public string ConfidenceLevel { get; init; } = "low";
     public string TruthLevel { get; init; } = "observation";
 }
@@ -485,13 +485,13 @@ public sealed class RecommendationProvenance
     public required string Category { get; init; }
     public required string Priority { get; init; }
     public DateTime GeneratedAt { get; init; }
-    public List<string> SourceInteractionIds { get; init; } = [];
-    public string? SourceGapPattern { get; init; }
-    public string? SourceOutcomeId { get; init; }
-    public string? SourceEventId { get; init; }
-    public string? EventType { get; init; }
-    public string? OutcomeStatus { get; init; }
-    public string? OutcomeType { get; init; }
+    public List<string> SourceInteractionIds { get; set; } = [];
+    public string? SourceGapPattern { get; set; }
+    public string? SourceOutcomeId { get; set; }
+    public string? SourceEventId { get; set; }
+    public string? EventType { get; set; }
+    public string? OutcomeStatus { get; set; }
+    public string? OutcomeType { get; set; }
 }
 
 public sealed class ProvenanceGraph

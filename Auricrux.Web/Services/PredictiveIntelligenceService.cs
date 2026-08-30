@@ -105,17 +105,18 @@ public class PredictiveIntelligenceService
                     
                     // Audit trail
                     await _audit.RecordActionAsync(
-                        actorId: "system:predictive-intelligence",
                         actionType: "predictive_transfer",
+                        actorType: "system",
+                        actorId: "system:predictive-intelligence",
                         resourceType: "project",
                         resourceId: prediction.ProjectId.ToString(),
-                        details: new Dictionary<string, object>
+                        actionDetails: new BsonDocument
                         {
                             { "source_outcome", sourceOutcomeId },
                             { "source_project", sourceProjectId },
                             { "similarity_score", prediction.SimilarityScore },
-                            { "matched_factors", prediction.MatchedFactors },
-                            { "predicted_timeframe", prediction.PredictedTimeframe }
+                            { "matched_factors", new BsonArray(prediction.MatchedFactors ?? []) },
+                            { "predicted_timeframe", prediction.PredictedTimeframe ?? "" }
                         },
                         result: "success",
                         ct: ct);

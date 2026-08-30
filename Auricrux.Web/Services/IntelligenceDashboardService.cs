@@ -37,31 +37,27 @@ public class IntelligenceDashboardService
         try
         {
             // Parallel metric gathering for performance
-            var metricsTask = Task.WhenAll(
-                CountEventsAsync(cutoff, ct),
-                CountOutcomesAsync(cutoff, ct),
-                CountVerifiedOutcomesAsync(cutoff, ct),
-                CountKnowledgeGapsAsync(cutoff, ct),
-                CountRecommendationsAsync(cutoff, ct),
-                CountPredictiveTransfersAsync(cutoff, ct),
-                EstimateIssuesPreventedAsync(cutoff, ct),
-                CalculateAverageCycleTimeAsync(cutoff, ct)
-            );
-
-            var metrics = await metricsTask;
+            var eventCount = await CountEventsAsync(cutoff, ct);
+            var outcomeCount = await CountOutcomesAsync(cutoff, ct);
+            var verifiedCount = await CountVerifiedOutcomesAsync(cutoff, ct);
+            var gapCount = await CountKnowledgeGapsAsync(cutoff, ct);
+            var recommendationCount = await CountRecommendationsAsync(cutoff, ct);
+            var transferCount = await CountPredictiveTransfersAsync(cutoff, ct);
+            var preventedCount = await EstimateIssuesPreventedAsync(cutoff, ct);
+            var cycleTime = await CalculateAverageCycleTimeAsync(cutoff, ct);
 
             var overview = new DashboardOverview
             {
                 Period = FormatPeriod(period),
-                EventsCaptured = (int)metrics[0],
-                OutcomesRecorded = (int)metrics[1],
-                OutcomesVerified = (int)metrics[2],
-                KnowledgeGapsIdentified = (int)metrics[3],
-                RecommendationsGenerated = (int)metrics[4],
-                PredictiveTransfers = (int)metrics[5],
-                IssuesPrevented = (int)metrics[6],
-                EstimatedSavingsUsd = CalculateSavings((int)metrics[6]),
-                LearningCycleTimeMinutes = metrics[7],
+                EventsCaptured = (int)eventCount,
+                OutcomesRecorded = (int)outcomeCount,
+                OutcomesVerified = (int)verifiedCount,
+                KnowledgeGapsIdentified = (int)gapCount,
+                RecommendationsGenerated = (int)recommendationCount,
+                PredictiveTransfers = (int)transferCount,
+                IssuesPrevented = (int)preventedCount,
+                EstimatedSavingsUsd = CalculateSavings((int)preventedCount),
+                LearningCycleTimeMinutes = cycleTime,
                 Health = await GetSystemHealthAsync(ct),
                 Status = "operational"
             };

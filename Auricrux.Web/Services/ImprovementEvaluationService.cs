@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Auricrux.Shared.Models;
+using MongoDB.Driver;
 
 namespace Auricrux.Web.Services;
 

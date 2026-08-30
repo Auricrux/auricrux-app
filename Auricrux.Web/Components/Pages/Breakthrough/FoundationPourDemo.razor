@@ -1,0 +1,102 @@
+@page "/breakthrough/foundation-pour"
+@using Auricrux.Web.Services.Breakthrough
+@inject FoundationPourDemoService DemoService
+@inject ILogger<FoundationPourDemo> Logger
+@rendermode InteractiveServer
+
+<PageTitle>Foundation Pour Self-Correction — Auricrux</PageTitle>
+
+<div class="pour-demo">
+    <header class="pour-demo__hero">
+        <p class="pour-demo__brand">Auricrux</p>
+        <h1>Foundation pour self-correction</h1>
+        <p class="pour-demo__lede">
+            Competing pour hypotheses verified against simulated field measurements —
+            the loop closes when correction is required.
+        </p>
+        <div class="pour-demo__actions">
+            <button class="pour-demo__run" disabled="@running" @onclick="RunDemoAsync">
+                @(running ? "Running loop…" : "Run self-correction loop")
+            </button>
+        </div>
+    </header>
+
+    @if (error is not null)
+    {
+        <div class="pour-demo__error" role="alert">
+            <strong>Demo failed.</strong> @error
+        </div>
+    }
+    else if (result is null && !running)
+    {
+        <p class="pour-demo__empty">No run yet. Start the loop to generate hypotheses and verify them.</p>
+    }
+    else if (running)
+    {
+        <p class="pour-demo__loading">Generating hypotheses and verifying field divergence…</p>
+    }
+    else if (result is not null)
+    {
+        <section class="pour-demo__summary" aria-live="polite">
+            <h2>Loop @(result.LoopClosed ? "closed" : "open")</h2>
+            <p>@result.Summary</p>
+            <dl class="pour-demo__meta">
+                <div><dt>Scenario</dt><dd>@result.ScenarioName</dd></div>
+                <div><dt>Recommended</dt><dd>@result.RecommendedApproach</dd></div>
+                <div><dt>Verification accuracy</dt><dd>@result.Verification.AccuracyScore.ToString("P0")</dd></div>
+                <div><dt>Correction required</dt><dd>@(result.Verification.RequiresModelCorrection ? "Yes" : "No")</dd></div>
+                <div><dt>Meta-learning samples</dt><dd>@result.MetaLearning.TotalPredictions</dd></div>
+                <div><dt>Proof certainty</dt><dd>@result.Proof.CertaintyLevel.ToString("P0")</dd></div>
+            </dl>
+        </section>
+
+        <section class="pour-demo__hypotheses">
+            <h2>Competing approaches</h2>
+            <ul>
+                @foreach (var h in result.Hypotheses)
+                {
+                    var selected = h.HypothesisId == result.ChosenHypothesisId;
+                    <li class="@(selected ? "is-chosen" : null)">
+                        <strong>@h.Approach</strong>
+                        <span>confidence @h.ConfidenceScore.ToString("P0")</span>
+                        <p>@h.PredictedOutcome</p>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <section class="pour-demo__proof">
+            <h2>Provable reasoning</h2>
+            <p>@result.Proof.Conclusion</p>
+        </section>
+    }
+</div>
+
+@code {
+    private FoundationPourDemoResult? result;
+    private string? error;
+    private bool running;
+
+    private async Task RunDemoAsync()
+    {
+        running = true;
+        error = null;
+        result = null;
+        try
+        {
+            result = await DemoService.RunAsync(new FoundationPourDemoOptions
+            {
+                ProjectId = $"web-pour-{Guid.NewGuid():N}"
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Foundation pour demo failed");
+            error = ex.Message;
+        }
+        finally
+        {
+            running = false;
+        }
+    }
+}

@@ -448,9 +448,9 @@ public sealed class KnowledgeController(
         string entryId,
         CancellationToken cancellationToken)
     {
-        var provenance = await provenance.GetCorpusEntryProvenanceAsync(entryId, cancellationToken);
+        var entryProvenance = await provenance.GetCorpusEntryProvenanceAsync(entryId, cancellationToken);
 
-        if (provenance == null)
+        if (entryProvenance == null)
         {
             return NotFound(new { error = "Corpus entry not found or Atlas not configured." });
         }
@@ -458,7 +458,7 @@ public sealed class KnowledgeController(
         return Ok(new CorpusProvenanceResponse
         {
             Success = true,
-            Provenance = provenance,
+            Provenance = entryProvenance,
             Timestamp = DateTime.UtcNow
         });
     }

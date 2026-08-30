@@ -4,6 +4,7 @@ using Auricrux.Shared.Services;
 using Auricrux.Web.Components;
 using Auricrux.Web.Middleware;
 using Auricrux.Web.Services;
+using Auricrux.Web.Services.Breakthrough;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -59,6 +60,13 @@ builder.Services.AddSingleton<AcademyLessonMatcherService>();
 
 // Phase 9B: Observability Dashboard
 builder.Services.AddSingleton<IntelligenceDashboardService>();
+
+// Phase 4 Breakthrough: self-correction loop (hypotheses → verify → meta-learn → proof)
+builder.Services.AddSingleton<HypothesisEngine>();
+builder.Services.AddSingleton<PhysicalVerificationService>();
+builder.Services.AddSingleton<MetaLearningService>();
+builder.Services.AddSingleton<ProvableReasoningService>();
+builder.Services.AddSingleton<FoundationPourDemoService>();
 
 // Background services
 builder.Services.AddHostedService<Auricrux.Web.BackgroundServices.LearningPipelineWorker>();

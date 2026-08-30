@@ -1,4 +1,5 @@
 using Auricrux.Shared.FcaDomain;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Net.Http.Json;
 
@@ -12,7 +13,7 @@ public class FcaEcosystemApiService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<FcaEcosystemApiService> _logger;
-    private readonly IMongoCollection<BsonDocument> _cache;
+    private readonly IMongoCollection<BsonDocument>? _cache;
     
     // Cache TTL
     private static readonly TimeSpan ProjectCacheTtl = TimeSpan.FromMinutes(30);

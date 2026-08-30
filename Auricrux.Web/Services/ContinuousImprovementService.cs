@@ -186,7 +186,8 @@ public sealed class ContinuousImprovementService
                     Category = gap.Category,
                     ProposedBy = "system-auto",
                     Rationale = $"Auto-generated from {gap.Occurrences} low-rated interactions (avg {gap.AverageRating:F2} stars). Common user feedback suggests this correction.",
-                    SourceInteractionIds = gapDetail.InteractionIds,
+                    SourceInteractionId = gapDetail.InteractionIds.FirstOrDefault(),
+                    SourceFeedbackIds = [],
                     SourceQueryPattern = gap.QueryPattern,
                     ValidatedAnswer = corrections
                 }, ct);
@@ -410,19 +411,19 @@ public sealed class WeeklyAnalysisReport
     public string? Error { get; init; }
     public DateTime PeriodStart { get; init; }
     public DateTime PeriodEnd { get; init; }
-    public int TotalInteractions { get; init; }
-    public int FeedbackReceived { get; init; }
-    public double AverageRating { get; init; }
-    public int NewKnowledgeGaps { get; init; }
-    public int CriticalGaps { get; init; }
-    public int CorpusProposalsCreated { get; init; }
-    public int CorpusEntriesApproved { get; init; }
-    public int EventsCaptured { get; init; }
-    public int OutcomesRecorded { get; init; }
-    public int OutcomesValidated { get; init; }
-    public int RecommendationsGenerated { get; init; }
-    public int RecommendationsEngaged { get; init; }
-    public double EngagementRate { get; init; }
+    public int TotalInteractions { get; set; }
+    public int FeedbackReceived { get; set; }
+    public double AverageRating { get; set; }
+    public int NewKnowledgeGaps { get; set; }
+    public int CriticalGaps { get; set; }
+    public int CorpusProposalsCreated { get; set; }
+    public int CorpusEntriesApproved { get; set; }
+    public int EventsCaptured { get; set; }
+    public int OutcomesRecorded { get; set; }
+    public int OutcomesValidated { get; set; }
+    public int RecommendationsGenerated { get; set; }
+    public int RecommendationsEngaged { get; set; }
+    public double EngagementRate { get; set; }
     public DateTime GeneratedAt { get; init; }
 }
 

@@ -29,6 +29,9 @@ public sealed class AtlasService : IDisposable
 
     public bool IsConfigured => _client is not null;
 
+    /// <summary>Raw database handle for breakthrough collections (hypotheses, verifications, proofs).</summary>
+    public IMongoDatabase? Database => _db;
+
     public AtlasService(IConfiguration configuration, ILogger<AtlasService> logger)
     {
         _logger = logger;
@@ -88,6 +91,12 @@ public sealed class AtlasService : IDisposable
 
     public IMongoCollection<BsonDocument> AuditTrail =>
         _db!.GetCollection<BsonDocument>("audit_trail");
+
+    public IMongoCollection<BsonDocument> KnowledgeGaps =>
+        _db!.GetCollection<BsonDocument>("knowledge_gaps");
+
+    public IMongoCollection<BsonDocument> ImprovementProposals =>
+        _db!.GetCollection<BsonDocument>("improvement_proposals");
 
     // ── Health ────────────────────────────────────────────────────────────────
 

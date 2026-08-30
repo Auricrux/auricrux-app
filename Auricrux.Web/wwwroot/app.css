@@ -58,3 +58,160 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+/* Foundation pour breakthrough demo */
+:root {
+  --pour-ink: #1a2421;
+  --pour-steel: #3d5a54;
+  --pour-sand: #d4c4a8;
+  --pour-clay: #8b5a2b;
+  --pour-mist: #e8efe9;
+}
+
+.pour-demo {
+  --pour-surface: linear-gradient(165deg, #f3efe6 0%, #dfe8e3 45%, #c5d4ce 100%);
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+  color: var(--pour-ink);
+  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+.pour-demo__hero {
+  position: relative;
+  padding: 2.5rem 1.75rem 2rem;
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(139, 90, 43, 0.18), transparent 55%),
+    radial-gradient(ellipse at 90% 40%, rgba(61, 90, 84, 0.22), transparent 50%),
+    linear-gradient(145deg, #1f2e2a 0%, #3d5a54 55%, #5a6f68 100%);
+  color: #f5f1e8;
+  overflow: hidden;
+  animation: pour-hero-in 0.7s ease-out both;
+}
+
+.pour-demo__brand {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.75rem;
+  font-family: "Georgia", "Times New Roman", serif;
+}
+
+.pour-demo__hero h1 {
+  font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  max-width: 28ch;
+}
+
+.pour-demo__lede {
+  margin: 0 0 1.5rem;
+  max-width: 42ch;
+  opacity: 0.9;
+  line-height: 1.45;
+}
+
+.pour-demo__run {
+  appearance: none;
+  border: none;
+  background: var(--pour-sand);
+  color: var(--pour-ink);
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.pour-demo__run:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #e8d9b8;
+}
+
+.pour-demo__run:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.pour-demo__error {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: #f8e8e4;
+  border-left: 4px solid #a33;
+}
+
+.pour-demo__empty,
+.pour-demo__loading {
+  margin-top: 1.5rem;
+  color: var(--pour-steel);
+}
+
+.pour-demo__summary,
+.pour-demo__hypotheses,
+.pour-demo__proof {
+  margin-top: 1.75rem;
+  animation: pour-rise 0.45s ease-out both;
+}
+
+.pour-demo__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 1rem 0 0;
+}
+
+.pour-demo__meta dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pour-steel);
+}
+
+.pour-demo__meta dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+}
+
+.pour-demo__hypotheses ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pour-demo__hypotheses li {
+  padding: 1rem 1.1rem;
+  background: var(--pour-mist);
+  border-left: 3px solid transparent;
+}
+
+.pour-demo__hypotheses li.is-chosen {
+  border-left-color: var(--pour-clay);
+  background: #f0ebe1;
+}
+
+.pour-demo__hypotheses li strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.pour-demo__hypotheses li span {
+  font-size: 0.85rem;
+  color: var(--pour-steel);
+}
+
+@keyframes pour-hero-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pour-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 640px) {
+  .pour-demo__hero {
+    padding: 1.75rem 1.1rem 1.5rem;
+  }
+}
