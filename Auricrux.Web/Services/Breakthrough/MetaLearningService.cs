@@ -383,17 +383,41 @@ public sealed class MetaLearningService
 
     private Dictionary<string, double> CalibrateConfidenceScores(List<PhysicalVerificationResult> verifications)
     {
-        // For this we'd need access to original confidence scores
-        // For now, return placeholder calibration
-        // In production, this would map "confidence X" → "actual accuracy Y"
+        return ComputeEmpiricalCalibration(
+            verifications
+                .Where(v => v.StatedConfidence > 0)
+                .Select(v => (v.StatedConfidence, v.AccuracyScore)));
+    }
 
-        return new Dictionary<string, double>
+    /// <summary>
+    /// Maps stated confidence buckets to mean measured accuracy.
+    /// Omits buckets with fewer than <paramref name="minPerBucket"/> samples instead of inventing values.
+    /// </summary>
+    public static Dictionary<string, double> ComputeEmpiricalCalibration(
+        IEnumerable<(double StatedConfidence, double AccuracyScore)> samples,
+        int minPerBucket = 2)
+    {
+        var list = samples.ToList();
+        (string Key, double Lo, double HiExclusive)[] buckets =
+        [
+            ("confidence_0.0_to_0.6", 0.0, 0.6),
+            ("confidence_0.6_to_0.7", 0.6, 0.7),
+            ("confidence_0.7_to_0.8", 0.7, 0.8),
+            ("confidence_0.8_to_0.9", 0.8, 0.9),
+            ("confidence_0.9_to_1.0", 0.9, 1.0001)
+        ];
+
+        var result = new Dictionary<string, double>();
+        foreach (var (key, lo, hi) in buckets)
         {
-            { "confidence_0.6_to_0.7", 0.62 },  // If model says 60-70% confident, it's actually 62% accurate
-            { "confidence_0.7_to_0.8", 0.74 },
-            { "confidence_0.8_to_0.9", 0.83 },
-            { "confidence_0.9_to_1.0", 0.88 }
-        };
+            var inBucket = list
+                .Where(s => s.StatedConfidence >= lo && s.StatedConfidence < hi)
+                .ToList();
+            if (inBucket.Count < minPerBucket) continue;
+            result[key] = Math.Round(inBucket.Average(s => s.AccuracyScore), 4);
+        }
+
+        return result;
     }
 }
 

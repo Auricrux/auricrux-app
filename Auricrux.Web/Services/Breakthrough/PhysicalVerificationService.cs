@@ -87,6 +87,7 @@ public sealed class PhysicalVerificationService
             VerificationId = verificationId,
             PredictionId = predictionId,
             AccuracyScore = accuracyScore,
+            StatedConfidence = hypothesis.ConfidenceScore,
             MeasurementVariances = variances,
             IdentifiedErrors = errors,
             RequiresModelCorrection = requiresCorrection,
@@ -414,6 +415,7 @@ public sealed class PhysicalVerificationService
                 ["predicted_outcome"] = hypothesis.PredictedOutcome,
                 ["actual_outcome"] = result.ActualOutcome,
                 ["accuracy_score"] = result.AccuracyScore,
+                ["stated_confidence"] = result.StatedConfidence,
                 ["measurement_variances"] = new BsonDocument(result.MeasurementVariances.Select(kvp => new BsonElement(
                     kvp.Key,
                     new BsonDocument
@@ -477,6 +479,7 @@ public sealed class PhysicalVerificationService
             VerificationId = doc["verification_id"].AsString,
             PredictionId = doc["prediction_id"].AsString,
             AccuracyScore = doc["accuracy_score"].ToDouble(),
+            StatedConfidence = doc.GetValue("stated_confidence", 0.0).ToDouble(),
             MeasurementVariances = variances,
             IdentifiedErrors = doc["identified_errors"].AsBsonArray.Select(e => e.AsString).ToList(),
             RequiresModelCorrection = doc["requires_correction"].AsBoolean,
@@ -496,6 +499,8 @@ public sealed class PhysicalVerificationResult
     public required string VerificationId { get; init; }
     public required string PredictionId { get; init; }
     public required double AccuracyScore { get; init; }
+    /// <summary>Hypothesis confidence at prediction time. 0 when unknown (legacy rows).</summary>
+    public double StatedConfidence { get; init; }
     public required Dictionary<string, MeasurementVariance> MeasurementVariances { get; init; }
     public required List<string> IdentifiedErrors { get; init; }
     public required bool RequiresModelCorrection { get; init; }

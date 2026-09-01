@@ -26,6 +26,29 @@ public sealed class MetaLearningCalibrationTests
     {
         Assert.False(MetaLearningService.TryParseCalibrationLowerBound(key, out _));
     }
+
+    [Fact]
+    public void EmpiricalCalibration_OmitsEmptyBuckets_AndAveragesMeasuredAccuracy()
+    {
+        var calibration = MetaLearningService.ComputeEmpiricalCalibration(
+        [
+            (0.92, 0.40),
+            (0.95, 0.50),
+            (0.65, 0.80),
+            (0.68, 0.90)
+        ]);
+
+        Assert.False(calibration.ContainsKey("confidence_0.7_to_0.8"));
+        Assert.Equal(0.45, calibration["confidence_0.9_to_1.0"], 3);
+        Assert.Equal(0.85, calibration["confidence_0.6_to_0.7"], 3);
+    }
+
+    [Fact]
+    public void EmpiricalCalibration_DoesNotInventPlaceholderBuckets()
+    {
+        var empty = MetaLearningService.ComputeEmpiricalCalibration([]);
+        Assert.Empty(empty);
+    }
 }
 
 /// <summary>
