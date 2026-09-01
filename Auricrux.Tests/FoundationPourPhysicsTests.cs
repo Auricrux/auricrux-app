@@ -162,3 +162,35 @@ public sealed class FoundationPourPhysicsTests
         Assert.True(windyDry.ColdJointRiskPercent > calm.ColdJointRiskPercent);
     }
 }
+
+public sealed class FoundationAndStructuralPhysicsTests
+{
+    [Fact]
+    public void LongerPiles_IncreaseMeyerhofCapacity()
+    {
+        var shortPile = FoundationPhysicsModel.DrivenPileCapacity(12, 20, 800, 8000);
+        var longPile = FoundationPhysicsModel.DrivenPileCapacity(12, 80, 800, 8000);
+        Assert.True(longPile > shortPile);
+    }
+
+    [Fact]
+    public void WiderFooting_IncreasesAllowableBearingContributionFromNgamma()
+    {
+        var narrow = FoundationPhysicsModel.AllowableBearingCapacity(
+            FoundationPhysicsModel.FootingShape.Square, 4, 4, 200, 30, 120);
+        var wide = FoundationPhysicsModel.AllowableBearingCapacity(
+            FoundationPhysicsModel.FootingShape.Square, 12, 4, 200, 30, 120);
+        Assert.True(wide > narrow);
+    }
+
+    [Fact]
+    public void LongSpan_FailsL360_WhileShortSpanPasses()
+    {
+        const double e = 29_000_000;
+        const double i = 475;
+        var shortDefl = StructuralPhysicsModel.BeamDeflectionUniformLoad(400, 30, e, i);
+        var longDefl = StructuralPhysicsModel.BeamDeflectionUniformLoad(400, 80, e, i);
+        Assert.True(StructuralPhysicsModel.IsDeflectionAcceptable(shortDefl, 30));
+        Assert.False(StructuralPhysicsModel.IsDeflectionAcceptable(longDefl, 80));
+    }
+}

@@ -110,12 +110,21 @@ public class PredictiveIntelligenceController : ControllerBase
                 }
             }
 
-            // Query would go here - for now return placeholder
+            var query = await _predictive.GetRecommendationsForProjectAsync(projectId, ct);
+            var message = query.Recommendations.Count > 0
+                ? $"Loaded {query.Recommendations.Count} predictive recommendation(s) from {query.Source}."
+                : query.AtlasConfigured
+                    ? "No predictive transfers have been delivered to this project yet."
+                    : "Atlas is not configured in this process; no persisted predictive transfers. Empty list is authoritative.";
+
             return Ok(new
             {
-                project_id = projectId,
-                predictive_recommendations = new object[] { },
-                message = "Predictive recommendations query - implementation in progress"
+                project_id = query.ProjectId,
+                predictive_recommendations = query.Recommendations,
+                count = query.Recommendations.Count,
+                source = query.Source,
+                atlas_configured = query.AtlasConfigured,
+                message
             });
         }
         catch (Exception ex)

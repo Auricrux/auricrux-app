@@ -380,155 +380,217 @@ public sealed class HypothesisEngine
         string context,
         Dictionary<string, object>? constraints)
     {
-        return new List<ConstructionHypothesis>
-        {
+        var cohesion = ReadNumericConstraint(constraints, "cohesion_psf", 200);
+        var phi = ReadNumericConstraint(constraints, "friction_angle_deg", 30);
+        var unitWeight = ReadNumericConstraint(constraints, "unit_weight_pcf", 120);
+        var widthFt = ReadNumericConstraint(constraints, "footing_width_ft", 6);
+        var depthFt = ReadNumericConstraint(constraints, "footing_depth_ft", 4);
+        var pileDiaIn = ReadNumericConstraint(constraints, "pile_diameter_in", 12);
+        var pileLenFt = ReadNumericConstraint(constraints, "pile_length_ft", 40);
+        var skinPsf = ReadNumericConstraint(constraints, "skin_friction_psf", 800);
+        var endBearingPsf = ReadNumericConstraint(constraints, "end_bearing_psf", 8000);
+        var elasticModulusPsf = ReadNumericConstraint(constraints, "elastic_modulus_psf", 400_000);
+        var appliedPsf = ReadNumericConstraint(constraints, "applied_pressure_psf", 2500);
+
+        var pileCapacityTons = FoundationPhysicsModel.DrivenPileCapacity(
+            pileDiaIn, pileLenFt, skinPsf, endBearingPsf) / 2000.0;
+        var shaftCapacityTons = FoundationPhysicsModel.DrivenPileCapacity(
+            pileDiaIn * 2.5, pileLenFt * 1.15, skinPsf * 0.9, endBearingPsf * 1.15) / 2000.0;
+        var qAllow = FoundationPhysicsModel.AllowableBearingCapacity(
+            FoundationPhysicsModel.FootingShape.Square,
+            widthFt, depthFt, cohesion, phi, unitWeight);
+        var settlementIn = FoundationPhysicsModel.ImmediateSettlement(
+            appliedPsf, widthFt, depthFt, elasticModulusPsf);
+        var (ka, kp) = FoundationPhysicsModel.LateralEarthPressureCoefficients(phi);
+
+        var pileSettlementRisk = Math.Clamp(2 + pileLenFt / 20, 2, 12);
+        var shaftSettlementRisk = Math.Max(1, pileSettlementRisk - 3);
+        var footingSettlementRisk = Math.Clamp(settlementIn / 0.5 * 10, 4, 40);
+        var footingCapacityTons = qAllow * widthFt * widthFt / 2000.0;
+
+        return
+        [
             new ConstructionHypothesis
             {
                 HypothesisId = Guid.NewGuid().ToString(),
                 Approach = "Standard Driven Pile Foundation",
                 PredictedOutcome = "High load capacity with moderate installation time and cost",
-                Assumptions = new List<string>
-                {
-                    "Soil bearing capacity < 2000 psf at shallow depth",
-                    "No groundwater issues within 20ft",
+                Assumptions =
+                [
+                    $"Meyerhof pile capacity on {pileDiaIn:0.#} in × {pileLenFt:0.#} ft piles",
+                    $"Skin friction {skinPsf:0} psf, end bearing {endBearingPsf:0} psf",
                     "Access for pile driving equipment available",
                     "Vibration tolerance acceptable for surroundings"
-                },
+                ],
                 QuantitativePredictions = new Dictionary<string, double>
                 {
                     { "cost_per_pile_usd", 8500 },
                     { "installation_days", 12 },
-                    { "load_capacity_tons", 85 },
-                    { "settlement_risk_percent", 5 }
+                    { "load_capacity_tons", Math.Round(pileCapacityTons, 1) },
+                    { "settlement_risk_percent", Math.Round(pileSettlementRisk, 1) },
+                    { "active_earth_pressure_ka", Math.Round(ka, 3) }
                 },
                 ConfidenceScore = 0.82,
-                RiskFactors = new List<string>
-                {
+                RiskFactors =
+                [
                     "Vibration impact on adjacent structures",
                     "Encountering unexpected bedrock depth",
                     "Weather delays during installation"
-                }
+                ]
             },
             new ConstructionHypothesis
             {
                 HypothesisId = Guid.NewGuid().ToString(),
                 Approach = "Drilled Shaft (Caisson) Foundation",
                 PredictedOutcome = "Highest load capacity with lower vibration but higher cost",
-                Assumptions = new List<string>
-                {
+                Assumptions =
+                [
+                    $"Larger shaft section ({pileDiaIn * 2.5:0.#} in) using same soil parameters",
                     "Soil conditions allow for open-hole drilling",
                     "Dewatering available if needed",
-                    "Concrete truck access confirmed",
-                    "Rebar cage fabrication on schedule"
-                },
+                    "Concrete truck access confirmed"
+                ],
                 QuantitativePredictions = new Dictionary<string, double>
                 {
                     { "cost_per_shaft_usd", 14200 },
                     { "installation_days", 18 },
-                    { "load_capacity_tons", 120 },
-                    { "settlement_risk_percent", 2 }
+                    { "load_capacity_tons", Math.Round(shaftCapacityTons, 1) },
+                    { "settlement_risk_percent", Math.Round(shaftSettlementRisk, 1) },
+                    { "passive_earth_pressure_kp", Math.Round(kp, 3) }
                 },
                 ConfidenceScore = 0.75,
-                RiskFactors = new List<string>
-                {
+                RiskFactors =
+                [
                     "Caving during drilling if unstable soil",
                     "Concrete placement quality issues",
                     "Higher cost overrun risk",
                     "Weather impact on open holes"
-                }
+                ]
             },
             new ConstructionHypothesis
             {
                 HypothesisId = Guid.NewGuid().ToString(),
                 Approach = "Shallow Spread Footing with Ground Improvement",
                 PredictedOutcome = "Cost-effective if soil improvement successful, higher schedule risk",
-                Assumptions = new List<string>
-                {
+                Assumptions =
+                [
+                    $"Terzaghi allowable bearing {qAllow:0} psf (FS=3) on {widthFt:0.#} ft square footing",
+                    $"Immediate settlement {settlementIn:0.###} in (elastic)",
                     "Soil improvement (compaction/stone columns) achieves target bearing",
-                    "Settlement monitoring acceptable",
-                    "No differential settlement concerns",
-                    "Load distribution uniform"
-                },
+                    "Settlement monitoring acceptable"
+                ],
                 QuantitativePredictions = new Dictionary<string, double>
                 {
                     { "cost_per_footing_usd", 5800 },
                     { "total_days_with_improvement", 24 },
-                    { "load_capacity_tons", 60 },
-                    { "settlement_risk_percent", 12 }
+                    { "load_capacity_tons", Math.Round(footingCapacityTons, 1) },
+                    { "settlement_risk_percent", Math.Round(footingSettlementRisk, 1) },
+                    { "allowable_bearing_psf", Math.Round(qAllow, 0) },
+                    { "predicted_settlement_inches", Math.Round(settlementIn, 3) }
                 },
                 ConfidenceScore = 0.68,
-                RiskFactors = new List<string>
-                {
+                RiskFactors =
+                [
                     "Ground improvement may not achieve target density",
                     "Differential settlement between footings",
                     "Requires extensive testing and verification",
                     "Settlement monitoring long-term"
-                }
+                ]
             }
-        };
+        ];
     }
 
     private List<ConstructionHypothesis> GenerateStructuralHypotheses(
         string context,
         Dictionary<string, object>? constraints)
     {
-        return new List<ConstructionHypothesis>
-        {
+        var spanFt = ReadNumericConstraint(constraints, "span_ft", 30);
+        var uniformLoadPlf = ReadNumericConstraint(constraints, "uniform_load_plf", 400);
+        var elasticModulusPsi = ReadNumericConstraint(constraints, "steel_E_psi", 29_000_000);
+        var momentOfInertiaIn4 = ReadNumericConstraint(constraints, "moment_of_inertia_in4", 475);
+        var plasticModulusIn3 = ReadNumericConstraint(constraints, "plastic_modulus_in3", 47);
+        var fyPsi = ReadNumericConstraint(constraints, "fy_psi", 50_000);
+        var boltDiaIn = ReadNumericConstraint(constraints, "bolt_diameter_in", 0.75);
+        var boltFuPsi = ReadNumericConstraint(constraints, "bolt_Fu_psi", 120_000);
+
+        var deflectionIn = StructuralPhysicsModel.BeamDeflectionUniformLoad(
+            uniformLoadPlf, spanFt, elasticModulusPsi, momentOfInertiaIn4);
+        var deflectionOk = StructuralPhysicsModel.IsDeflectionAcceptable(deflectionIn, spanFt);
+        var boltShearLbs = StructuralPhysicsModel.BoltShearCapacity(boltDiaIn, boltFuPsi);
+        var phiMn = StructuralPhysicsModel.DesignFlexuralStrength(
+            StructuralPhysicsModel.SteelBeamFlexuralStrength(fyPsi, plasticModulusIn3));
+        var combo = StructuralPhysicsModel.LoadCombination(
+            deadLoad: uniformLoadPlf * 0.4,
+            liveLoad: uniformLoadPlf * 0.6,
+            loadCase: StructuralPhysicsModel.LoadCombinationCase.LRFD_1_2D_1_6L);
+
+        var confidenceConventional = deflectionOk ? 0.88 : 0.62;
+        var confidenceModular = deflectionOk ? 0.72 : 0.55;
+
+        return
+        [
             new ConstructionHypothesis
             {
                 HypothesisId = Guid.NewGuid().ToString(),
                 Approach = "Conventional Steel Erection Sequence",
-                PredictedOutcome = "Proven approach with predictable timeline",
-                Assumptions = new List<string>
-                {
+                PredictedOutcome = deflectionOk
+                    ? "Proven approach with predictable timeline; beam deflection within L/360"
+                    : "Erection is feasible but live-load deflection exceeds L/360 — member size should increase",
+                Assumptions =
+                [
+                    $"Simply supported span {spanFt:0.#} ft, w = {uniformLoadPlf:0} plf",
+                    $"AISC compact section, Fy = {fyPsi / 1000:0} ksi, I = {momentOfInertiaIn4:0} in⁴",
                     "Steel fabrication on schedule",
-                    "Crane access confirmed",
-                    "Bolted connections per AISC/RCSC spec",
-                    "Weather windows available"
-                },
+                    "Bolted connections per AISC/RCSC spec"
+                ],
                 QuantitativePredictions = new Dictionary<string, double>
                 {
                     { "erection_days", 45 },
                     { "crew_size", 8 },
                     { "cost_per_ton_usd", 2400 },
-                    { "safety_incidents_risk_percent", 8 }
+                    { "safety_incidents_risk_percent", 8 },
+                    { "beam_deflection_inches", Math.Round(deflectionIn, 3) },
+                    { "deflection_ok", deflectionOk ? 1 : 0 },
+                    { "bolt_shear_capacity_lbs", Math.Round(boltShearLbs, 0) },
+                    { "design_flexural_in_lb", Math.Round(phiMn, 0) },
+                    { "lrfd_1_2D_1_6L_plf", Math.Round(combo, 1) }
                 },
-                ConfidenceScore = 0.88,
-                RiskFactors = new List<string>
-                {
-                    "Weather delays",
-                    "Crane breakdown",
-                    "Bolt torque QC failures"
-                }
+                ConfidenceScore = confidenceConventional,
+                RiskFactors = deflectionOk
+                    ? ["Weather delays", "Crane breakdown", "Bolt torque QC failures"]
+                    : ["Live-load deflection exceeds L/360", "Weather delays", "Bolt torque QC failures"]
             },
             new ConstructionHypothesis
             {
                 HypothesisId = Guid.NewGuid().ToString(),
                 Approach = "Accelerated Modular Steel Assembly",
                 PredictedOutcome = "Faster erection but higher coordination complexity",
-                Assumptions = new List<string>
-                {
+                Assumptions =
+                [
                     "Ground-level pre-assembly space available",
                     "Larger crane capacity for module lifts",
                     "Field welding crew coordinated",
                     "Module fit-up tolerance within 1/8\""
-                },
+                ],
                 QuantitativePredictions = new Dictionary<string, double>
                 {
                     { "erection_days", 28 },
                     { "crew_size", 12 },
                     { "cost_per_ton_usd", 2750 },
-                    { "safety_incidents_risk_percent", 5 }
+                    { "safety_incidents_risk_percent", 5 },
+                    { "beam_deflection_inches", Math.Round(deflectionIn, 3) },
+                    { "deflection_ok", deflectionOk ? 1 : 0 },
+                    { "bolt_shear_capacity_lbs", Math.Round(boltShearLbs, 0) }
                 },
-                ConfidenceScore = 0.72,
-                RiskFactors = new List<string>
-                {
+                ConfidenceScore = confidenceModular,
+                RiskFactors =
+                [
                     "Module fit-up issues",
                     "Field welding delays",
                     "Higher upfront coordination cost"
-                }
+                ]
             }
-        };
+        ];
     }
 
     private List<ConstructionHypothesis> GenerateScheduleHypotheses(

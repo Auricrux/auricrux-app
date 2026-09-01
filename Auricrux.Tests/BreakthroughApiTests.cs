@@ -179,6 +179,61 @@ public sealed class BreakthroughApiTests : IClassFixture<WebApplicationFactory<P
         Assert.False(string.IsNullOrWhiteSpace(payload.StatusMessage));
     }
 
+    [Fact]
+    public async Task Predictive_recommendations_are_empty_not_a_placeholder()
+    {
+        var response = await _client.GetAsync("/api/predictive/recommendations/demo-site");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("implementation in progress", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("predictive_recommendations", body);
+        Assert.Contains("atlas_configured", body);
+    }
+
+    [Fact]
+    public async Task Foundation_pile_hypotheses_scale_capacity_with_pile_length()
+    {
+        var shortResp = await _client.PostAsJsonAsync("/api/breakthrough/hypotheses", new
+        {
+            decisionContext = "Driven piles for warehouse column loads",
+            constructionPhase = "foundation",
+            constraints = new Dictionary<string, double> { ["pile_length_ft"] = 20 }
+        });
+        var longResp = await _client.PostAsJsonAsync("/api/breakthrough/hypotheses", new
+        {
+            decisionContext = "Driven piles for warehouse column loads",
+            constructionPhase = "foundation",
+            constraints = new Dictionary<string, double> { ["pile_length_ft"] = 80 }
+        });
+
+        var shortCmp = await shortResp.Content.ReadFromJsonAsync<HypothesisComparison>();
+        var longCmp = await longResp.Content.ReadFromJsonAsync<HypothesisComparison>();
+        var shortPile = shortCmp!.Hypotheses.First(h => h.Approach.Contains("Driven Pile", StringComparison.Ordinal));
+        var longPile = longCmp!.Hypotheses.First(h => h.Approach.Contains("Driven Pile", StringComparison.Ordinal));
+
+        Assert.NotEqual(85, shortPile.QuantitativePredictions["load_capacity_tons"]);
+        Assert.True(longPile.QuantitativePredictions["load_capacity_tons"] >
+                    shortPile.QuantitativePredictions["load_capacity_tons"]);
+    }
+
+    [Fact]
+    public async Task Structural_hypotheses_include_deflection_check()
+    {
+        var response = await _client.PostAsJsonAsync("/api/breakthrough/hypotheses", new
+        {
+            decisionContext = "Steel framing for a 30-foot bay",
+            constructionPhase = "structural-steel",
+            constraints = new Dictionary<string, double> { ["span_ft"] = 30, ["uniform_load_plf"] = 400 }
+        });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var comparison = await response.Content.ReadFromJsonAsync<HypothesisComparison>();
+        Assert.All(comparison!.Hypotheses, h =>
+        {
+            Assert.True(h.QuantitativePredictions.ContainsKey("beam_deflection_inches"));
+            Assert.True(h.QuantitativePredictions.ContainsKey("deflection_ok"));
+        });
+    }
+
     private sealed class BreakthroughActivityPayload
     {
         public string Persistence { get; set; } = "";

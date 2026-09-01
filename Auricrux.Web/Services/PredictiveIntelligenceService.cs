@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Auricrux.Shared.FcaDomain;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -22,6 +23,7 @@ public class PredictiveIntelligenceService
     private readonly LearningRecommendationService _recommendations;
     private readonly AuditTrailService _audit;
     private readonly ILogger<PredictiveIntelligenceService> _logger;
+    private static readonly ConcurrentBag<BsonDocument> MemoryPredictiveRecommendations = [];
 
     public PredictiveIntelligenceService(
         AtlasService atlas,
@@ -343,8 +345,12 @@ public class PredictiveIntelligenceService
                 ["expires_at"] = DateTime.UtcNow.AddDays(30)
             };
 
-            await _atlas.LearningRecommendations.InsertOneAsync(recommendation, cancellationToken: ct);
-            
+            MemoryPredictiveRecommendations.Add(recommendation);
+            if (_atlas.IsConfigured)
+            {
+                await _atlas.LearningRecommendations.InsertOneAsync(recommendation, cancellationToken: ct);
+            }
+
             _logger.LogInformation(
                 "Created predictive recommendation {RecommendationId} for project {ProjectId} (similarity: {Score:F2})",
                 recommendationId,
@@ -388,6 +394,83 @@ public class PredictiveIntelligenceService
             .Aggregate((a, b) => $"{a} {b}");
     }
 
+    /// <summary>
+    /// List predictive (proactive) recommendations already delivered to a project.
+    /// Empty is a real answer — never a placeholder "implementation in progress".
+    /// </summary>
+    public async Task<PredictiveRecommendationQuery> GetRecommendationsForProjectAsync(
+        string projectId,
+        CancellationToken ct = default)
+    {
+        var fromMemory = MemoryPredictiveRecommendations
+            .Where(d => d.GetValue("project_id", "").AsString == projectId)
+            .Select(MapPredictiveRecommendation)
+            .ToList();
+
+        if (!_atlas.IsConfigured)
+        {
+            return new PredictiveRecommendationQuery
+            {
+                ProjectId = projectId,
+                Recommendations = fromMemory,
+                Source = "in_memory",
+                AtlasConfigured = false
+            };
+        }
+
+        try
+        {
+            var filter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq("project_id", projectId),
+                Builders<BsonDocument>.Filter.Eq("type", "predictive"));
+
+            var docs = await _atlas.LearningRecommendations
+                .Find(filter)
+                .SortByDescending(d => d["generated_at"])
+                .ToListAsync(ct);
+
+            var fromAtlas = docs.Select(MapPredictiveRecommendation).ToList();
+            var atlasIds = fromAtlas.Select(r => r.RecommendationId).ToHashSet();
+            var merged = fromAtlas
+                .Concat(fromMemory.Where(r => !atlasIds.Contains(r.RecommendationId)))
+                .ToList();
+
+            return new PredictiveRecommendationQuery
+            {
+                ProjectId = projectId,
+                Recommendations = merged,
+                Source = "atlas",
+                AtlasConfigured = true
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error querying predictive recommendations for {ProjectId}", projectId);
+            return new PredictiveRecommendationQuery
+            {
+                ProjectId = projectId,
+                Recommendations = fromMemory,
+                Source = "in_memory_fallback",
+                AtlasConfigured = true
+            };
+        }
+    }
+
+    private static PredictiveRecommendationRecord MapPredictiveRecommendation(BsonDocument doc)
+    {
+        return new PredictiveRecommendationRecord
+        {
+            RecommendationId = doc.GetValue("recommendation_id", doc.GetValue("_id", "")).ToString() ?? "",
+            ProjectId = doc.GetValue("project_id", "").AsString,
+            Title = doc.GetValue("title", "").AsString,
+            Description = doc.GetValue("description", "").AsString,
+            PredictedTimeframe = doc.GetValue("predicted_timeframe", "").AsString,
+            SimilarityScore = doc.GetValue("similarity_score", 0.0).ToDouble(),
+            EngagementStatus = doc.GetValue("engagement_status", "").AsString,
+            SourceOutcomeId = doc.GetValue("source_outcome_id", "").AsString
+        };
+    }
+
     // Supporting types
     private class ProjectPrediction
     {
@@ -397,4 +480,24 @@ public class PredictiveIntelligenceService
         public List<string> MatchedFactors { get; set; } = new();
         public string PredictedTimeframe { get; set; } = "";
     }
+}
+
+public sealed class PredictiveRecommendationQuery
+{
+    public required string ProjectId { get; init; }
+    public required List<PredictiveRecommendationRecord> Recommendations { get; init; }
+    public required string Source { get; init; }
+    public required bool AtlasConfigured { get; init; }
+}
+
+public sealed class PredictiveRecommendationRecord
+{
+    public required string RecommendationId { get; init; }
+    public required string ProjectId { get; init; }
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+    public required string PredictedTimeframe { get; init; }
+    public required double SimilarityScore { get; init; }
+    public required string EngagementStatus { get; init; }
+    public required string SourceOutcomeId { get; init; }
 }
