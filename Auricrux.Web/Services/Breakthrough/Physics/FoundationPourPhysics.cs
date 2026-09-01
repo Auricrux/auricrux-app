@@ -77,14 +77,14 @@ public static class FoundationPourPhysics
 
         var maturityFactor = MaturityFactor(effectiveCureTempF);
 
-        var strength28 = ConcretePhysicsModel.PredictStrengthAtAge(targetPsi, 28, cementType, curing);
-        var strength7 = ConcretePhysicsModel.PredictStrengthAtAge(targetPsi, 7, cementType, curing) * maturityFactor;
+        var strength7 = StrengthAtCalendarAge(targetPsi, 7, cementType, curing, maturityFactor);
+        var strength28 = StrengthAtCalendarAge(targetPsi, 28, cementType, curing, maturityFactor);
 
         var evaporation = WeatherPhysicsModel.EstimateEvaporationRate(ambientTempF, relativeHumidity, windSpeedMph);
 
         return new PourPrediction(
             Strength7dPsi: Math.Round(strength7),
-            Strength28dPsi: Math.Round(strength28 * Math.Min(1.0, 0.9 + 0.1 * maturityFactor)),
+            Strength28dPsi: Math.Round(strength28),
             SlumpInches: SlumpFor(strategy),
             CureDaysToStripping: DaysToStripping(targetPsi, cementType, curing, maturityFactor),
             ColdJointRiskPercent: Math.Round(
@@ -106,12 +106,30 @@ public static class FoundationPourPhysics
         return Math.Clamp(ratio, 0.15, 1.35);
     }
 
+    /// <summary>
+    /// Strength at a calendar age, where temperature scales <em>equivalent age</em> rather than
+    /// final strength — cold delays hydration, it does not permanently cap the ultimate strength.
+    /// </summary>
+    public static double StrengthAtCalendarAge(
+        double targetPsi,
+        int calendarAgeDays,
+        ConcretePhysicsModel.CementType cementType,
+        ConcretePhysicsModel.CuringCondition curing,
+        double maturityFactor)
+    {
+        var equivalentAgeDays = Math.Max(1, (int)Math.Round(calendarAgeDays * maturityFactor));
+        return ConcretePhysicsModel.PredictStrengthAtAge(targetPsi, equivalentAgeDays, cementType, curing);
+    }
+
     private static double SlumpFor(PourStrategy strategy) => strategy switch
     {
         PourStrategy.ColdWeatherProtected => 3.5,
         PourStrategy.AcceleratedHighEarly => 5.0,
         _ => 4.0
     };
+
+    /// <summary>Calendar days until stripping strength is reached, capped at a season-long ceiling.</summary>
+    public const int MaxCureDaysConsidered = 120;
 
     private static int DaysToStripping(
         double targetPsi,
@@ -120,13 +138,15 @@ public static class FoundationPourPhysics
         double maturityFactor)
     {
         var required = targetPsi * StrippingStrengthFraction;
-        for (var day = 1; day <= 60; day++)
+        for (var day = 1; day <= MaxCureDaysConsidered; day++)
         {
-            var strength = ConcretePhysicsModel.PredictStrengthAtAge(targetPsi, day, cementType, curing) * maturityFactor;
-            if (strength >= required) return day;
+            if (StrengthAtCalendarAge(targetPsi, day, cementType, curing, maturityFactor) >= required)
+            {
+                return day;
+            }
         }
 
-        return 60;
+        return MaxCureDaysConsidered;
     }
 
     private static double ColdJointRisk(

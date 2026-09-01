@@ -70,6 +70,20 @@ public sealed class FoundationPourPhysicsTests
     }
 
     [Fact]
+    public void ColdPour_StillReachesStripping_TemperatureDelaysRatherThanCaps()
+    {
+        var cold = FoundationPourPhysics.Predict(
+            FoundationPourPhysics.PourStrategy.StandardAmbient,
+            targetPsi: 4000,
+            ambientTempF: 30,
+            slabThicknessIn: 8);
+
+        // Temperature scales equivalent age, so a cold pour is delayed but not capped forever.
+        Assert.True(cold.CureDaysToStripping < FoundationPourPhysics.MaxCureDaysConsidered);
+        Assert.True(cold.CureDaysToStripping > 14);
+    }
+
+    [Fact]
     public void MaturityFactor_ScalesWithCureTemperature()
     {
         Assert.Equal(1.0, FoundationPourPhysics.MaturityFactor(FoundationPourPhysics.ReferenceCureTempF), 3);
