@@ -160,6 +160,23 @@ public sealed class BreakthroughController(
     }
 
     /// <summary>
+    /// Retrieve a previously generated proof (in-memory, or Atlas when configured).
+    /// </summary>
+    [HttpGet("provable-reasoning/{proofId}")]
+    public async Task<ActionResult<ProvableReasoningResult>> GetProvableReasoning(
+        string proofId,
+        CancellationToken cancellationToken)
+    {
+        var proof = await reasoningService.GetProofAsync(proofId, cancellationToken);
+        if (proof is null)
+        {
+            return NotFound(new { error = "Proof not found in memory or Atlas.", proofId });
+        }
+
+        return Ok(proof);
+    }
+
+    /// <summary>
     /// Run the full foundation-pour self-correction loop end to end.
     /// </summary>
     [HttpPost("demo/foundation-pour")]

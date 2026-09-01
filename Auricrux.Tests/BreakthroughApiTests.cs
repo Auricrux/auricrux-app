@@ -133,6 +133,32 @@ public sealed class BreakthroughApiTests : IClassFixture<WebApplicationFactory<P
         Assert.False(string.IsNullOrWhiteSpace(proof!.Conclusion));
         Assert.NotEmpty(proof.ProofSteps);
         Assert.NotEmpty(proof.CitedStandards);
+        Assert.Contains("ACI 209R", string.Join(' ', proof.CitedStandards), StringComparison.OrdinalIgnoreCase);
+        Assert.True(proof.MathematicalVerification.ContainsKey("unprotected_7d_psi"));
+
+        var fetched = await _client.GetAsync($"/api/breakthrough/provable-reasoning/{proof.ProofId}");
+        Assert.Equal(HttpStatusCode.OK, fetched.StatusCode);
+    }
+
+    [Fact]
+    public async Task Provable_reasoning_pile_capacity_scales_with_length()
+    {
+        var shortPile = await _client.PostAsJsonAsync("/api/breakthrough/provable-reasoning", new
+        {
+            question = "What is the driven pile capacity?",
+            physicalParameters = new Dictionary<string, double> { ["pile_length_ft"] = 20, ["pile_diameter_in"] = 12 }
+        });
+        var longPile = await _client.PostAsJsonAsync("/api/breakthrough/provable-reasoning", new
+        {
+            question = "What is the driven pile capacity?",
+            physicalParameters = new Dictionary<string, double> { ["pile_length_ft"] = 80, ["pile_diameter_in"] = 12 }
+        });
+
+        var shortProof = await shortPile.Content.ReadFromJsonAsync<ProvableReasoningResult>();
+        var longProof = await longPile.Content.ReadFromJsonAsync<ProvableReasoningResult>();
+        var shortQ = double.Parse(shortProof!.MathematicalVerification["qall_lbs"]);
+        var longQ = double.Parse(longProof!.MathematicalVerification["qall_lbs"]);
+        Assert.True(longQ > shortQ);
     }
 
     [Fact]

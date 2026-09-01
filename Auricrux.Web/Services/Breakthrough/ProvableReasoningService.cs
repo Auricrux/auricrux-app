@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using Auricrux.Web.Services;
+using Auricrux.Web.Services.Breakthrough.Physics;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -31,6 +33,7 @@ public sealed class ProvableReasoningService
 {
     private readonly AtlasService _atlas;
     private readonly ILogger<ProvableReasoningService> _logger;
+    private static readonly ConcurrentDictionary<string, ProvableReasoningResult> MemoryByProofId = new();
 
     public ProvableReasoningService(AtlasService atlas, ILogger<ProvableReasoningService> logger)
     {
@@ -81,6 +84,8 @@ public sealed class ProvableReasoningService
             GeneratedAt = DateTime.UtcNow
         };
 
+        MemoryByProofId[proofId] = result;
+
         // Persist proof
         if (_atlas.IsConfigured)
         {
@@ -95,6 +100,9 @@ public sealed class ProvableReasoningService
     /// </summary>
     public async Task<ProvableReasoningResult?> GetProofAsync(string proofId, CancellationToken ct = default)
     {
+        if (MemoryByProofId.TryGetValue(proofId, out var cached))
+            return cached;
+
         if (!_atlas.IsConfigured) return null;
 
         try
@@ -130,7 +138,9 @@ public sealed class ProvableReasoningService
     {
         var lowerQuestion = question.ToLowerInvariant();
 
-        if (lowerQuestion.Contains("load") && (lowerQuestion.Contains("capacity") || lowerQuestion.Contains("support") || lowerQuestion.Contains("bear")))
+        if (lowerQuestion.Contains("pile") || lowerQuestion.Contains("footing") ||
+            lowerQuestion.Contains("bearing") ||
+            (lowerQuestion.Contains("load") && (lowerQuestion.Contains("capacity") || lowerQuestion.Contains("support") || lowerQuestion.Contains("bear"))))
             return QuestionType.LoadCapacity;
 
         if (lowerQuestion.Contains("strength") || lowerQuestion.Contains("stress") || lowerQuestion.Contains("material"))
@@ -151,23 +161,30 @@ public sealed class ProvableReasoningService
     private (string Conclusion, List<string> ProofSteps, Dictionary<string, string> Verification, List<string> Standards, double Certainty, string Limitations)
         GenerateLoadCapacityProof(string question, Dictionary<string, double> parameters, List<string> codes)
     {
+        if (parameters.ContainsKey("pile_diameter_in") ||
+            parameters.ContainsKey("pile_length_ft") ||
+            question.Contains("pile", StringComparison.OrdinalIgnoreCase))
+        {
+            return GeneratePileCapacityProof(parameters);
+        }
+
         var proofSteps = new List<string>();
         var verification = new Dictionary<string, string>();
         var standards = new List<string>();
 
-        // Example: Concrete column load capacity
-        var fc = parameters.GetValueOrDefault("concrete_strength_psi", 4000); // f'c
-        var area = parameters.GetValueOrDefault("column_area_sq_in", 144); // A (12"x12" = 144 sq in)
-        var reductionFactor = parameters.GetValueOrDefault("phi_factor", 0.65); // φ (ACI 318)
+        var fc = parameters.GetValueOrDefault("concrete_strength_psi", 4000);
+        var area = parameters.GetValueOrDefault("column_area_sq_in", 144);
+        var reductionFactor = parameters.GetValueOrDefault("phi_factor", 0.65);
+        var lengthIn = parameters.GetValueOrDefault("column_length_in", 0);
+        var radiusIn = parameters.GetValueOrDefault("radius_of_gyration_in", 0);
 
         proofSteps.Add($"Given: Concrete compressive strength f'c = {fc} psi");
         proofSteps.Add($"Given: Column gross area Ag = {area} in²");
         proofSteps.Add($"Given: Strength reduction factor φ = {reductionFactor} (ACI 318-19 Table 21.2.2)");
 
-        // Axial load capacity formula
         proofSteps.Add("Step 1: Apply ACI 318-19 Eq. 22.4.2.1 for tied column axial capacity:");
         proofSteps.Add("Pn,max = 0.80 × φ × [0.85 × f'c × (Ag - Ast) + fy × Ast]");
-        proofSteps.Add("For simplicity, assume Ast (steel area) ≈ 0.01 × Ag (1% reinforcement typical):");
+        proofSteps.Add("Assume Ast ≈ 0.01 × Ag (1% longitudinal steel, stated assumption):");
 
         var ast = 0.01 * area;
         var fy = parameters.GetValueOrDefault("steel_yield_psi", 60000);
@@ -180,64 +197,169 @@ public sealed class ProvableReasoningService
         var pnTotal = pnConcrete + pnSteel;
         var pnMax = 0.80 * reductionFactor * pnTotal;
 
-        proofSteps.Add($"Step 2: Calculate concrete contribution: 0.85 × {fc} × {area - ast:F2} = {pnConcrete:F0} lbs");
-        proofSteps.Add($"Step 3: Calculate steel contribution: {fy} × {ast:F2} = {pnSteel:F0} lbs");
-        proofSteps.Add($"Step 4: Sum contributions: {pnConcrete:F0} + {pnSteel:F0} = {pnTotal:F0} lbs");
-        proofSteps.Add($"Step 5: Apply factors: 0.80 × {reductionFactor} × {pnTotal:F0} = {pnMax:F0} lbs");
+        proofSteps.Add($"Step 2: Concrete contribution: 0.85 × {fc} × {area - ast:F2} = {pnConcrete:F0} lbs");
+        proofSteps.Add($"Step 3: Steel contribution: {fy} × {ast:F2} = {pnSteel:F0} lbs");
+        proofSteps.Add($"Step 4: Pn,max = 0.80 × {reductionFactor} × {pnTotal:F0} = {pnMax:F0} lbs");
+
+        if (lengthIn > 0 && radiusIn > 0)
+        {
+            var (slenderness, isShort) = StructuralPhysicsModel.ColumnSlenderness(lengthIn, radiusIn);
+            proofSteps.Add($"Step 5: Slenderness KL/r = {slenderness:F1} (short-column limit 22): {(isShort ? "short — axial formula applies" : "slender — Euler/P-delta required")}");
+            if (!isShort)
+            {
+                var e = ConcretePhysicsModel.ModulusOfElasticity(fc);
+                var i = area * radiusIn * radiusIn;
+                var pcr = StructuralPhysicsModel.EulerBucklingLoad(e, i, lengthIn);
+                proofSteps.Add($"Euler Pcr = π²EI/(KL)² = {pcr:F0} lbs (unbraced, K=1)");
+                pnMax = Math.Min(pnMax, 0.75 * pcr);
+                proofSteps.Add($"Governing capacity taken as min(Pn,max, 0.75 Pcr) = {pnMax:F0} lbs");
+            }
+        }
 
         var capacityTons = pnMax / 2000;
         var conclusion = $"Column axial load capacity = {pnMax:F0} lbs ({capacityTons:F1} tons)";
 
         verification["formula"] = "Pn,max = 0.80 × φ × [0.85 × f'c × (Ag - Ast) + fy × Ast]";
-        verification["calculation"] = $"0.80 × {reductionFactor} × [{0.85 * fc:F0} × {area - ast:F2} + {fy} × {ast:F2}] = {pnMax:F0}";
-        verification["unit_check"] = "psi × in² = lbs ✓";
+        verification["calculation"] = $"{pnMax:F0} lbs";
+        verification["unit_check"] = "psi × in² = lbs";
 
-        standards.Add("ACI 318-19: Building Code Requirements for Structural Concrete");
         standards.Add("ACI 318-19 Section 22.4.2.1: Axial strength of compression members");
         standards.Add("ACI 318-19 Table 21.2.2: Strength reduction factors φ");
 
-        var certainty = 0.95; // High certainty for straightforward calculation
-        var limitations = "Assumes: (1) Tied column configuration, (2) 1% longitudinal reinforcement, " +
-                         "(3) Normal-weight concrete, (4) Short column (no slenderness effects), " +
-                         "(5) Axial load only (no bending moments)";
+        var certainty = 0.88;
+        var limitations = "Assumes tied column, 1% steel unless Ast given, normal-weight concrete, axial load only unless slenderness inputs were provided.";
 
         return (conclusion, proofSteps, verification, standards, certainty, limitations);
+    }
+
+    private static (string, List<string>, Dictionary<string, string>, List<string>, double, string)
+        GeneratePileCapacityProof(Dictionary<string, double> parameters)
+    {
+        var dia = parameters.GetValueOrDefault("pile_diameter_in", 12);
+        var len = parameters.GetValueOrDefault("pile_length_ft", 40);
+        var skin = parameters.GetValueOrDefault("skin_friction_psf", 800);
+        var tip = parameters.GetValueOrDefault("end_bearing_psf", 8000);
+        var qUlt = FoundationPhysicsModel.DrivenPileCapacity(dia, len, skin, tip);
+        var qAllow = qUlt / 3.0;
+
+        var steps = new List<string>
+        {
+            $"Given: Driven pile {dia:0.#} in diameter × {len:0.#} ft long",
+            $"Given: Unit skin friction fs = {skin:0} psf, unit end bearing qp = {tip:0} psf",
+            "Step 1: Meyerhof Qult = fs × perimeter × length + qp × tip area",
+            $"Qult = {qUlt:F0} lbs ({qUlt / 2000:F1} tons)",
+            "Step 2: Allowable capacity Qall = Qult / FS, FS = 3 (typical static)",
+            $"Qall = {qAllow:F0} lbs ({qAllow / 2000:F1} tons)"
+        };
+
+        var verification = new Dictionary<string, string>
+        {
+            ["formula"] = "Qult = fs·π·D·L + qp·π·D²/4",
+            ["qult_lbs"] = $"{qUlt:F0}",
+            ["qall_lbs"] = $"{qAllow:F0}"
+        };
+
+        return (
+            $"Driven-pile allowable capacity = {qAllow:F0} lbs ({qAllow / 2000:F1} tons) with FS=3",
+            steps,
+            verification,
+            ["Meyerhof pile capacity (Das / FHWA driven-pile)", "Typical FS=3 on Qult pending static load test"],
+            0.80,
+            "Does not replace a site-specific geotechnical report. Skin and tip values are inputs, not measured SPT/CPT.");
     }
 
     private (string, List<string>, Dictionary<string, string>, List<string>, double, string)
         GenerateMaterialStrengthProof(string question, Dictionary<string, double> parameters, List<string> codes)
     {
+        if (parameters.ContainsKey("ambient_temp_f") &&
+            (parameters.ContainsKey("target_psi") || parameters.ContainsKey("required_strip_psi")))
+        {
+            return GeneratePourStrippingProof(parameters);
+        }
+
         var proofSteps = new List<string>();
         var verification = new Dictionary<string, string>();
-        var standards = new List<string>();
+        var age = (int)parameters.GetValueOrDefault("age_days", 7);
+        var measured = parameters.GetValueOrDefault("strength_7day_psi",
+            parameters.GetValueOrDefault("measured_strength_psi", 3000));
+        var cement = parameters.GetValueOrDefault("type_iii", 0) > 0
+            ? ConcretePhysicsModel.CementType.TypeIII
+            : ConcretePhysicsModel.CementType.TypeI;
 
-        // Example: Concrete 28-day strength prediction
-        var fc7 = parameters.GetValueOrDefault("strength_7day_psi", 3000);
+        var ratio = ConcretePhysicsModel.PredictStrengthAtAge(1.0, age, cement);
+        var fc28 = measured / ratio;
+        var at3 = ConcretePhysicsModel.PredictStrengthAtAge(fc28, 3, cement);
+        var at7 = ConcretePhysicsModel.PredictStrengthAtAge(fc28, 7, cement);
+        var at28 = ConcretePhysicsModel.PredictStrengthAtAge(fc28, 28, cement);
+        var tensile = ConcretePhysicsModel.TensileStrength(fc28);
+        var modulus = ConcretePhysicsModel.ModulusOfElasticity(fc28);
 
-        proofSteps.Add($"Given: 7-day compressive strength = {fc7} psi");
-        proofSteps.Add("Step 1: Apply ACI 209R strength gain curve for Type I Portland cement");
-        proofSteps.Add("f(t) = fc28 × [t / (4 + 0.85t)] where t = age in days");
-        proofSteps.Add("Step 2: At 7 days: f(7) = fc28 × [7 / (4 + 0.85×7)]");
+        proofSteps.Add($"Given: Measured compressive strength {measured:F0} psi at {age} days");
+        proofSteps.Add($"Cement: {(cement == ConcretePhysicsModel.CementType.TypeIII ? "Type III" : "Type I")} — ACI 209R-92 Eq. 2-1");
+        proofSteps.Add($"Step 1: f(t)/fc28 = t / (a + b t) = {ratio:F3} at t={age} d");
+        proofSteps.Add($"Step 2: Infer fc28 = {measured:F0} / {ratio:F3} = {fc28:F0} psi");
+        proofSteps.Add($"Step 3: Same curve → f(3)={at3:F0} psi, f(7)={at7:F0} psi, f(28)={at28:F0} psi");
+        proofSteps.Add($"Step 4: ACI 318 fr = 7.5√f'c = {tensile:F0} psi; Ec = {modulus:F0} psi");
 
-        var strengthRatio7 = 7.0 / (4.0 + 0.85 * 7.0);
-        proofSteps.Add($"f(7) = fc28 × {strengthRatio7:F3}");
-        proofSteps.Add($"Step 3: Solve for fc28: fc28 = f(7) / {strengthRatio7:F3}");
+        verification["formula"] = "f(t) = fc28 × [t / (a + b t)] (ACI 209R)";
+        verification["fc28_psi"] = $"{fc28:F0}";
+        verification["fr_psi"] = $"{tensile:F0}";
 
-        var fc28 = fc7 / strengthRatio7;
-        proofSteps.Add($"fc28 = {fc7} / {strengthRatio7:F3} = {fc28:F0} psi");
+        return (
+            $"Inferred 28-day strength = {fc28:F0} psi (ACI 209R from {age}-day break of {measured:F0} psi)",
+            proofSteps,
+            verification,
+            ["ACI 209R-92 Eq. 2-1", "ACI 318-19 §19.2 tensile and elastic modulus"],
+            0.84,
+            "Curing assumed moist unless stated. Temperature maturity is applied only when ambient_temp_f is provided (pour path).");
+    }
 
-        var conclusion = $"Predicted 28-day compressive strength = {fc28:F0} psi";
+    private static (string, List<string>, Dictionary<string, string>, List<string>, double, string)
+        GeneratePourStrippingProof(Dictionary<string, double> parameters)
+    {
+        var target = parameters.GetValueOrDefault("target_psi", 4000);
+        var ambient = parameters.GetValueOrDefault("ambient_temp_f", 70);
+        var thickness = parameters.GetValueOrDefault("slab_thickness_in", 8);
+        var required = parameters.GetValueOrDefault("required_strip_psi", target * FoundationPourPhysics.StrippingStrengthFraction);
 
-        verification["formula"] = "fc28 = f(7) / [7 / (4 + 0.85×7)]";
-        verification["calculation"] = $"{fc7} / {strengthRatio7:F3} = {fc28:F0}";
+        var unprotected = FoundationPourPhysics.Predict(
+            FoundationPourPhysics.PourStrategy.StandardAmbient, target, ambient, thickness);
+        var protectedPour = FoundationPourPhysics.Predict(
+            FoundationPourPhysics.PourStrategy.ColdWeatherProtected, target, ambient, thickness);
 
-        standards.Add("ACI 209R-92: Prediction of Creep, Shrinkage, and Temperature Effects in Concrete Structures");
+        var reachesUnprotected = unprotected.Strength7dPsi >= required;
+        var reachesProtected = protectedPour.Strength7dPsi >= required;
 
-        var certainty = 0.85;
-        var limitations = "Assumes: (1) Type I Portland cement, (2) Normal curing conditions, " +
-                         "(3) Normal-weight concrete, (4) Temperature 70°F";
+        var steps = new List<string>
+        {
+            $"Given: Design f'c = {target:F0} psi, ambient {ambient:0.#}°F, slab {thickness:0.#} in",
+            $"Stripping threshold = {required:F0} psi ({FoundationPourPhysics.StrippingStrengthFraction:P0} of design unless overridden)",
+            $"ACI 209R + equivalent-age: unprotected 7-day = {unprotected.Strength7dPsi:F0} psi, strip in {unprotected.CureDaysToStripping:0.#} d",
+            $"Cold-weather protected 7-day = {protectedPour.Strength7dPsi:F0} psi, strip in {protectedPour.CureDaysToStripping:0.#} d",
+            unprotected.ColdProtectionRequired
+                ? "ACI 306R cold-weather protection is required at this ambient temperature"
+                : "Ambient is above ACI 306R cold-weather trigger"
+        };
 
-        return (conclusion, proofSteps, verification, standards, certainty, limitations);
+        var conclusion = reachesUnprotected
+            ? $"Unprotected pour is predicted to reach {unprotected.Strength7dPsi:F0} psi by 7 days (≥ {required:F0} stripping)."
+            : reachesProtected
+                ? $"Unprotected 7-day {unprotected.Strength7dPsi:F0} psi is below stripping {required:F0}. Protected cure is predicted to reach {protectedPour.Strength7dPsi:F0} psi; stripping in {protectedPour.CureDaysToStripping:0.#} days."
+                : $"Neither unprotected nor protected 7-day strength reaches {required:F0} psi. Plan a longer cure (unprotected strip ~{unprotected.CureDaysToStripping:0.#} d).";
+
+        return (
+            conclusion,
+            steps,
+            new Dictionary<string, string>
+            {
+                ["unprotected_7d_psi"] = $"{unprotected.Strength7dPsi:F0}",
+                ["protected_7d_psi"] = $"{protectedPour.Strength7dPsi:F0}",
+                ["strip_days_unprotected"] = $"{unprotected.CureDaysToStripping:0.#}",
+                ["required_strip_psi"] = $"{required:F0}"
+            },
+            ["ACI 209R-92 strength-gain", "ACI 306R cold weather", "FoundationPourPhysics equivalent-age"],
+            0.82,
+            "Field cylinders must match the protection protocol. Mix design w/c not an input here.");
     }
 
     private (string, List<string>, Dictionary<string, string>, List<string>, double, string)
