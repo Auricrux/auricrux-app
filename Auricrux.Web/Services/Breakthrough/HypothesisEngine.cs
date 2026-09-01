@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Auricrux.Web.Services;
+using Auricrux.Web.Services.Breakthrough.Physics;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -218,100 +219,161 @@ public sealed class HypothesisEngine
         string context,
         Dictionary<string, object>? constraints)
     {
-        var targetPsi = 4000.0;
-        if (constraints != null && constraints.TryGetValue("target_psi", out var psiObj) &&
-            double.TryParse(psiObj?.ToString(), out var parsedPsi))
-        {
-            targetPsi = parsedPsi;
-        }
+        var targetPsi = ReadNumericConstraint(constraints, "target_psi", 4000.0);
+        var ambientTempF = ReadNumericConstraint(constraints, "ambient_temp_f", 62.0);
+        var slabThicknessIn = ReadNumericConstraint(constraints, "slab_thickness_in", 8.0);
+        var relativeHumidity = ReadNumericConstraint(constraints, "relative_humidity", 0.55);
+        var windSpeedMph = ReadNumericConstraint(constraints, "wind_speed_mph", 8.0);
 
         return
         [
-            new ConstructionHypothesis
-            {
-                HypothesisId = Guid.NewGuid().ToString(),
-                Approach = "Standard 4000 PSI Mix — Day Pour, Ambient Cure",
-                PredictedOutcome = "Meets design strength at 28 days with normal finishing window",
-                Assumptions =
+            BuildPourHypothesis(
+                FoundationPourPhysics.PourStrategy.StandardAmbient,
+                "Standard 4000 PSI Mix — Day Pour, Ambient Cure",
+                "Meets design strength at 28 days with normal finishing window",
                 [
-                    "Ambient temperature 50–70°F during place and cure",
                     "Water-cement ratio held to mix design",
                     "Vibration and finishing per ACI 301",
                     "No extended truck wait beyond 90 minutes"
                 ],
-                QuantitativePredictions = new Dictionary<string, double>
-                {
-                    { "compressive_strength_psi_7d", targetPsi * 0.65 },
-                    { "compressive_strength_psi_28d", targetPsi },
-                    { "slump_inches", 4.0 },
-                    { "cure_days_to_stripping", 7 },
-                    { "cold_joint_risk_percent", 8 }
-                },
-                ConfidenceScore = 0.84,
-                RiskFactors =
+                baseConfidence: 0.84,
                 [
                     "Hot-weather set acceleration if temps rise",
                     "Finishers overworking surface → scaling",
                     "Supply delay creating cold joints"
-                ]
-            },
-            new ConstructionHypothesis
-            {
-                HypothesisId = Guid.NewGuid().ToString(),
-                Approach = "Cold-Weather Pour — Heated Mix + Insulated Blankets",
-                PredictedOutcome = "Protected early strength; slightly longer schedule, lower freeze risk",
-                Assumptions =
+                ],
+                targetPsi, ambientTempF, slabThicknessIn, relativeHumidity, windSpeedMph),
+
+            BuildPourHypothesis(
+                FoundationPourPhysics.PourStrategy.ColdWeatherProtected,
+                "Cold-Weather Pour — Heated Mix + Insulated Blankets",
+                "Protected early strength; slightly longer schedule, lower freeze risk",
                 [
                     "Mix water heated; aggregates above freezing",
                     "Insulated blankets placed within 1 hour of finish",
                     "Cylinder cures match field protection protocol",
-                    "ACI 306 cold-weather plan active"
+                    "ACI 306R cold-weather plan active"
                 ],
-                QuantitativePredictions = new Dictionary<string, double>
-                {
-                    { "compressive_strength_psi_7d", targetPsi * 0.55 },
-                    { "compressive_strength_psi_28d", targetPsi * 0.98 },
-                    { "slump_inches", 3.5 },
-                    { "cure_days_to_stripping", 10 },
-                    { "cold_joint_risk_percent", 5 }
-                },
-                ConfidenceScore = 0.79,
-                RiskFactors =
+                baseConfidence: 0.79,
                 [
                     "Blanket gaps causing surface freeze",
                     "Under-heated mix slowing set",
                     "Cylinder strength not matching field if protection removed early"
-                ]
-            },
-            new ConstructionHypothesis
-            {
-                HypothesisId = Guid.NewGuid().ToString(),
-                Approach = "Accelerated High-Early Mix — Fast Form Cycle",
-                PredictedOutcome = "Earlier stripping strength; higher cost and thermal cracking risk",
-                Assumptions =
+                ],
+                targetPsi, ambientTempF, slabThicknessIn, relativeHumidity, windSpeedMph),
+
+            BuildPourHypothesis(
+                FoundationPourPhysics.PourStrategy.AcceleratedHighEarly,
+                "Accelerated High-Early Mix — Fast Form Cycle",
+                "Earlier stripping strength; higher cost and thermal cracking risk",
                 [
                     "Type III or accelerator dosage within manufacturer limits",
                     "Thermal control plan for mass sections",
                     "QA cylinders cast for 1-day and 3-day breaks",
                     "Finishing crew sized for faster set"
                 ],
-                QuantitativePredictions = new Dictionary<string, double>
-                {
-                    { "compressive_strength_psi_7d", targetPsi * 0.85 },
-                    { "compressive_strength_psi_28d", targetPsi * 1.05 },
-                    { "slump_inches", 5.0 },
-                    { "cure_days_to_stripping", 3 },
-                    { "cold_joint_risk_percent", 12 }
-                },
-                ConfidenceScore = 0.71,
-                RiskFactors =
+                baseConfidence: 0.71,
                 [
                     "Plastic shrinkage if wind/sun high",
                     "Thermal cracking in thicker sections",
                     "Cost overrun from admixture premium"
-                ]
-            }
+                ],
+                targetPsi, ambientTempF, slabThicknessIn, relativeHumidity, windSpeedMph)
         ];
+    }
+
+    /// <summary>
+    /// Builds one pour hypothesis whose quantitative predictions come from ACI-based
+    /// concrete and weather physics rather than fixed ratios, so field verification can
+    /// falsify the physics rather than a guess.
+    /// </summary>
+    private static ConstructionHypothesis BuildPourHypothesis(
+        FoundationPourPhysics.PourStrategy strategy,
+        string approach,
+        string predictedOutcome,
+        List<string> assumptions,
+        double baseConfidence,
+        List<string> riskFactors,
+        double targetPsi,
+        double ambientTempF,
+        double slabThicknessIn,
+        double relativeHumidity,
+        double windSpeedMph)
+    {
+        var physics = FoundationPourPhysics.Predict(
+            strategy, targetPsi, ambientTempF, slabThicknessIn, relativeHumidity, windSpeedMph);
+
+        var groundedAssumptions = new List<string>(assumptions)
+        {
+            $"Effective cure temperature {physics.EffectiveCureTempF:0.#}°F (ambient {ambientTempF:0.#}°F)",
+            $"Surface evaporation {physics.EvaporationRateLbPerSqFtPerHour:0.###} lb/ft²/hr (ACI 305R)",
+            $"Strength gain per ACI 209R; stripping at {FoundationPourPhysics.StrippingStrengthFraction:P0} of design"
+        };
+
+        var groundedRisks = new List<string>(riskFactors);
+        var confidence = baseConfidence;
+
+        if (physics.ColdProtectionRequired)
+        {
+            if (strategy == FoundationPourPhysics.PourStrategy.ColdWeatherProtected)
+            {
+                confidence += 0.08;
+            }
+            else
+            {
+                confidence -= 0.15;
+                groundedRisks.Insert(
+                    0,
+                    $"ACI 306R cold-weather protection triggered at {ambientTempF:0.#}°F — unprotected cure loses early strength");
+            }
+        }
+
+        if (physics.EvaporationRateLbPerSqFtPerHour > FoundationPourPhysics.HighEvaporationThreshold)
+        {
+            confidence -= 0.05;
+            groundedRisks.Insert(
+                0,
+                $"Evaporation {physics.EvaporationRateLbPerSqFtPerHour:0.###} lb/ft²/hr exceeds ACI 305R plastic-shrinkage threshold");
+        }
+
+        if (strategy == FoundationPourPhysics.PourStrategy.AcceleratedHighEarly && slabThicknessIn > 18)
+        {
+            confidence -= 0.05;
+            groundedRisks.Insert(0, $"Mass section at {slabThicknessIn:0.#} in raises thermal-gradient cracking risk");
+        }
+
+        return new ConstructionHypothesis
+        {
+            HypothesisId = Guid.NewGuid().ToString(),
+            Approach = approach,
+            PredictedOutcome = predictedOutcome,
+            Assumptions = groundedAssumptions,
+            QuantitativePredictions = new Dictionary<string, double>
+            {
+                { "compressive_strength_psi_7d", physics.Strength7dPsi },
+                { "compressive_strength_psi_28d", physics.Strength28dPsi },
+                { "slump_inches", physics.SlumpInches },
+                { "cure_days_to_stripping", physics.CureDaysToStripping },
+                { "cold_joint_risk_percent", physics.ColdJointRiskPercent }
+            },
+            ConfidenceScore = Math.Clamp(confidence, 0.35, 0.95),
+            RiskFactors = groundedRisks
+        };
+    }
+
+    private static double ReadNumericConstraint(
+        Dictionary<string, object>? constraints,
+        string key,
+        double fallback)
+    {
+        if (constraints != null &&
+            constraints.TryGetValue(key, out var raw) &&
+            double.TryParse(raw?.ToString(), out var parsed))
+        {
+            return parsed;
+        }
+
+        return fallback;
     }
 
     private List<ConstructionHypothesis> GenerateFoundationHypotheses(

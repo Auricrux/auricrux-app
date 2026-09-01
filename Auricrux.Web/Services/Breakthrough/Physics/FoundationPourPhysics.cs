@@ -1,0 +1,156 @@
+namespace Auricrux.Web.Services.Breakthrough.Physics;
+
+/// <summary>
+/// Derives foundation-pour predictions from concrete and weather physics instead of
+/// fixed ratios, so hypotheses can be falsified against real ACI behavior.
+///
+/// Sources: ACI 209R-92 (strength gain), ACI 306R (cold weather), ACI 305R (evaporation).
+/// </summary>
+public static class FoundationPourPhysics
+{
+    /// <summary>Reference cure temperature the ACI 209R curve is calibrated against.</summary>
+    public const double ReferenceCureTempF = 68.0;
+
+    /// <summary>Fraction of design strength normally required before stripping forms.</summary>
+    public const double StrippingStrengthFraction = 0.70;
+
+    /// <summary>
+    /// Evaporation level treated as high for pour planning.
+    /// The inherited ACI 305R approximation in <see cref="WeatherPhysicsModel"/> returns values
+    /// an order of magnitude above field lb/ft²/hr, so comparisons stay inside that model's scale.
+    /// </summary>
+    public const double HighEvaporationThreshold = 1.0;
+
+    public enum PourStrategy
+    {
+        /// <summary>Ambient placement with normal Type I mix.</summary>
+        StandardAmbient,
+
+        /// <summary>Heated mix plus insulated blankets per ACI 306R.</summary>
+        ColdWeatherProtected,
+
+        /// <summary>Type III / accelerated mix for a fast form cycle.</summary>
+        AcceleratedHighEarly
+    }
+
+    public sealed record PourPrediction(
+        double Strength7dPsi,
+        double Strength28dPsi,
+        double SlumpInches,
+        int CureDaysToStripping,
+        double ColdJointRiskPercent,
+        double EffectiveCureTempF,
+        bool ColdProtectionRequired,
+        double EvaporationRateLbPerSqFtPerHour);
+
+    /// <summary>
+    /// Predict pour outcomes for one strategy under given site conditions.
+    /// </summary>
+    public static PourPrediction Predict(
+        PourStrategy strategy,
+        double targetPsi,
+        double ambientTempF,
+        double slabThicknessIn,
+        double relativeHumidity = 0.55,
+        double windSpeedMph = 8)
+    {
+        var cementType = strategy == PourStrategy.AcceleratedHighEarly
+            ? ConcretePhysicsModel.CementType.TypeIII
+            : ConcretePhysicsModel.CementType.TypeI;
+
+        var curing = strategy == PourStrategy.AcceleratedHighEarly
+            ? ConcretePhysicsModel.CuringCondition.AirDried
+            : ConcretePhysicsModel.CuringCondition.MoistCured;
+
+        var coldProtectionRequired = WeatherPhysicsModel.RequiresColdWeatherProtection(
+            meanDailyTempF: ambientTempF,
+            minTempF: ambientTempF - 6,
+            hoursBelow50F: ambientTempF < 50 ? 14 : 0);
+
+        // Protected pours hold concrete at the ACI 306R minimum placement temperature.
+        var effectiveCureTempF = ambientTempF;
+        if (strategy == PourStrategy.ColdWeatherProtected)
+        {
+            var (minTempF, maxTempF) = WeatherPhysicsModel.ColdWeatherPlacementTemp(slabThicknessIn, ambientTempF);
+            effectiveCureTempF = Math.Clamp(Math.Max(ambientTempF, minTempF), minTempF, maxTempF);
+        }
+
+        var maturityFactor = MaturityFactor(effectiveCureTempF);
+
+        var strength28 = ConcretePhysicsModel.PredictStrengthAtAge(targetPsi, 28, cementType, curing);
+        var strength7 = ConcretePhysicsModel.PredictStrengthAtAge(targetPsi, 7, cementType, curing) * maturityFactor;
+
+        var evaporation = WeatherPhysicsModel.EstimateEvaporationRate(ambientTempF, relativeHumidity, windSpeedMph);
+
+        return new PourPrediction(
+            Strength7dPsi: Math.Round(strength7),
+            Strength28dPsi: Math.Round(strength28 * Math.Min(1.0, 0.9 + 0.1 * maturityFactor)),
+            SlumpInches: SlumpFor(strategy),
+            CureDaysToStripping: DaysToStripping(targetPsi, cementType, curing, maturityFactor),
+            ColdJointRiskPercent: Math.Round(
+                ColdJointRisk(strategy, evaporation, coldProtectionRequired), 1),
+            EffectiveCureTempF: Math.Round(effectiveCureTempF, 1),
+            ColdProtectionRequired: coldProtectionRequired,
+            EvaporationRateLbPerSqFtPerHour: Math.Round(evaporation, 3));
+    }
+
+    /// <summary>
+    /// Nurse-Saul style temperature scaling relative to the 68°F reference cure.
+    /// Below freezing hydration effectively stops, so the factor floors low rather than zero
+    /// to keep predictions falsifiable rather than degenerate.
+    /// </summary>
+    public static double MaturityFactor(double cureTempF)
+    {
+        var datum = 32.0;
+        var ratio = (cureTempF - datum) / (ReferenceCureTempF - datum);
+        return Math.Clamp(ratio, 0.15, 1.35);
+    }
+
+    private static double SlumpFor(PourStrategy strategy) => strategy switch
+    {
+        PourStrategy.ColdWeatherProtected => 3.5,
+        PourStrategy.AcceleratedHighEarly => 5.0,
+        _ => 4.0
+    };
+
+    private static int DaysToStripping(
+        double targetPsi,
+        ConcretePhysicsModel.CementType cementType,
+        ConcretePhysicsModel.CuringCondition curing,
+        double maturityFactor)
+    {
+        var required = targetPsi * StrippingStrengthFraction;
+        for (var day = 1; day <= 60; day++)
+        {
+            var strength = ConcretePhysicsModel.PredictStrengthAtAge(targetPsi, day, cementType, curing) * maturityFactor;
+            if (strength >= required) return day;
+        }
+
+        return 60;
+    }
+
+    private static double ColdJointRisk(
+        PourStrategy strategy,
+        double evaporationRate,
+        bool coldProtectionRequired)
+    {
+        // Surface moisture loss drives plastic-shrinkage joints (ACI 305R). Saturating so the
+        // term stays bounded but strictly increasing across the model's wide output range.
+        var evaporationTerm = 20.0 * (evaporationRate / (evaporationRate + 0.5));
+        var risk = 4.0 + evaporationTerm;
+
+        if (coldProtectionRequired)
+        {
+            // Slow set widens the window where a delayed truck creates a joint.
+            risk += strategy == PourStrategy.ColdWeatherProtected ? 1.5 : 6.0;
+        }
+
+        if (strategy == PourStrategy.AcceleratedHighEarly)
+        {
+            // Fast set shortens the safe placement window between loads.
+            risk += 5.0;
+        }
+
+        return Math.Clamp(risk, 2.0, 45.0);
+    }
+}
