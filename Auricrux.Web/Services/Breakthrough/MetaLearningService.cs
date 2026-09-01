@@ -127,7 +127,8 @@ public sealed class MetaLearningService
 
         // Calibration recommendations
         var poorlyCalibrated = insight.ConfidenceCalibration
-            .Where(kvp => Math.Abs(kvp.Value - double.Parse(kvp.Key.Replace("confidence_", "").Replace("_to_", ".").Split('_')[0])) > 0.15)
+            .Where(kvp => TryParseCalibrationLowerBound(kvp.Key, out var stated)
+                          && Math.Abs(kvp.Value - stated) > 0.15)
             .ToList();
 
         if (poorlyCalibrated.Any())
@@ -143,6 +144,27 @@ public sealed class MetaLearningService
         }
 
         return recommendations;
+    }
+
+    /// <summary>
+    /// Reads the stated confidence from a calibration bucket key such as
+    /// "confidence_0.6_to_0.7". Returns false for keys that do not match, so an
+    /// unexpected bucket name degrades the recommendation instead of throwing.
+    /// </summary>
+    public static bool TryParseCalibrationLowerBound(string key, out double lowerBound)
+    {
+        lowerBound = 0;
+        if (string.IsNullOrWhiteSpace(key)) return false;
+
+        var range = key.Replace("confidence_", string.Empty, StringComparison.OrdinalIgnoreCase);
+        var bounds = range.Split("_to_", StringSplitOptions.RemoveEmptyEntries);
+        if (bounds.Length == 0) return false;
+
+        return double.TryParse(
+            bounds[0],
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out lowerBound);
     }
 
     // ── Private Implementation ──────────────────────────────────────────────────

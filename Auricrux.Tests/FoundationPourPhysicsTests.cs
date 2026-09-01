@@ -1,7 +1,32 @@
+using Auricrux.Web.Services.Breakthrough;
 using Auricrux.Web.Services.Breakthrough.Physics;
 using Xunit;
 
 namespace Auricrux.Tests;
+
+/// <summary>
+/// Guards the calibration bucket parser. The original implementation produced
+/// "0.6.0.7" and threw once enough verifications existed to populate calibration.
+/// </summary>
+public sealed class MetaLearningCalibrationTests
+{
+    [Theory]
+    [InlineData("confidence_0.6_to_0.7", 0.6)]
+    [InlineData("confidence_0.9_to_1.0", 0.9)]
+    public void ParsesStatedConfidenceFromBucketKey(string key, double expected)
+    {
+        Assert.True(MetaLearningService.TryParseCalibrationLowerBound(key, out var lowerBound));
+        Assert.Equal(expected, lowerBound, 3);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not-a-bucket")]
+    public void ReturnsFalseForUnexpectedKeys(string key)
+    {
+        Assert.False(MetaLearningService.TryParseCalibrationLowerBound(key, out _));
+    }
+}
 
 /// <summary>
 /// Proves pour predictions come from ACI-based physics, not fixed ratios:

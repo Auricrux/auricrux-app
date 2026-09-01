@@ -51,6 +51,35 @@ public class IntelligenceDashboardController : ControllerBase
     }
 
     /// <summary>
+    /// Breakthrough loop activity. Stays truthful without Atlas because the
+    /// self-correction loop runs in process regardless of persistence.
+    /// </summary>
+    [HttpGet("breakthrough")]
+    public async Task<IActionResult> GetBreakthroughActivity(
+        [FromQuery] string period = "7d",
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var timeSpan = period switch
+            {
+                "24h" => TimeSpan.FromHours(24),
+                "7d" => TimeSpan.FromDays(7),
+                "30d" => TimeSpan.FromDays(30),
+                _ => TimeSpan.FromDays(7)
+            };
+
+            var activity = await _dashboard.GetBreakthroughActivityAsync(timeSpan, ct);
+            return Ok(activity);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting breakthrough activity");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get learning loop stage metrics
     /// </summary>
     [HttpGet("learning-loop")]

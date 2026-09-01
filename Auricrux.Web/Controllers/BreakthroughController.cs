@@ -4,18 +4,163 @@ using Microsoft.AspNetCore.Mvc;
 namespace Auricrux.Web.Controllers;
 
 /// <summary>
-/// Auricrux breakthrough APIs — self-correction loop demos owned by this app.
+/// Auricrux breakthrough APIs — the self-correction loop as first-class endpoints:
+/// competing hypotheses → physical verification → meta-learning → provable reasoning.
+/// Every path works without Atlas (in-process cache); Atlas adds durable persistence.
 /// </summary>
 [ApiController]
 [Route("api/breakthrough")]
 public sealed class BreakthroughController(
+    HypothesisEngine hypothesisEngine,
+    PhysicalVerificationService verificationService,
+    MetaLearningService metaLearningService,
+    ProvableReasoningService reasoningService,
     FoundationPourDemoService foundationPourDemo,
     ILogger<BreakthroughController> logger) : ControllerBase
 {
     /// <summary>
-    /// Run the foundation-pour self-correction loop:
-    /// competing hypotheses → divergent field measurements → verification → meta-learning → proof.
-    /// Works without Atlas (in-memory cache).
+    /// Generate competing falsifiable hypotheses for a construction decision.
+    /// </summary>
+    [HttpPost("hypotheses")]
+    public async Task<ActionResult<HypothesisComparison>> GenerateHypotheses(
+        [FromBody] GenerateHypothesesRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.DecisionContext))
+        {
+            return BadRequest(new { error = "decisionContext is required" });
+        }
+
+        var comparison = await hypothesisEngine.GenerateHypothesesAsync(
+            request.DecisionContext.Trim(),
+            string.IsNullOrWhiteSpace(request.ConstructionPhase) ? "general" : request.ConstructionPhase.Trim(),
+            request.ProjectId,
+            request.Constraints?.ToDictionary(kv => kv.Key, kv => (object)kv.Value),
+            cancellationToken);
+
+        return Ok(comparison);
+    }
+
+    /// <summary>
+    /// Retrieve a previously generated hypothesis comparison by decision id.
+    /// </summary>
+    [HttpGet("hypotheses/{decisionId}")]
+    public async Task<ActionResult<HypothesisComparison>> GetHypotheses(
+        string decisionId,
+        CancellationToken cancellationToken)
+    {
+        var comparison = await hypothesisEngine.GetHypothesesAsync(decisionId, cancellationToken);
+        if (comparison is null)
+        {
+            return NotFound(new { error = "Decision not found in memory or Atlas.", decisionId });
+        }
+
+        return Ok(comparison);
+    }
+
+    /// <summary>
+    /// Verify a prediction against measured field reality — this is what closes the loop.
+    /// </summary>
+    [HttpPost("verify")]
+    public async Task<ActionResult<PhysicalVerificationResult>> VerifyPrediction(
+        [FromBody] VerifyPredictionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.PredictionId))
+        {
+            return BadRequest(new { error = "predictionId is required" });
+        }
+
+        if (request.ActualMeasurements is null || request.ActualMeasurements.Count == 0)
+        {
+            return BadRequest(new { error = "actualMeasurements must contain at least one measurement" });
+        }
+
+        var result = await verificationService.VerifyPredictionAsync(
+            request.PredictionId.Trim(),
+            request.ActualOutcome?.Trim() ?? "Field outcome recorded",
+            request.ActualMeasurements,
+            request.EvidenceUrl,
+            request.VerifiedBy,
+            cancellationToken);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Prediction accuracy statistics over a rolling window.
+    /// </summary>
+    [HttpGet("accuracy")]
+    public async Task<ActionResult<object>> GetAccuracy(
+        [FromQuery] int periodHours = 168,
+        CancellationToken cancellationToken = default)
+    {
+        var period = TimeSpan.FromHours(Math.Clamp(periodHours, 1, 24 * 365));
+        var stats = await verificationService.GetAccuracyStatsAsync(period, cancellationToken);
+
+        return Ok(new
+        {
+            periodHours = period.TotalHours,
+            stats.TotalVerifications,
+            stats.AverageAccuracy,
+            stats.MedianAccuracy,
+            stats.CorrectionRate,
+            mostCommonErrors = stats.MostCommonErrors.Select(e => new { error = e.Error, count = e.Count })
+        });
+    }
+
+    /// <summary>
+    /// Meta-learning: detect systematic error patterns in what the model gets wrong.
+    /// </summary>
+    [HttpGet("meta-learning/{modelId}")]
+    public async Task<ActionResult<MetaLearningInsight>> DetectSystematicErrors(
+        string modelId,
+        [FromQuery] int periodHours = 168,
+        CancellationToken cancellationToken = default)
+    {
+        var period = TimeSpan.FromHours(Math.Clamp(periodHours, 1, 24 * 365));
+        var insight = await metaLearningService.AnalyzeModelErrorsAsync(modelId, period, cancellationToken);
+        return Ok(insight);
+    }
+
+    /// <summary>
+    /// Improvement recommendations derived from recent verification history.
+    /// </summary>
+    [HttpGet("improvement-recommendations")]
+    public async Task<ActionResult<object>> GetImprovementRecommendations(
+        [FromQuery] int periodHours = 168,
+        CancellationToken cancellationToken = default)
+    {
+        var period = TimeSpan.FromHours(Math.Clamp(periodHours, 1, 24 * 365));
+        var recommendations = await metaLearningService.GetImprovementRecommendationsAsync(period, cancellationToken);
+        return Ok(new { periodHours = period.TotalHours, count = recommendations.Count, recommendations });
+    }
+
+    /// <summary>
+    /// Provable engineering reasoning with step-by-step math and code citations.
+    /// </summary>
+    [HttpPost("provable-reasoning")]
+    public async Task<ActionResult<ProvableReasoningResult>> GenerateProvableReasoning(
+        [FromBody] ProvableReasoningRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Question))
+        {
+            return BadRequest(new { error = "question is required" });
+        }
+
+        var proof = await reasoningService.GenerateProofAsync(
+            request.Question.Trim(),
+            request.PhysicalParameters ?? [],
+            request.ApplicableCodes is { Count: > 0 } codes ? codes : ["ACI 318", "ACI 301"],
+            request.DesignIntent,
+            cancellationToken);
+
+        return Ok(proof);
+    }
+
+    /// <summary>
+    /// Run the full foundation-pour self-correction loop end to end.
     /// </summary>
     [HttpPost("demo/foundation-pour")]
     public async Task<ActionResult<FoundationPourDemoResult>> RunFoundationPourDemo(
@@ -37,4 +182,55 @@ public sealed class BreakthroughController(
         var result = await foundationPourDemo.RunAsync(null, cancellationToken);
         return Ok(result);
     }
+}
+
+/// <summary>Request to generate competing hypotheses for a decision.</summary>
+public sealed class GenerateHypothesesRequest
+{
+    /// <summary>What decision is being made, in field language.</summary>
+    public string DecisionContext { get; init; } = "";
+
+    /// <summary>Construction phase, e.g. foundation-pour, structural, schedule.</summary>
+    public string ConstructionPhase { get; init; } = "general";
+
+    /// <summary>Optional project association.</summary>
+    public string? ProjectId { get; init; }
+
+    /// <summary>Known numeric constraints, e.g. target_psi, ambient_temp_f, slab_thickness_in.</summary>
+    public Dictionary<string, double>? Constraints { get; init; }
+}
+
+/// <summary>Request to verify a prediction against measured field results.</summary>
+public sealed class VerifyPredictionRequest
+{
+    /// <summary>Hypothesis id returned when the prediction was generated.</summary>
+    public string PredictionId { get; init; } = "";
+
+    /// <summary>Narrative of what actually happened in the field.</summary>
+    public string? ActualOutcome { get; init; }
+
+    /// <summary>Measured values keyed by the same names used in the prediction.</summary>
+    public Dictionary<string, double>? ActualMeasurements { get; init; }
+
+    /// <summary>Optional link to photos, cylinder breaks, or reports.</summary>
+    public string? EvidenceUrl { get; init; }
+
+    /// <summary>Who recorded the verification.</summary>
+    public string? VerifiedBy { get; init; }
+}
+
+/// <summary>Request for a provable engineering answer.</summary>
+public sealed class ProvableReasoningRequest
+{
+    /// <summary>Engineering question to prove.</summary>
+    public string Question { get; init; } = "";
+
+    /// <summary>Numeric inputs the proof should use.</summary>
+    public Dictionary<string, double>? PhysicalParameters { get; init; }
+
+    /// <summary>Codes and standards to cite.</summary>
+    public List<string>? ApplicableCodes { get; init; }
+
+    /// <summary>Optional design intent for context.</summary>
+    public string? DesignIntent { get; init; }
 }

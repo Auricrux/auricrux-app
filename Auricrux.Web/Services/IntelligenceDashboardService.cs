@@ -1,3 +1,4 @@
+using Auricrux.Web.Services.Breakthrough;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -10,14 +11,62 @@ namespace Auricrux.Web.Services;
 public class IntelligenceDashboardService
 {
     private readonly AtlasService _atlas;
+    private readonly PhysicalVerificationService _verification;
+    private readonly MetaLearningService _metaLearning;
     private readonly ILogger<IntelligenceDashboardService> _logger;
 
     public IntelligenceDashboardService(
         AtlasService atlas,
+        PhysicalVerificationService verification,
+        MetaLearningService metaLearning,
         ILogger<IntelligenceDashboardService> logger)
     {
         _atlas = atlas;
+        _verification = verification;
+        _metaLearning = metaLearning;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Breakthrough loop activity from the in-process verification cache.
+    /// This is the one view that stays truthful without Atlas, because the
+    /// self-correction loop runs in memory whether or not persistence is configured.
+    /// </summary>
+    public async Task<BreakthroughActivity> GetBreakthroughActivityAsync(
+        TimeSpan period,
+        CancellationToken ct = default)
+    {
+        var stats = await _verification.GetAccuracyStatsAsync(period, ct);
+
+        var activity = new BreakthroughActivity
+        {
+            Period = FormatPeriod(period),
+            Persistence = _atlas.IsConfigured ? "atlas" : "in-memory",
+            VerificationsRecorded = stats.TotalVerifications,
+            AverageAccuracy = stats.AverageAccuracy,
+            MedianAccuracy = stats.MedianAccuracy,
+            CorrectionRate = stats.CorrectionRate,
+            MostCommonErrors = stats.MostCommonErrors
+                .Select(e => new BreakthroughErrorCount { Error = e.Error, Count = e.Count })
+                .ToList()
+        };
+
+        // Meta-learning needs a minimum sample before its patterns mean anything.
+        if (stats.TotalVerifications >= 10)
+        {
+            var insight = await _metaLearning.AnalyzeModelErrorsAsync("auricrux-primary", period, ct);
+            activity.SystematicErrorPatterns = insight.SystematicErrors.Count;
+            activity.RecommendedExperiments = insight.RecommendedExperiments;
+        }
+        else
+        {
+            activity.RecommendedExperiments =
+            [
+                $"Record {10 - stats.TotalVerifications} more field verifications to unlock meta-learning"
+            ];
+        }
+
+        return activity;
     }
 
     /// <summary>
@@ -29,7 +78,21 @@ public class IntelligenceDashboardService
     {
         if (!_atlas.IsConfigured)
         {
-            return new DashboardOverview { Status = "atlas_not_configured" };
+            // Atlas-backed counters are genuinely unavailable, but the breakthrough loop
+            // still runs in memory — report that rather than a misleading wall of zeros.
+            var breakthrough = await GetBreakthroughActivityAsync(period, ct);
+
+            return new DashboardOverview
+            {
+                Period = FormatPeriod(period),
+                OutcomesVerified = breakthrough.VerificationsRecorded,
+                Status = "in_memory_breakthrough",
+                StatusMessage =
+                    $"Atlas persistence is off. Self-correction loop ran {breakthrough.VerificationsRecorded} " +
+                    $"verification(s) in memory at {breakthrough.AverageAccuracy:P0} average accuracy. " +
+                    "Learning-loop counters that require Atlas are unavailable.",
+                Health = await GetSystemHealthAsync(ct)
+            };
         }
 
         var cutoff = DateTime.UtcNow.Subtract(period);
@@ -473,6 +536,25 @@ public class DashboardOverview
     public SystemHealth Health { get; set; } = new();
     public string Status { get; set; } = "";
     public string StatusMessage { get; set; } = "";
+}
+
+public class BreakthroughActivity
+{
+    public string Period { get; set; } = "";
+    public string Persistence { get; set; } = "";
+    public int VerificationsRecorded { get; set; }
+    public double AverageAccuracy { get; set; }
+    public double MedianAccuracy { get; set; }
+    public double CorrectionRate { get; set; }
+    public int SystematicErrorPatterns { get; set; }
+    public List<string> RecommendedExperiments { get; set; } = new();
+    public List<BreakthroughErrorCount> MostCommonErrors { get; set; } = new();
+}
+
+public class BreakthroughErrorCount
+{
+    public string Error { get; set; } = "";
+    public int Count { get; set; }
 }
 
 public class SystemHealth
