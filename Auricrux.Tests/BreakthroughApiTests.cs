@@ -177,6 +177,8 @@ public sealed class BreakthroughApiTests : IClassFixture<WebApplicationFactory<P
         Assert.NotNull(payload);
         Assert.Equal("in_memory_breakthrough", payload!.Status);
         Assert.False(string.IsNullOrWhiteSpace(payload.StatusMessage));
+        Assert.NotEqual("healthy", payload.Health.OllamaStatus);
+        Assert.False(string.IsNullOrWhiteSpace(payload.Health.RuntimeMode));
     }
 
     [Fact]
@@ -246,5 +248,13 @@ public sealed class BreakthroughApiTests : IClassFixture<WebApplicationFactory<P
         public string Status { get; set; } = "";
         public string StatusMessage { get; set; } = "";
         public int OutcomesVerified { get; set; }
+        public HealthPayload Health { get; set; } = new();
+    }
+
+    private sealed class HealthPayload
+    {
+        public string OllamaStatus { get; set; } = "";
+        public string RuntimeMode { get; set; } = "";
+        public string AtlasStatus { get; set; } = "";
     }
 }

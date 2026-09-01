@@ -1,10 +1,12 @@
 @{
-    var (statusIcon, statusColor, statusText) = Status.ToLower() switch
+    var (statusIcon, statusColor, statusText) = Status.ToLowerInvariant() switch
     {
-        "healthy" or "operational" or "active" => ("✅", "green", "Healthy"),
-        "unavailable" or "error" => ("❌", "red", "Unavailable"),
-        "degraded" or "warning" => ("⚠️", "yellow", "Degraded"),
-        _ => ("⚪", "gray", "Unknown")
+        "healthy" or "operational" or "active" or "ollama-live" => ("✅", "green", Status is "ollama-live" ? "Ollama live" : "Healthy"),
+        "configured" or "hosted" or "self" => ("ℹ️", "blue", Status),
+        "unavailable" or "error" or "unreachable" => ("❌", "red", "Unavailable"),
+        "degraded" or "warning" or "ollama-degraded" or "corpus-fallback" => ("⚠️", "yellow", Status),
+        "not_configured" or "unobserved" => ("⚪", "gray", Status.Replace('_', ' ')),
+        _ => ("⚪", "gray", string.IsNullOrWhiteSpace(Status) ? "Unknown" : Status)
     };
 }
 

@@ -13,17 +13,26 @@ public class IntelligenceDashboardService
     private readonly AtlasService _atlas;
     private readonly PhysicalVerificationService _verification;
     private readonly MetaLearningService _metaLearning;
+    private readonly BackendHealthService _backendHealth;
+    private readonly IHttpClientFactory _http;
+    private readonly IConfiguration _config;
     private readonly ILogger<IntelligenceDashboardService> _logger;
 
     public IntelligenceDashboardService(
         AtlasService atlas,
         PhysicalVerificationService verification,
         MetaLearningService metaLearning,
+        BackendHealthService backendHealth,
+        IHttpClientFactory http,
+        IConfiguration config,
         ILogger<IntelligenceDashboardService> logger)
     {
         _atlas = atlas;
         _verification = verification;
         _metaLearning = metaLearning;
+        _backendHealth = backendHealth;
+        _http = http;
+        _config = config;
         _logger = logger;
     }
 
@@ -407,11 +416,12 @@ public class IntelligenceDashboardService
         return await _atlas.LearningRecommendations.CountDocumentsAsync(filter, cancellationToken: ct);
     }
 
-    private async Task<double> CalculateAverageCycleTimeAsync(DateTime cutoff, CancellationToken ct)
+    private Task<double> CalculateAverageCycleTimeAsync(DateTime cutoff, CancellationToken ct)
     {
-        // Calculate average time from event capture to recommendation generation
-        // This is a simplified calculation - in production would track explicit timestamps
-        return 18.5; // Placeholder - would calculate from actual data
+        // Event→recommendation timestamps are not in the current schema.
+        _ = cutoff;
+        _ = ct;
+        return Task.FromResult(0.0);
     }
 
     private long CalculateSavings(int issuesPrevented)
@@ -422,14 +432,41 @@ public class IntelligenceDashboardService
 
     private async Task<SystemHealth> GetSystemHealthAsync(CancellationToken ct)
     {
+        var backend = await _backendHealth.ProbeAsync(ct);
+        var ollama = !backend.OllamaReachable
+            ? "unreachable"
+            : backend.PrimaryModelReady ? "healthy" : "degraded";
+
         return new SystemHealth
         {
-            AtlasStatus = _atlas.IsConfigured ? "healthy" : "unavailable",
-            FcaApiStatus = "healthy", // Would check actual API
-            OllamaStatus = "healthy", // Would check actual Ollama
-            WorkerStatus = "active",  // Would check worker heartbeat
-            OrchestratorStatus = "active" // Would check orchestrator heartbeat
+            AtlasStatus = _atlas.IsConfigured ? "configured" : "unavailable",
+            FcaApiStatus = await ProbeFcaApiAsync(ct),
+            OllamaStatus = ollama,
+            RuntimeMode = backend.RuntimeMode,
+            WorkerStatus = "unobserved",
+            OrchestratorStatus = "hosted"
         };
+    }
+
+    private async Task<string> ProbeFcaApiAsync(CancellationToken ct)
+    {
+        var baseUrl = _config["FcaEcosystem:ApiBaseUrl"]
+                      ?? _config["Auricrux:FcaEcosystemApiBase"];
+        if (string.IsNullOrWhiteSpace(baseUrl)) return "not_configured";
+
+        try
+        {
+            var http = _http.CreateClient("FcaEcosystem");
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            var root = baseUrl.TrimEnd('/') + "/";
+            using var response = await http.GetAsync(new Uri(new Uri(root), "health"), timeout.Token);
+            return response.IsSuccessStatusCode ? "healthy" : $"http_{(int)response.StatusCode}";
+        }
+        catch
+        {
+            return "unreachable";
+        }
     }
 
     private string FormatPeriod(TimeSpan period)
@@ -562,6 +599,7 @@ public class SystemHealth
     public string AtlasStatus { get; set; } = "";
     public string FcaApiStatus { get; set; } = "";
     public string OllamaStatus { get; set; } = "";
+    public string RuntimeMode { get; set; } = "";
     public string WorkerStatus { get; set; } = "";
     public string OrchestratorStatus { get; set; } = "";
 }

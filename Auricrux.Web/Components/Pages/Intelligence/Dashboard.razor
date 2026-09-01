@@ -265,10 +265,11 @@
                     System Health
                 </h2>
                 
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <HealthIndicator Service="MongoDB Atlas" Status="@overview.Health.AtlasStatus" />
                     <HealthIndicator Service="FCA API" Status="@overview.Health.FcaApiStatus" />
                     <HealthIndicator Service="Ollama" Status="@overview.Health.OllamaStatus" />
+                    <HealthIndicator Service="Model runtime" Status="@overview.Health.RuntimeMode" />
                     <HealthIndicator Service="Learning Worker" Status="@overview.Health.WorkerStatus" />
                     <HealthIndicator Service="Predictive Orchestrator" Status="@overview.Health.OrchestratorStatus" />
                 </div>
