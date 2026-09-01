@@ -17,7 +17,8 @@
   ./scripts/smoke_prod.ps1 -BaseUrl "https://auricrux.futurecontractorsofamerica.com"
 #>
 param(
-    [string]$BaseUrl = "https://fca-auricrux-api.azurewebsites.net"
+    # Azure is permanently retired; the documented production endpoint is the custom domain.
+    [string]$BaseUrl = "https://auricrux.futurecontractorsofamerica.com"
 )
 
 $ErrorActionPreference = "Stop"

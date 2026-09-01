@@ -1,5 +1,10 @@
 name: Production Smoke
 
+# Azure is permanently retired — this workflow must never point at *.azurewebsites.net.
+# Target resolution order:
+#   1. workflow_dispatch input
+#   2. repository variable PROD_SMOKE_BASE_URL (set this when the live host is not the custom domain)
+#   3. the documented custom domain
 on:
   schedule:
     - cron: '0 */6 * * *'
@@ -8,7 +13,6 @@ on:
       base_url:
         description: 'Production base URL to smoke test'
         required: false
-        default: 'https://fca-auricrux-api.azurewebsites.net'
 
 permissions:
   contents: read
@@ -19,25 +23,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve production target
+        id: target
+        shell: bash
+        run: |
+          base="${{ github.event.inputs.base_url }}"
+          if [ -z "$base" ]; then base="${{ vars.PROD_SMOKE_BASE_URL }}"; fi
+          if [ -z "$base" ]; then base="https://auricrux.futurecontractorsofamerica.com"; fi
+          case "$base" in
+            *azurewebsites.net*)
+              echo "::error::Azure is retired; refusing to smoke test $base. Set the PROD_SMOKE_BASE_URL repository variable."
+              exit 1
+              ;;
+          esac
+          echo "base_url=$base" >> "$GITHUB_OUTPUT"
+          echo "Smoke target: $base"
+
       - name: Run production smoke script
         shell: pwsh
-        run: |
-          $base = '${{ github.event.inputs.base_url }}'
-          if ([string]::IsNullOrWhiteSpace($base)) { $base = 'https://fca-auricrux-api.azurewebsites.net' }
-          ./scripts/smoke_prod.ps1 -BaseUrl $base
-
-      - name: Probe custom domain (informational)
-        shell: pwsh
-        continue-on-error: true
-        run: |
-          try {
-            Invoke-RestMethod -Uri 'https://auricrux.futurecontractorsofamerica.com/api/health' -TimeoutSec 20
-            Write-Host '::notice::Custom domain /api/health responded — AUX-020 may be ready to promote.'
-          } catch {
-            Write-Host '::warning::Custom domain still not routing to fca-auricrux-api (AUX-020 PARTIAL). DNS/Porkbun CNAME required — see deployment-packages/CUSTOM_DOMAIN_SETUP.md'
-          }
+        run: ./scripts/smoke_prod.ps1 -BaseUrl '${{ steps.target.outputs.base_url }}'
 
       - name: Upload smoke report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: prod-smoke-report
