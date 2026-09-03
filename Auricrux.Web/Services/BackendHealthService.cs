@@ -17,6 +17,7 @@ public sealed class BackendHealthReport
     public IReadOnlyList<string> Models { get; set; } = [];
     public string RuntimeMode { get; set; } = "corpus-fallback";
     public PackageIdentitySnapshot? PackageIdentity { get; set; }
+    public string GitSha { get; set; } = "";
 }
 
 public sealed class BackendHealthService(
@@ -39,8 +40,9 @@ public sealed class BackendHealthService(
             MemoryBackends = memory.Backends,
             Models = intelligence.AvailableModels,
             Timestamp = DateTime.UtcNow,
-            Version = string.IsNullOrWhiteSpace(pkg.PackageVersion) ? "1.3.0" : pkg.PackageVersion,
-            PackageIdentity = pkg
+            Version = string.IsNullOrWhiteSpace(pkg.PackageVersion) ? "1.4.0" : pkg.PackageVersion,
+            PackageIdentity = pkg,
+            GitSha = pkg.GitSha ?? ""
         };
 
         try

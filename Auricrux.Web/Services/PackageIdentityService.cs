@@ -68,7 +68,7 @@ public sealed class PackageIdentityService(
 
         var packageVersion = !string.IsNullOrWhiteSpace(stamp?.PackageVersion)
             ? stamp!.PackageVersion!
-            : (config["Auricrux:PackageVersion"] ?? "1.3.0");
+            : (config["Auricrux:PackageVersion"] ?? "1.4.0");
 
         var buildUtc = !string.IsNullOrWhiteSpace(stamp?.BuildTimestampUtc)
             ? stamp!.BuildTimestampUtc!
@@ -119,7 +119,12 @@ public sealed class PackageIdentityService(
                                || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Auricrux__PublicHost")),
             HostProfile = stamp?.HostProfile,
             RecipeProfile = stamp?.RecipeProfile,
-            DeploymentSource = stamp?.DeploymentSource
+            DeploymentSource = stamp?.DeploymentSource,
+            GitSha = FirstNonEmpty(
+                Environment.GetEnvironmentVariable("GIT_COMMIT"),
+                Environment.GetEnvironmentVariable("GITHUB_SHA"),
+                config["Auricrux:GitSha"],
+                ParseGitSha(infoVer))
         };
 
         logger.LogInformation(
@@ -339,6 +344,24 @@ public sealed class PackageIdentityService(
         return h.TrimEnd('/');
     }
 
+    private static string ParseGitSha(string informationalVersion)
+    {
+        if (string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            return "";
+        }
+
+        var plus = informationalVersion.IndexOf('+');
+        if (plus < 0 || plus >= informationalVersion.Length - 1)
+        {
+            return "";
+        }
+
+        var tail = informationalVersion[(plus + 1)..];
+        var cut = tail.IndexOfAny(['.', ' ']);
+        return cut < 0 ? tail : tail[..cut];
+    }
+
     private static string FirstNonEmpty(params string?[] values)
     {
         foreach (var v in values)
@@ -402,4 +425,6 @@ public sealed class PackageIdentitySnapshot
     public string? HostProfile { get; set; }
     public string? RecipeProfile { get; set; }
     public string? DeploymentSource { get; set; }
+    /// <summary>Short or full git SHA when the host was built from source (env or informational version).</summary>
+    public string GitSha { get; set; } = "";
 }

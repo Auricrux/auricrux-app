@@ -21,8 +21,8 @@ Auricrux is a Construction Intelligence Platform consisting of:
 
 **Deployment Details:**
 - **Platform**: Oracle Cloud Infrastructure (OCI)
-- **URL**: https://auricrux.futurecontractorsofamerica.com
-- **IP**: 150.136.115.97
+- **URL**: http://auricrux.futurecontractorsofamerica.com (HTTPS :443 not listening yet)
+- **IP**: 150.136.90.65 (Auricrux VM; FCA API is 150.136.115.97)
 - **Runtime**: .NET 10.0 on Linux
 - **Database**: MongoDB Atlas (shared with FCA ecosystem)
 

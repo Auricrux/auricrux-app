@@ -94,11 +94,16 @@ public sealed class EnterpriseReadinessTests : IClassFixture<WebApplicationFacto
         var payload = await response.Content.ReadFromJsonAsync<HealthPayload>();
         Assert.NotNull(payload);
         Assert.True(payload!.CorpusEntries >= 75);
+        Assert.False(string.IsNullOrWhiteSpace(payload.Version));
+        Assert.False(string.IsNullOrWhiteSpace(payload.RuntimeMode));
     }
 
     private sealed class HealthPayload
     {
         public int CorpusEntries { get; set; }
+        public string Version { get; set; } = string.Empty;
+        public string RuntimeMode { get; set; } = string.Empty;
+        public string GitSha { get; set; } = string.Empty;
     }
 
     private sealed class CapabilitiesPayload

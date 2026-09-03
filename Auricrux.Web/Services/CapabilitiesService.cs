@@ -30,7 +30,7 @@ public sealed class CapabilitiesService(
         return new CapabilitiesReport
         {
             App = "Auricrux",
-            Version = string.IsNullOrWhiteSpace(pkg.PackageVersion) ? "1.3.0" : pkg.PackageVersion,
+            Version = string.IsNullOrWhiteSpace(pkg.PackageVersion) ? "1.4.0" : pkg.PackageVersion,
             PrimaryModel = primaryModel,
             CorpusEntries = corpusStats.TotalEntries,
             CorpusStats = corpusStats,

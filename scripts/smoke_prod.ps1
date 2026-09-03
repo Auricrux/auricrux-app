@@ -18,7 +18,7 @@
 #>
 param(
     # Azure is permanently retired; the documented production endpoint is the custom domain.
-    [string]$BaseUrl = "https://auricrux.futurecontractorsofamerica.com"
+    [string]$BaseUrl = "http://auricrux.futurecontractorsofamerica.com"
 )
 
 $ErrorActionPreference = "Stop"
@@ -48,6 +48,15 @@ function Invoke-SmokeCheck {
 Write-Host "Auricrux production smoke test against $baseUrl" -ForegroundColor Cyan
 Write-Host "Run at (UTC): $((Get-Date).ToUniversalTime().ToString('o'))"
 Write-Host ""
+
+Invoke-SmokeCheck "GET /api/health (runtime identity)" {
+    $r = Invoke-RestMethod -Uri "$baseUrl/api/health" -Method Get -TimeoutSec 30
+    if (-not $r.status) { throw "No status in /api/health" }
+    if (-not $r.runtimeMode) { throw "No runtimeMode in /api/health" }
+    $ver = $r.version
+    $sha = $r.gitSha
+    "status=$($r.status) runtimeMode=$($r.runtimeMode) version=$ver gitSha=$sha primary=$($r.primaryModel)"
+}
 
 Invoke-SmokeCheck "GET /health" {
     $r = Invoke-RestMethod -Uri "$baseUrl/health" -Method Get -TimeoutSec 30
